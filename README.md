@@ -4,7 +4,7 @@
 
 Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts.
 
-> Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
+> Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n) and [Rails I18n](https://guides.rubyonrails.org/i18n.html).
 
 ### Usage
 
