@@ -1,30 +1,18 @@
 /*!
 [![CI](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml/badge.svg)](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml) [![Docs](https://docs.rs/rust-i18n/badge.svg)](https://docs.rs/rust-i18n/) [![Crates.io](https://img.shields.io/crates/v/rust-i18n.svg)](https://crates.io/crates/rust-i18n)
 
-Loon is a localization/internationalization library, inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
+Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts.
 
-It use [rust-embed](https://crates.io/crates/rust-embed) for embed the localization assets into your binary.
+> Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
 
 ### Usage
 
-Load locales assets by RustEmbed and init Loon in your `lib.rs`
+Load macro in your `lib.rs`
 
-```ignore
-use rust_embed::RustEmbed;
-
-// Load Loon macro, for allow you use `t!` macro in anywhere.
+```rs
+// Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
-extern crate loon_embed;
-
-// Use RustEmbed to locale assets
-#[derive(RustEmbed)]
-#[folder = "locales/"]
-#[include = "*.yml"]
-struct Asset;
-
-fn main() {
-    loon_embed::init::<Asset>("en");
-}
+extern crate rust_i18n;
 ```
 
 You must put I18n YAML files in `locales/` folder.
@@ -38,26 +26,33 @@ locales/
 For example of `en.yml`:
 
 ```yml
-greeting: Hello world
-messages:
-  hello: Hello, {}
+en:
+  hello: Hello world
+  messages:
+    hello: Hello, %{name}
 ```
 
 Now you can use `t!` macro in anywhere.
 
 ```ignore
-t!("greeting");
+t!("hello");
 // => "Hello world"
 
-t!("messages.hello", "world");
+t!("hello", locale = "zh-CN);
+// => "你好世界"
+
+t!("messages.hello", name = "world");
 // => "Hello, world"
+
+t!("messages.hello", locale = "zh-CN", name = "Jason");
+// => "你好, Jason"
 ```
 
-You can use `loon_embed::set_locale` or call `loon_embed::init` agian to change the current locale in runtime.
+You can use `rust_i18n::set_locale` to change the current locale in runtime.
 
 ```rs
-loon_embed::set_locale("zh-CN");
-loon_embed::locale();
+rust_i18n::set_locale("zh-CN");
+rust_i18n::locale();
 // => "zh-CN"
 ```
 */

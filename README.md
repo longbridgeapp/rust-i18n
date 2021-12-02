@@ -28,22 +28,28 @@ For example of `en.yml`:
 
 ```yml
 en:
-  greeting: Hello world
+  hello: Hello world
   messages:
-    hello: Hello, {}
+    hello: Hello, %{name}
 ```
 
 Now you can use `t!` macro in anywhere.
 
 ```rs
-t!("greeting");
+t!("hello");
 // => "Hello world"
 
-t!("messages.hello", "world");
+t!("hello", locale = "zh-CN);
+// => "你好世界"
+
+t!("messages.hello", name = "world");
 // => "Hello, world"
+
+t!("messages.hello", locale = "zh-CN", name = "Jason");
+// => "你好, Jason"
 ```
 
-You can use `rust_i18n::set_locale` or call `rust_i18n::init` agian to change the current locale in runtime.
+You can use `rust_i18n::set_locale` to change the current locale in runtime.
 
 ```rs
 rust_i18n::set_locale("zh-CN");
