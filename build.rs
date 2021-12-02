@@ -72,6 +72,7 @@ fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
     v
 }
 
+#[allow(unused)]
 fn debug<T: ?Sized + serde::Serialize>(val: &T) {
     let mut file = std::fs::OpenOptions::new()
         .write(true)
