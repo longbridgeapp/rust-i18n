@@ -2,8 +2,11 @@ name: CI
 on: [push]
 jobs:
   build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest]
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@master
       - name: Install Rust
