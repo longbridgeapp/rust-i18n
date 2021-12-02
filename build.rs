@@ -16,7 +16,7 @@ type Translations = HashMap<Locale, Value>;
 fn load_locales() -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let build_directory = std::env::var("PWD").unwrap();
+    let build_directory = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let locales = format!("{}/**/locales/**/*.yml", build_directory);
     println!("Reading {}", &locales);
 
