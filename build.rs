@@ -78,7 +78,7 @@ fn debug<T: ?Sized + serde::Serialize>(val: &T) {
         .write(true)
         .append(true)
         .create(true)
-        .open("debug.txt")
+        .open("target/rust-i18n-debug.log")
         .unwrap();
 
     writeln!(file, "{}", serde_json::to_string_pretty(val).unwrap()).unwrap();
@@ -209,11 +209,12 @@ fn write_code(code: TokenStream) {
 }
 
 fn main() {
-    std::fs::remove_file("debug.txt").ok();
-
     let translations = load_locales();
     let code = generate_code(translations);
-    // debug(&code.to_string());
+    if std::env::var("RUST_I18N_DEBUG").is_ok() {
+        debug(&code.to_string());
+    }
+
     write_code(code);
 }
 
