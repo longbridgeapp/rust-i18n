@@ -39,7 +39,7 @@ Now you can use `t!` macro in anywhere.
 t!("hello");
 // => "Hello world"
 
-t!("hello", locale = "zh-CN);
+t!("hello", locale = "zh-CN");
 // => "你好世界"
 
 t!("messages.hello", name = "world");
