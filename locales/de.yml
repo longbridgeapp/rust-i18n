@@ -1,0 +1,4 @@
+de:
+  hello: Hallo Welt!
+  messages:
+    hello: Hallo, %{name}!
