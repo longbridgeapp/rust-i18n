@@ -17,11 +17,12 @@ type Translations = HashMap<Locale, Value>;
 /// Convert /Users/jason/work/rust-i18n/target/release/build/rust-i18n-cfa390035e3fe523/out into /Users/jason/work/rust-i18n
 fn workdir() -> String {
     let dest = std::env::var("OUT_DIR").unwrap();
-    let seperator = Regex::new(r"/target/([\w]+)/build/").expect("Invalid regex");
+    let seperator =
+        Regex::new(r"(/target/([\w]+)/build/)|(\target\([\w]+)\build\)").expect("Invalid regex");
     let parts = seperator.split(&dest).collect::<Vec<_>>();
 
     if parts.len() < 2 {
-        panic!("Invalid path");
+        panic!("Invalid path from OUT_DIR env.");
     }
 
     parts[0].to_string()
