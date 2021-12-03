@@ -16,11 +16,8 @@ type Translations = HashMap<Locale, Value>;
 fn load_locales() -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let current_dir = std::env::current_dir().expect("Faild to get current dir");
-    let locale_path = format!(
-        "{}/**/locales/**/*.yml",
-        current_dir.as_os_str().to_str().unwrap()
-    );
+    let current_dir = std::env::var("PWD").expect("Faild to get current dir via PWD env");
+    let locale_path = format!("{}/**/locales/**/*.yml", current_dir);
     println!("Reading {}", &locale_path);
 
     for entry in glob(&locale_path).expect("Failed to read glob pattern") {
