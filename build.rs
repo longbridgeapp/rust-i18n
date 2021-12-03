@@ -75,18 +75,6 @@ fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
     v
 }
 
-#[allow(unused)]
-fn debug<T: ?Sized + serde::Serialize>(val: &T) {
-    let mut file = std::fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .create(true)
-        .open("target/rust-i18n-debug.log")
-        .unwrap();
-
-    writeln!(file, "{}", serde_json::to_string_pretty(val).unwrap()).unwrap();
-}
-
 fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
     let mut locales = Vec::<TokenStream>::new();
 
@@ -214,8 +202,11 @@ fn write_code(code: TokenStream) {
 fn main() {
     let translations = load_locales();
     let code = generate_code(translations);
+
+    println!("{}", code.to_string());
+
     if std::env::var("RUST_I18N_DEBUG").is_ok() {
-        debug(&code.to_string());
+        panic!("Show debug output.");
     }
 
     write_code(code);
