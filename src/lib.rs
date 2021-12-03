@@ -91,6 +91,7 @@ mod tests {
         assert_eq!(t!("hello", locale = "de"), "Hallo Welt!");
         assert_eq!(t!("hello", locale = "en"), "Hello, World!");
 
+        crate::set_locale("en");
         assert_eq!(t!("messages.hello", name = "Jason"), "Hello, Jason!");
         assert_eq!(
             t!("messages.hello", locale = "en", name = "Jason"),
