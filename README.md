@@ -57,6 +57,14 @@ rust_i18n::locale();
 // => "zh-CN"
 ```
 
+## Debug codegen
+
+Use `RUST_I18N_DEBUG` environment variable to run cargo build, Rust I18n will just print the codegen result.
+
+```bash
+$ RUST_I18N_DEBUG=1 cargo build
+```
+
 ### License
 
 MIT
