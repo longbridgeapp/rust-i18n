@@ -16,11 +16,14 @@ type Translations = HashMap<Locale, Value>;
 fn load_locales() -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let build_directory = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let locales = format!("{}/**/locales/**/*.yml", build_directory);
-    println!("Reading {}", &locales);
+    let current_dir = std::env::current_dir().expect("Faild to get current dir");
+    let locale_path = format!(
+        "{}/**/locales/**/*.yml",
+        current_dir.as_os_str().to_str().unwrap()
+    );
+    println!("Reading {}", &locale_path);
 
-    for entry in glob(&locales).expect("Failed to read glob pattern") {
+    for entry in glob(&locale_path).expect("Failed to read glob pattern") {
         let entry = entry.unwrap();
         println!("cargo:rerun-if-changed={}", entry.display());
 
