@@ -7,7 +7,7 @@
 /// // => "/Users/jason/work/rust-i18n"
 /// ```
 pub fn workdir(dest: &str) -> String {
-    let seperator = regex::Regex::new(r"(/target/([\w]+)/build/)|(\\target\\([\w]+)\\build\\)")
+    let seperator = regex::Regex::new(r"(/target/(.+?)/build/)|(\\target\\(.+?)\\build\\)")
         .expect("Invalid regex");
     let parts = seperator.split(dest).collect::<Vec<_>>();
 
@@ -56,5 +56,12 @@ mod tests {
                 r#"/Users/jason/work/rust-i18n/target/foo/build/rust-i18n-d1612e30e02f745c/out"#
             )
         );
+
+        assert_eq!(
+            r"/opt/rustwide",
+            crate::workdir(
+                r"/opt/rustwide/target/x86_64-unknown-linux-gnu/debug/build/rust-i18n-c1b1cee86c09c9f1/out"
+            )
+        )
     }
 }
