@@ -1,7 +1,6 @@
 use glob::glob;
 use proc_macro2::TokenStream;
 use quote::quote;
-use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -14,24 +13,11 @@ type Translations = HashMap<Locale, Value>;
     Inspired from https://github.com/terry90/internationalization-rs/blob/master/build.rs
 */
 
-/// Convert /Users/jason/work/rust-i18n/target/release/build/rust-i18n-cfa390035e3fe523/out into /Users/jason/work/rust-i18n
-fn workdir() -> String {
-    let dest = std::env::var("OUT_DIR").unwrap();
-    let seperator =
-        Regex::new(r"(/target/([\w]+)/build/)|(\target\([\w]+)\build\)").expect("Invalid regex");
-    let parts = seperator.split(&dest).collect::<Vec<_>>();
-
-    if parts.len() < 2 {
-        panic!("Invalid path from OUT_DIR env.");
-    }
-
-    parts[0].to_string()
-}
-
 fn load_locales() -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let workdir = workdir();
+    let dest = std::env::var("OUT_DIR").expect("OUT_DIR env not found");
+    let workdir = rust_i18n_support::workdir(&dest);
     println!("cargo:i18n-workdir={}", &workdir);
     let locale_path = format!("{}/locales/**/*.yml", workdir);
     println!("cargo:i18n-locale-path={}", &locale_path);
