@@ -1,6 +1,7 @@
 use glob::glob;
 use proc_macro2::TokenStream;
 use quote::quote;
+use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -13,12 +14,26 @@ type Translations = HashMap<Locale, Value>;
     Inspired from https://github.com/terry90/internationalization-rs/blob/master/build.rs
 */
 
+/// Convert /Users/jason/work/rust-i18n/target/release/build/rust-i18n-cfa390035e3fe523/out into /Users/jason/work/rust-i18n
+fn workdir() -> String {
+    let dest = std::env::var("OUT_DIR").unwrap();
+    let seperator = Regex::new(r"/target/([\w]+)/build/").expect("Invalid regex");
+    let parts = seperator.split(&dest).collect::<Vec<_>>();
+
+    if parts.len() < 2 {
+        panic!("Invalid path");
+    }
+
+    parts[0].to_string()
+}
+
 fn load_locales() -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let current_dir = std::env::var("PWD").expect("Faild to get current dir via PWD env");
-    let locale_path = format!("{}/**/locales/**/*.yml", current_dir);
-    println!("Reading {}", &locale_path);
+    let workdir = workdir();
+    println!("cargo:i18n-workdir={}", &workdir);
+    let locale_path = format!("{}/locales/**/*.yml", workdir);
+    println!("cargo:i18n-locale-path={}", &locale_path);
 
     for entry in glob(&locale_path).expect("Failed to read glob pattern") {
         let entry = entry.unwrap();
@@ -188,8 +203,7 @@ fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
     result
 }
 
-fn write_code(code: TokenStream) {
-    let dest = std::env::var("OUT_DIR").unwrap();
+fn write_code(dest: &str, code: TokenStream) {
     let mut output = File::create(&std::path::Path::new(&dest).join("i18n.rs")).unwrap();
     output
         .write(code.to_string().as_bytes())
@@ -197,24 +211,16 @@ fn write_code(code: TokenStream) {
 }
 
 fn main() {
+    let dest = std::env::var("OUT_DIR").unwrap();
+    println!("cargo:rustc-env=OUT_DIR={}", dest);
     let translations = load_locales();
     let code = generate_code(translations);
 
-    println!("{}", code.to_string());
+    println!("Code generated:\n{}", code.to_string());
 
     if std::env::var("RUST_I18N_DEBUG").is_ok() {
         panic!("Show debug output.");
     }
 
-    write_code(code);
-}
-
-mod tests {
-    #[test]
-    fn test_extract_vars() {
-        let translations = read_locales();
-        let code = generate_code(translations);
-
-        assert_eq!("", code);
-    }
+    write_code(&dest, code);
 }
