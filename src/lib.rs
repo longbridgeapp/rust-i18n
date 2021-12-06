@@ -6,13 +6,23 @@ Rust I18n is use Rust codegen for load YAML file storage translations on compile
 > Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
 
 ### Usage
+Add crate dependencies in your Cargo.toml:
 
-Load macro in your `lib.rs`
+```toml
+[dependencies]
+lazy_static = "1.4.0"
+rust-i18n = "0"
+```
 
-```rs
+Load macro and init translations in `lib.rs`
+
+```ignore
 // Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
 extern crate rust_i18n;
+
+// Init translations for current crate.
+i18n!("locales");
 ```
 
 You must put I18n YAML files in `locales/` folder.
@@ -56,50 +66,81 @@ rust_i18n::locale();
 // => "zh-CN"
 ```
 */
-include!(concat!(env!("OUT_DIR"), "/i18n.rs"));
+// include!(concat!(env!("OUT_DIR"), "/i18n.rs"));
+use std::sync::Mutex;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_t() {
-        assert_eq!(t!("hello"), "Hello, World!");
-        assert_eq!(t!("hello"), "Hello, World!");
+pub use rust_i18n_support::i18n;
 
-        // Vars
-        assert_eq!(
-            t!("a.very.nested.message"),
-            "Hello, %{name}. Your message is: %{msg}"
-        );
-        assert_eq!(
-            t!("a.very.nested.message", name = "Jason"),
-            "Hello, Jason. Your message is: %{msg}"
-        );
-        assert_eq!(
-            t!("a.very.nested.message", name = "Jason", msg = "Bla bla"),
-            "Hello, Jason. Your message is: Bla bla"
-        );
+lazy_static::lazy_static! {
+    static ref CURRENT_LOCALE: Mutex<String> = Mutex::new(String::from("en"));
+}
 
-        crate::set_locale("de");
-        assert_eq!(t!("messages.hello", name = "world"), "Hallo, world!");
+pub fn set_locale(locale: &str) {
+    let mut current_locale = CURRENT_LOCALE.lock().unwrap();
+    *current_locale = locale.to_string();
+}
 
-        crate::set_locale("en");
-        assert_eq!(t!("messages.hello", name = "world"), "Hello, world!");
-    }
+pub fn locale() -> String {
+    CURRENT_LOCALE.lock().unwrap().to_string()
+}
 
-    #[test]
-    fn it_t_with_locale_and_args() {
-        assert_eq!(t!("hello", locale = "de"), "Hallo Welt!");
-        assert_eq!(t!("hello", locale = "en"), "Hello, World!");
+/// Get I18n text
+///
+/// ```ignore
+/// // Simple get text with current locale
+/// t!("greeting"); // greeting: "Hello world" => "Hello world"
+/// // Get a special locale's text
+/// t!("greeting", locale = "de"); // greeting: "Hallo Welt!" => "Hallo Welt!"
+///
+/// // With variables
+/// t!("messages.hello", "world"); // messages.hello: "Hello, {}" => "Hello, world"
+/// t!("messages.foo", "Foo", "Bar"); // messages.foo: "Hello, {} and {}" => "Hello, Foo and Bar"
+///
+/// // With locale and variables
+/// t!("messages.hello", locale = "de", "Jason"); // messages.hello: "Hallo, {}" => "Hallo, Jason"
+/// ```
+#[macro_export]
+macro_rules! t {
+    // t!("foo")
+    ($key:expr) => {
+        crate::translate(rust_i18n::locale().as_str(), $key)
+    };
 
-        crate::set_locale("en");
-        assert_eq!(t!("messages.hello", name = "Jason"), "Hello, Jason!");
-        assert_eq!(
-            t!("messages.hello", locale = "en", name = "Jason"),
-            "Hello, Jason!"
-        );
-        assert_eq!(
-            t!("messages.hello", locale = "de", name = "Jason"),
-            "Hallo, Jason!"
-        );
-    }
+    // t!("foo", locale="en")
+    ($key:expr, locale=$locale:tt) => {
+        crate::translate($locale, $key)
+    };
+
+    // t!("foo", locale="en")
+    ($key:expr, locale=$locale:tt, $($var_name:tt = $var_val:tt),+) => {
+        {
+            let mut message = crate::translate($locale, $key);
+            $(
+                message = message.replace(concat!("%{", stringify!($var_name), "}"), $var_val);
+            )+
+            message
+        }
+    };
+
+    // t!("foo {} {}", "bar", "baz")
+    ($key:expr, $($var_name:tt = $var_val:tt),+) => {
+        {
+            let mut message = crate::translate(rust_i18n::locale().as_str(), $key);
+            $(
+                message = message.replace(concat!("%{", stringify!($var_name), "}"), $var_val);
+            )+
+            message
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! map {
+    {$($key:expr => $value:expr),+} => {{
+        let mut m = std::collections::HashMap::new();
+        $(
+            m.insert($key, $value);
+        )+
+        m
+    }};
 }

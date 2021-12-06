@@ -7,6 +7,8 @@ jobs:
         platform: [ubuntu-latest, windows-latest]
     name: Test
     runs-on: ${{ matrix.platform }}
+    env:
+      RUST_I18N_DEBUG: 1
     steps:
       - uses: actions/checkout@master
       - name: Install Rust

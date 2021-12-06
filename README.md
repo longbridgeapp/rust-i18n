@@ -8,7 +8,24 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 
 ## Usage
 
-### Preparing the Localized Mappings
+Add crate dependencies in your Cargo.toml:
+
+```toml
+[dependencies]
+lazy_static = "1.4.0"
+rust-i18n = "0"
+```
+
+Load macro and init translations in `lib.rs`
+
+```rs
+// Load I18n macro, for allow you use `t!` macro in anywhere.
+#[macro_use]
+extern crate rust_i18n;
+
+// Init translations for current crate.
+i18n!("locales");
+```
 
 Make sure all YAML files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
@@ -17,19 +34,29 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 ├── Cargo.lock
 ├── Cargo.toml
 ├── locales
-│   ├── en-US.yml
-│   └── fr-FR.yml
+│   ├── en.yml
+│   ├── zh-CN.yml
+│   └── zh-TW.yml
 └── src
     └── main.rs
 ```
 
-In the YAML files, specify the localization keys and their corresponding values, for example, in `en-US.yml`:
+In the YAML files, specify the localization keys and their corresponding values, for example, in `en.yml`:
 
 ```yml
-en-US: # The language code of this mapping file
+en: # The language code of this mapping file
   hello: Hello world # A simple key -> value mapping
   messages:
     hello: Hello, %{name} # A nested key.sub_key -> value mapping, in this case "messages.hello" maps to "Hello, %{name}"
+```
+
+And example of the `zh-CN.yml`:
+
+```yml
+zh-CN:
+  hello: 你好世界
+  messages:
+    hello: 你好, %{name}
 ```
 
 ### Loading Localized Strings in Rust

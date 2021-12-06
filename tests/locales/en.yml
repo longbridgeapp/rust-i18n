@@ -1,5 +1,5 @@
 en:
-  hello: Hello, World!
+  hello: Bar - Hello, World!
   custom:
     greeting: Hello, %{name}!!!
   a:
