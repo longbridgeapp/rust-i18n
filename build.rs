@@ -19,7 +19,7 @@ fn load_locales() -> Translations {
     let dest = std::env::var("OUT_DIR").expect("OUT_DIR env not found");
     let workdir = rust_i18n_support::workdir(&dest);
     println!("cargo:i18n-workdir={}", &workdir);
-    let locale_path = format!("{}/locales/**/*.yml", workdir);
+    let locale_path = format!("{}/**/locales/**/*.yml", workdir);
     println!("cargo:i18n-locale-path={}", &locale_path);
 
     for entry in glob(&locale_path).expect("Failed to read glob pattern") {
