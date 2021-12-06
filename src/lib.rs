@@ -63,10 +63,25 @@ use quote::quote;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::{Mutex, MutexGuard, Once};
 
 type Locale = String;
 type Value = serde_json::Value;
 type Translations = HashMap<Locale, Value>;
+
+/// Merge JSON Values, merge b into a
+fn merge_value(a: &mut Value, b: &Value) {
+    match (a, b) {
+        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
+            for (k, v) in b {
+                merge_value(a.entry(k.clone()).or_insert(Value::Null), v);
+            }
+        }
+        (a, b) => {
+            *a = b.clone();
+        }
+    }
+}
 
 #[derive(Debug)]
 struct Option {
@@ -85,6 +100,12 @@ fn is_debug() -> bool {
     std::env::var("RUST_I18N_DEBUG").is_ok()
 }
 
+static INITIALIZED: Once = Once::new();
+
+lazy_static::lazy_static! {
+    static ref TRANSLATIONS: Mutex<Translations> = Mutex::new(Translations::new());
+}
+
 #[proc_macro]
 pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let option = match syn::parse::<Option>(input) {
@@ -92,9 +113,30 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Err(err) => return err.to_compile_error().into(),
     };
 
-    let translations = load_locales(&option.locales_path);
+    let new_translations = load_locales(&option.locales_path);
 
-    let code = generate_code(translations);
+    let mut translations = TRANSLATIONS.lock().unwrap();
+    new_translations.into_iter().for_each(|(k, new_value)| {
+        translations
+            .entry(k)
+            .and_modify(|old_value| merge_value(old_value, &new_value))
+            .or_insert(new_value);
+    });
+
+    // if is_debug() {
+    //     println!("{:#?}", translations);
+    // }
+
+    let mut code = generate_code(translations);
+
+    INITIALIZED.call_once(|| {
+        let base_code = generate_base();
+
+        code = quote! {
+            #base_code
+            #code
+        };
+    });
 
     if is_debug() {
         println!("Code generated:\n{}", code.to_string());
@@ -166,31 +208,15 @@ fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
     v
 }
 
-fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
-    let mut locales = Vec::<TokenStream>::new();
-
-    let mut locale_vars = HashMap::<String, String>::new();
-    for (locale, trs) in translations {
-        let new_vars = extract_vars(locale.as_str(), &trs);
-        locale_vars.extend(new_vars);
-    }
-
-    locale_vars.iter().for_each(|(k, v)| {
-        let k = k.to_string();
-        let v = v.to_string();
-
-        locales.push(quote! {
-            #k => #v,
-        });
-    });
-
-    if is_debug() {
-        println!("cargo:i18n-locales={:#?}", locales);
-    }
-
+fn generate_base() -> proc_macro2::TokenStream {
     let result = quote! {
         use std::sync::Mutex;
         use std::collections::HashMap;
+
+
+        lazy_static::lazy_static! {
+            static ref CURRENT_LOCALE: Mutex<String> = Mutex::new(String::from("en"));
+        }
 
         macro_rules! map {
             {$($key:expr => $value:expr),+} => {{
@@ -200,15 +226,6 @@ fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
                 )+
                 m
             }};
-        }
-
-        lazy_static::lazy_static! {
-            static ref LOCALES: HashMap<&'static str, &'static str> = map! [
-                #(#locales)*
-                "" => ""
-            ];
-
-            static ref CURRENT_LOCALE: Mutex<String> = Mutex::new(String::from("en"));
         }
 
         pub fn set_locale(locale: &str) {
@@ -268,7 +285,6 @@ fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
                     message
                 }
             };
-
         }
 
         pub fn translate(locale: &str, key: &str) -> String {
@@ -279,6 +295,40 @@ fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
                     key.to_string()
                 }
             }
+        }
+    };
+
+    result
+}
+
+fn generate_code(translations: MutexGuard<HashMap<String, Value>>) -> proc_macro2::TokenStream {
+    let mut locales = Vec::<TokenStream>::new();
+
+    let mut locale_vars = HashMap::<String, String>::new();
+    translations.iter().for_each(|(locale, trs)| {
+        let new_vars = extract_vars(locale.as_str(), &trs);
+        locale_vars.extend(new_vars);
+    });
+
+    locale_vars.iter().for_each(|(k, v)| {
+        let k = k.to_string();
+        let v = v.to_string();
+
+        locales.push(quote! {
+            #k => #v,
+        });
+    });
+
+    if is_debug() {
+        println!("cargo:i18n-locales={:#?}", locales);
+    }
+
+    let result = quote! {
+        lazy_static::lazy_static! {
+            static ref LOCALES: HashMap<&'static str, &'static str> = map! [
+                #(#locales)*
+                "" => ""
+            ];
         }
     };
 
