@@ -4,6 +4,7 @@ authors = ["Jason Lee <huacnlee@gmail.com>"]
 categories = ["compile-time", "localization", "internationalization"]
 description = "Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts."
 edition = "2018"
+exclude = ["examples", "crates", "tests"]
 keywords = ["i18n", "yml", "localization", "internationalization"]
 license = "MIT"
 name = "rust-i18n"
@@ -21,3 +22,6 @@ serde = "1"
 serde_json = "1"
 serde_yaml = "0.8"
 syn = "1.0.82"
+
+[dev-dependencies]
+foo = {path = "examples/foo"}

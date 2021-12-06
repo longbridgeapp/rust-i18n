@@ -32,37 +32,38 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Err(err) => return err.to_compile_error().into(),
     };
 
-    let translations = load_locales(&option.locales_path);
+    // CARGO_MANIFEST_DIR is current build directory
+    let cargo_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is empty");
+    let current_dir = std::path::PathBuf::from(cargo_dir);
+    let locales_path = current_dir.join(option.locales_path);
+
+    let locales_path = std::fs::canonicalize(locales_path.clone())
+        .unwrap_or_else(|_| panic!("Invalid locale path: {}", &locales_path.display()))
+        .display()
+        .to_string();
+
+    let translations = load_locales(&locales_path);
     let code = generate_code(translations);
 
     if is_debug() {
         println!("{}", code.to_string());
-        panic!("Debug mode, show codegen.");
+        // panic!("Debug mode, show codegen.");
     }
 
     code.into()
 }
 
-fn load_locales(dest: &str) -> Translations {
+fn load_locales(locales_path: &str) -> Translations {
     let mut translations: Translations = HashMap::new();
 
-    let current_dir = std::env::current_dir().unwrap();
-    let locale_path = current_dir.join(dest);
-
-    let locale_path = std::fs::canonicalize(locale_path.clone())
-        .unwrap_or_else(|_| panic!("Invalid locale path: {}", &locale_path.display()))
-        .display()
-        .to_string();
-
     if is_debug() {
-        println!("cargo:i18n-locale-path={}", &locale_path);
+        println!("cargo:i18n-locale-path={}", &locales_path);
     }
 
-    for entry in glob(&format!("{}/**/*.yml", locale_path)).expect("Failed to read glob pattern") {
+    for entry in glob(&format!("{}/**/*.yml", locales_path)).expect("Failed to read glob pattern") {
         let entry = entry.unwrap();
-        if is_debug() {
-            println!("cargo:rerun-if-changed={}", entry.display());
-        }
+
+        println!("cargo:rerun-if-changed={}", entry.display());
 
         let file = File::open(entry).expect("Failed to open the YAML file");
         let mut reader = std::io::BufReader::new(file);
