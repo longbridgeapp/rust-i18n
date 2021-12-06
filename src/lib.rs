@@ -6,13 +6,23 @@ Rust I18n is use Rust codegen for load YAML file storage translations on compile
 > Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
 
 ### Usage
+Add crate dependencies in your Cargo.toml:
 
-Load macro in your `lib.rs`
+```toml
+[dependencies]
+lazy_static = "1.4.0"
+rust-i18n = "0"
+```
 
-```rs
+Load macro and init translations in `lib.rs`
+
+```ignore
 // Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
 extern crate rust_i18n;
+
+// Init translations for current crate.
+i18n!("locales");
 ```
 
 You must put I18n YAML files in `locales/` folder.

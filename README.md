@@ -16,7 +16,7 @@ lazy_static = "1.4.0"
 rust-i18n = "0"
 ```
 
-Load macro in your `lib.rs`
+Load macro and init translations in `lib.rs`
 
 ```rs
 // Load I18n macro, for allow you use `t!` macro in anywhere.
@@ -24,7 +24,7 @@ Load macro in your `lib.rs`
 extern crate rust_i18n;
 
 // Init translations for current crate.
-i18n!("./locales");
+i18n!("locales");
 ```
 
 Make sure all YAML files (containing the localized mappings) are located in the `locales/` folder of the project root directory:

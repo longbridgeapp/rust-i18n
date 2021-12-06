@@ -1,6 +1,5 @@
 [package]
 authors = ["Jason Lee <huacnlee@gmail.com>"]
-# build = "build.rs"
 categories = ["compile-time", "localization", "internationalization"]
 description = "Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts."
 edition = "2018"
@@ -10,14 +9,14 @@ license = "MIT"
 name = "rust-i18n"
 readme = "README.md"
 repository = "https://github.com/longbridgeapp/rust-i18n"
-version = "0.1.7-alpha.0"
+version = "0.2.0"
 
 [dependencies]
 glob = "0.3"
 lazy_static = "1.4.0"
 proc-macro2 = "1.0"
 quote = "1.0.2"
-rust-i18n-support = {path = "./crates/support", version = "0.1.1"}
+rust-i18n-support = {path = "./crates/support", version = "0.2.0"}
 serde = "1"
 serde_json = "1"
 serde_yaml = "0.8"

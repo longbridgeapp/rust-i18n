@@ -25,6 +25,13 @@ impl syn::parse::Parse for Option {
     }
 }
 
+/// Init I18n translations.
+///
+/// This will load all translations by glob `**/*.yml` from the given path.
+///
+/// ```ignore
+/// i18n!("locales");
+/// ```
 #[proc_macro]
 pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let option = match syn::parse::<Option>(input) {
