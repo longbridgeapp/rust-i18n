@@ -102,8 +102,6 @@ The `RUST_I18N_DEBUG` environment variable can be used to print out some debuggi
 $ RUST_I18N_DEBUG=1 cargo build
 ```
 
-Note: When `RUST_I18N_DEBUG` is enabled, the `build.rs` will panic to stop the build from continuing, this is intentional so don't panic when you see this happen!
-
 ## Example
 
 A minimal example of using rust-i18n can be found [here](https://github.com/longbridgeapp/rust-i18n-example).
