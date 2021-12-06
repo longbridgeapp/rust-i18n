@@ -22,3 +22,7 @@ foo = {path = "examples/foo"}
 [build-dependencies]
 glob = "0.3"
 regex = "1"
+
+[[example]]
+name = "app"
+test = true

@@ -104,7 +104,7 @@ $ RUST_I18N_DEBUG=1 cargo build
 
 ## Example
 
-A minimal example of using rust-i18n can be found [here](https://github.com/longbridgeapp/rust-i18n-example).
+A minimal example of using rust-i18n can be found [here](https://github.com/longbridgeapp/rust-i18n/tree/main/examples).
 
 ## License
 

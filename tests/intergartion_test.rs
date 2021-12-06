@@ -54,6 +54,7 @@ mod tests {
 
     #[test]
     fn it_with_merge_file() {
+        rust_i18n::set_locale("en");
         assert_eq!(t!("user.title"), "User Title");
         assert_eq!(t!("messages.user.title"), "Message User Title");
     }
