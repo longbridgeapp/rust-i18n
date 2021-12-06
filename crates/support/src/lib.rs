@@ -75,7 +75,7 @@ fn load_locales(locales_path: &str) -> Translations {
     let path_pattern = format!("{}/**/*.yml", locales_path);
 
     if is_debug() {
-        println!("cargo:i18n-locale-path={}", &path_pattern);
+        println!("cargo:i18n-locale={}", &path_pattern);
     }
 
     for entry in glob(&path_pattern).expect("Failed to read glob pattern") {
@@ -83,7 +83,6 @@ fn load_locales(locales_path: &str) -> Translations {
         if is_debug() {
             println!("cargo:i18n-load={}", &entry.display());
         }
-        println!("cargo:rerun-if-changed={}", entry.display());
 
         let file = File::open(entry).expect("Failed to open the YAML file");
         let mut reader = std::io::BufReader::new(file);
