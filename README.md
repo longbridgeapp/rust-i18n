@@ -36,7 +36,7 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 ├── locales
 │   ├── en.yml
 │   ├── zh-CN.yml
-│   └── zh-TW.yml
+│   └── zh-HK.yml
 └── src
     └── main.rs
 ```
