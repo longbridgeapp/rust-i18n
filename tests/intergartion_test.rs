@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rust_i18n;
 
-i18n!("locales");
+i18n!("./tests/locales");
 
 #[cfg(test)]
 mod tests {
@@ -50,5 +50,11 @@ mod tests {
             t!("messages.hello", locale = "de", name = "Jason"),
             "Hallo, Jason!"
         );
+    }
+
+    #[test]
+    fn it_with_merge_file() {
+        assert_eq!(t!("user.title"), "User Title");
+        assert_eq!(t!("messages.user.title"), "Message User Title");
     }
 }

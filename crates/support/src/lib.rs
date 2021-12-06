@@ -9,7 +9,7 @@ type Value = serde_json::Value;
 type Translations = HashMap<Locale, Value>;
 
 fn is_debug() -> bool {
-    std::env::var("RUST_I18N_DEBUG").is_ok()
+    std::env::var("RUST_I18N_DEBUG").unwrap_or_else(|_| "0".to_string()) == "1"
 }
 
 #[derive(Debug)]
@@ -22,6 +22,20 @@ impl syn::parse::Parse for Option {
         let locales_path = input.parse::<syn::LitStr>()?.value();
 
         Ok(Self { locales_path })
+    }
+}
+
+/// Merge JSON Values, merge b into a
+fn merge_value(a: &mut Value, b: &Value) {
+    match (a, b) {
+        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
+            for (k, v) in b {
+                merge_value(a.entry(k.clone()).or_insert(Value::Null), v);
+            }
+        }
+        (a, b) => {
+            *a = b.clone();
+        }
     }
 }
 
@@ -44,12 +58,7 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let current_dir = std::path::PathBuf::from(cargo_dir);
     let locales_path = current_dir.join(option.locales_path);
 
-    let locales_path = std::fs::canonicalize(locales_path.clone())
-        .unwrap_or_else(|_| panic!("Invalid locale path: {}", &locales_path.display()))
-        .display()
-        .to_string();
-
-    let translations = load_locales(&locales_path);
+    let translations = load_locales(&locales_path.display().to_string());
     let code = generate_code(translations);
 
     if is_debug() {
@@ -63,13 +72,17 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 fn load_locales(locales_path: &str) -> Translations {
     let mut translations: Translations = HashMap::new();
 
+    let path_pattern = format!("{}/**/*.yml", locales_path);
+
     if is_debug() {
-        println!("cargo:i18n-locale-path={}", &locales_path);
+        println!("cargo:i18n-locale-path={}", &path_pattern);
     }
 
-    for entry in glob(&format!("{}/**/*.yml", locales_path)).expect("Failed to read glob pattern") {
+    for entry in glob(&path_pattern).expect("Failed to read glob pattern") {
         let entry = entry.unwrap();
-
+        if is_debug() {
+            println!("cargo:i18n-load={}", &entry.display());
+        }
         println!("cargo:rerun-if-changed={}", entry.display());
 
         let file = File::open(entry).expect("Failed to open the YAML file");
@@ -83,7 +96,12 @@ fn load_locales(locales_path: &str) -> Translations {
         let trs: Translations =
             serde_yaml::from_str(&content).expect("Invalid YAML format, parse error");
 
-        translations.extend(trs)
+        trs.into_iter().for_each(|(k, new_value)| {
+            translations
+                .entry(k)
+                .and_modify(|old_value| merge_value(old_value, &new_value))
+                .or_insert(new_value);
+        });
     }
 
     translations
