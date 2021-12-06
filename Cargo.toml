@@ -12,15 +12,8 @@ repository = "https://github.com/longbridgeapp/rust-i18n"
 version = "0.2.0"
 
 [dependencies]
-glob = "0.3"
 lazy_static = "1.4.0"
-proc-macro2 = "1.0"
-quote = "1.0.2"
-rust-i18n-support = {path = "./crates/support", version = "0.2.0"}
-serde = "1"
-serde_json = "1"
-serde_yaml = "0.8"
-syn = "1.0.82"
+rust-i18n-support = {path = "./crates/support", version = "0.2"}
 
 [dev-dependencies]
 foo = {path = "examples/foo"}

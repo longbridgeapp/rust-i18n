@@ -3,8 +3,8 @@ description = "Support for rust-i18n crate."
 edition = "2021"
 license = "MIT"
 name = "rust-i18n-support"
-version = "0.2.1-alpha.0"
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme = "../../README.md"
+version = "0.2.1"
 
 [dependencies]
 glob = "0.3"
