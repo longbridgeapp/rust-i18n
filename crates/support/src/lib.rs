@@ -158,7 +158,7 @@ fn generate_code(translations: Translations) -> proc_macro2::TokenStream {
     // result
     quote! {
         lazy_static::lazy_static! {
-            static ref LOCALES: std::collections::HashMap<&'static str, &'static str> = map! [
+            static ref LOCALES: std::collections::HashMap<&'static str, &'static str> = rust_i18n::map! [
                 #(#locales)*
                 "" => ""
             ];
