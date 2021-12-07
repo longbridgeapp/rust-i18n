@@ -33,6 +33,19 @@ extern crate rust_i18n;
 i18n!("locales");
 ```
 
+Or you can import by use directly:
+
+```rs
+// You must import in each files when you wants use `t!` macro.
+use rust_i18n::t;
+
+rust_i18n::i18n!("locales");
+
+fn main() {
+    println!("{}", t!("hello"));
+}
+```
+
 Make sure all YAML files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
 ```

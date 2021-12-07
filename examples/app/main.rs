@@ -1,8 +1,7 @@
-#[macro_use]
-extern crate rust_i18n;
+use rust_i18n::t;
 
 // Init translations for current crate.
-i18n!("examples/app/locales");
+rust_i18n::i18n!("examples/app/locales");
 
 fn main() {}
 

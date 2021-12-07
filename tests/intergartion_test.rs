@@ -1,10 +1,9 @@
-#[macro_use]
-extern crate rust_i18n;
-
-i18n!("./tests/locales");
+rust_i18n::i18n!("./tests/locales");
 
 #[cfg(test)]
 mod tests {
+    use rust_i18n::t;
+
     #[test]
     fn it_foo_title() {
         assert_eq!(foo::t("hello"), "Foo - Hello, World!");
