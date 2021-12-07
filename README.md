@@ -6,6 +6,12 @@ rust-i18n is a crate for loading localized text from a set of YAML mapping files
 
 The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n) and [Rails I18n](https://guides.rubyonrails.org/i18n.html).
 
+## Features
+
+- Codegen on compile time for includes translations into binary.
+- Global `t!` macro for loading localized text in everywhere.
+- Use YAML for mapping localized text, and support mutiple YAML files merging.
+
 ## Usage
 
 Add crate dependencies in your Cargo.toml:
