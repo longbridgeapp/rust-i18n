@@ -48,7 +48,10 @@ fn main() -> Result<(), Error> {
             let mut messages: Vec<_> = results.values().collect();
             messages.sort_by_key(|m| m.index);
 
-            generator::generate(output_path, source_locale, messages)?;
+            let result = generator::generate(output_path, source_locale, messages);
+            if result.is_err() {
+                std::process::exit(1);
+            }
         }
         _ => {}
     }
