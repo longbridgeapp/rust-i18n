@@ -7,6 +7,8 @@ pub fn iter_crate<F>(src_path: &str, mut callback: F) -> Result<(), Error>
 where
     F: FnMut(&PathBuf, &str) -> Result<(), Error>,
 {
+    let src_path = src_path.trim_end_matches('/');
+
     let pattern = format!("{}/**/*.rs", src_path);
     for entry in glob::glob(&pattern)? {
         let entry = entry.unwrap();

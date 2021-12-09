@@ -18,11 +18,12 @@ fn main() -> Result<(), Error> {
             Arg::with_name("locale")
                 .short("l")
                 .help("Source locale")
+                .multiple(true)
                 .default_value("en"),
         )
         .arg(
             Arg::with_name("source")
-                .help("Path of the Rust source code")
+                .help("Path of your Rust crate root")
                 .default_value("./"),
         );
 
@@ -35,11 +36,12 @@ fn main() -> Result<(), Error> {
 
     let mut results = HashMap::new();
 
+    #[allow(clippy::single_match)]
     match app.subcommand() {
         ("extract", Some(sub_m)) => {
             let source_path = sub_m.value_of("source").expect("Missing source path");
             let output_path = sub_m.value_of("output").expect("Missing output path");
-            let source_locale = sub_m.value_of("locale").expect("Missing source locale");
+            let source_locales = sub_m.values_of("locale").expect("Missing source locale");
 
             iter::iter_crate(source_path, |path, source| {
                 extractor::extract(&mut results, path, source)
@@ -48,8 +50,16 @@ fn main() -> Result<(), Error> {
             let mut messages: Vec<_> = results.values().collect();
             messages.sort_by_key(|m| m.index);
 
-            let result = generator::generate(output_path, source_locale, messages);
-            if result.is_err() {
+            let mut has_error = false;
+
+            for source_locale in source_locales.into_iter() {
+                let result = generator::generate(output_path, source_locale, messages.clone());
+                if result.is_err() {
+                    has_error = true;
+                }
+            }
+
+            if has_error {
                 std::process::exit(1);
             }
         }
