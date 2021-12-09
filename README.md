@@ -11,8 +11,11 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Codegen on compile time for includes translations into binary.
 - Global `t!` macro for loading localized text in everywhere.
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
+- Command lint tool for checking and extract untranslated texts into YAML files.
 
 ## Installation
+
+Rust I18n also provided a `i18n` command line tool help you process translations.
 
 ```bash
 $ cargo install rust-i18n
@@ -133,7 +136,32 @@ $ i18n extract .
 
 After that the untranslated texts will be extracted and saved into `locales/TODO.en.yml` file.
 
-You also can special the locale by use `--locale` option, run `i18n extract -h` to see details.
+You also can special the locale by use `--locale` option:
+
+```bash
+$ cd your_project_root_directory
+$ i18n extract -l en fr zh-CN zh-HK
+
+Checking [en] and generating untranslated texts...
+Found 1 new texts need to translate.
+----------------------------------------
+Writing to TODO.en.yml
+
+Checking [fr] and generating untranslated texts...
+Found 11 new texts need to translate.
+----------------------------------------
+Writing to TODO.fr.yml
+
+Checking [zh-CN] and generating untranslated texts...
+All thing done.
+
+Checking [zh-HK] and generating untranslated texts...
+Found 11 new texts need to translate.
+----------------------------------------
+Writing to TODO.zh-HK.yml
+```
+
+Run `i18n extract -h` to see details.
 
 ```bash
 $ i18n extract -h
@@ -141,18 +169,18 @@ i18n-extract
 Extracts strings from source files
 
 USAGE:
-    i18n extract [OPTIONS] [source]
+    i18n extract [OPTIONS] [--] [source]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -l <locale>        Source locale [default: en]
-    -o <output>        Path for output locales YAML files. [default: ./locales]
+    -l <locale>...        Source locale [default: en]
+    -o <output>           Path for output locales YAML files. [default: ./locales]
 
 ARGS:
-    <source>    Path of the Rust source code [default: ./]
+    <source>    Path of your Rust crate root [default: ./]
 ```
 
 ## Debugging the Codegen Process
