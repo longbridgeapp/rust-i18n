@@ -1,8 +1,8 @@
-# rust-i18n
+# Rust I18n
 
 [![CI](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml/badge.svg)](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml) [![Docs](https://docs.rs/rust-i18n/badge.svg)](https://docs.rs/rust-i18n/) [![Crates.io](https://img.shields.io/crates/v/rust-i18n.svg)](https://crates.io/crates/rust-i18n)
 
-rust-i18n is a crate for loading localized text from a set of YAML mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
+Rust I18n is a crate for loading localized text from a set of YAML mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
 
 The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n) and [Rails I18n](https://guides.rubyonrails.org/i18n.html).
 
@@ -11,7 +11,7 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Codegen on compile time for includes translations into binary.
 - Global `t!` macro for loading localized text in everywhere.
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
-- Command line tool for checking and extract untranslated texts into YAML files.
+- `cargo i18n` Command line tool for checking and extract untranslated texts into YAML files.
 
 ## Installation
 
