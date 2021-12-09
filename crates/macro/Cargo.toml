@@ -1,0 +1,20 @@
+[package]
+edition = "2021"
+name = "rust-i18n-macro"
+version = "0.2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glob = "0.3"
+lazy_static = "1.4.0"
+proc-macro2 = "1.0"
+quote = "1.0.2"
+rust-i18n-support = {path = "../support"}
+serde = "1"
+serde_json = "1"
+serde_yaml = "0.8"
+syn = "1.0.82"
+
+[lib]
+proc-macro = true

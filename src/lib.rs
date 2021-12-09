@@ -69,7 +69,7 @@ rust_i18n::locale();
 // include!(concat!(env!("OUT_DIR"), "/i18n.rs"));
 use std::sync::Mutex;
 
-pub use rust_i18n_support::i18n;
+pub use rust_i18n_macro::i18n;
 
 lazy_static::lazy_static! {
     static ref CURRENT_LOCALE: Mutex<String> = Mutex::new(String::from("en"));

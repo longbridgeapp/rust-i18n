@@ -12,6 +12,12 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Global `t!` macro for loading localized text in everywhere.
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
 
+## Installation
+
+```bash
+$ cargo install rust-i18n-bin
+```
+
 ## Usage
 
 Add crate dependencies in your Cargo.toml:
