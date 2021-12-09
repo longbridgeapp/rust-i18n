@@ -24,7 +24,7 @@ rust-i18n-macro = {path = "./crates/macro", version = "0.3"}
 foo = {path = "examples/foo"}
 
 [features]
-bin = ["rust-i18n-extract", "clap", "anyhow", "quote"]
+default = ["rust-i18n-extract", "clap", "anyhow", "quote"]
 
 [build-dependencies]
 glob = "0.3"
@@ -37,4 +37,4 @@ test = true
 [[bin]]
 name = "i18n"
 path = "src/main.rs"
-required-features = ["bin"]
+required-features = ["default"]
