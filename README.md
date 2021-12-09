@@ -127,11 +127,8 @@ assert_eq!(locale, "zh-CN");
 Rust I18n providered a `i18n` bin for help you extract the untranslated texts from the source code and then write into YAML file.
 
 ```bash
-$ cd your_project_root_directory
 $ cargo install rust-i18n
 # Now you have `cargo i18n` command
-
-$ cargo i18n -h
 ```
 
 After that the untranslated texts will be extracted and saved into `locales/TODO.en.yml` file.
