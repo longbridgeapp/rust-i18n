@@ -107,12 +107,12 @@ macro_rules! t {
     };
 
     // t!("foo", locale="en")
-    ($key:expr, locale=$locale:tt) => {
+    ($key:expr, locale=$locale:expr) => {
         crate::translate($locale, $key)
     };
 
     // t!("foo", locale="en")
-    ($key:expr, locale=$locale:tt, $($var_name:tt = $var_val:tt),+) => {
+    ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+) => {
         {
             let mut message = crate::translate($locale, $key);
             $(
@@ -123,7 +123,7 @@ macro_rules! t {
     };
 
     // t!("foo {} {}", "bar", "baz")
-    ($key:expr, $($var_name:tt = $var_val:tt),+) => {
+    ($key:expr, $($var_name:tt = $var_val:expr),+) => {
         {
             let mut message = crate::translate(rust_i18n::locale().as_str(), $key);
             $(

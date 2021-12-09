@@ -46,6 +46,10 @@ mod tests {
             "Hello, Jason!"
         );
         assert_eq!(
+            t!("messages.hello", name = "Jason", locale = "en"),
+            "Hello, Jason!"
+        );
+        assert_eq!(
             t!("messages.hello", locale = "de", name = "Jason"),
             "Hallo, Jason!"
         );
@@ -56,5 +60,40 @@ mod tests {
         rust_i18n::set_locale("en");
         assert_eq!(t!("user.title"), "User Title");
         assert_eq!(t!("messages.user.title"), "Message User Title");
+    }
+
+    #[test]
+    fn it_support_expr() {
+        rust_i18n::set_locale("en");
+        let name = "Jason Lee";
+        let locale = "en";
+
+        let key = "messages.hello";
+
+        assert_eq!(
+            t!(&format!("messages.{}", "hello"), name = name),
+            "Hello, Jason Lee!"
+        );
+        assert_eq!(t!(key, name = name), "Hello, Jason Lee!");
+
+        assert_eq!(
+            t!("messages.hello", name = &name.to_string()),
+            "Hello, Jason Lee!"
+        );
+        assert_eq!(
+            t!("messages.hello", name = &format!("this is {}", name)),
+            "Hello, this is Jason Lee!"
+        );
+
+        assert_eq!(t!("messages.hello", locale = locale), "Hello, %{name}!");
+
+        assert_eq!(
+            t!("messages.hello", name = name, locale = locale),
+            "Hello, Jason Lee!"
+        );
+        assert_eq!(
+            t!("messages.hello", name = name, locale = &locale.to_string()),
+            "Hello, Jason Lee!"
+        );
     }
 }
