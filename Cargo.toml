@@ -10,7 +10,7 @@ license = "MIT"
 name = "rust-i18n"
 readme = "README.md"
 repository = "https://github.com/longbridgeapp/rust-i18n"
-version = "0.3.5-alpha.0"
+version = "0.4.0-alpha.0"
 
 [dependencies]
 anyhow = {version = "1", optional = true}
@@ -35,6 +35,6 @@ name = "app"
 test = true
 
 [[bin]]
-name = "i18n"
+name = "cargo-i18n"
 path = "src/main.rs"
 required-features = ["default"]

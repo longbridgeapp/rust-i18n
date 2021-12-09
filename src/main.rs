@@ -6,8 +6,18 @@ use std::collections::HashMap;
 use rust_i18n_extract::{extractor, generator, iter};
 
 fn main() -> Result<(), Error> {
-    let extract_command = SubCommand::with_name("extract")
-        .about("Extracts strings from source files")
+    let extract_command = SubCommand::with_name("i18n")
+        .about(
+            r#"---------------------------------------
+Rust I18n command for help you simply to extract all untranslated texts from soruce code.
+
+It will iter all Rust files in and extract all untranslated texts that used `t!` macro.
+And then generate a YAML file and merge for existing texts.
+
+https://github.com/longbridgeapp/rust-i18n
+"#,
+        )
+        .version(clap::crate_version!())
         .arg(
             Arg::with_name("output")
                 .short("o")
@@ -27,10 +37,8 @@ fn main() -> Result<(), Error> {
                 .default_value("./"),
         );
 
-    let app = App::new("i18n")
-        .version(clap::crate_version!())
-        .author(clap::crate_authors!())
-        .about("Rust I18n is a crate for loading localized text from a set of YAML mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.")
+    let app = App::new("rust-i18n")
+        .bin_name("cargo")
         .subcommand(extract_command)
         .get_matches();
 

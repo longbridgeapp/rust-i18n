@@ -11,11 +11,11 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Codegen on compile time for includes translations into binary.
 - Global `t!` macro for loading localized text in everywhere.
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
-- Command lint tool for checking and extract untranslated texts into YAML files.
+- Command line tool for checking and extract untranslated texts into YAML files.
 
 ## Installation
 
-Rust I18n also provided a `i18n` command line tool help you process translations.
+Rust I18n also provided a `cargo i18n` command line tool help you process translations.
 
 ```bash
 $ cargo install rust-i18n
@@ -129,9 +129,9 @@ Rust I18n providered a `i18n` bin for help you extract the untranslated texts fr
 ```bash
 $ cd your_project_root_directory
 $ cargo install rust-i18n
+# Now you have `cargo i18n` command
 
-# Now you have `i18n` command
-$ i18n extract .
+$ cargo i18n -h
 ```
 
 After that the untranslated texts will be extracted and saved into `locales/TODO.en.yml` file.
@@ -140,7 +140,7 @@ You also can special the locale by use `--locale` option:
 
 ```bash
 $ cd your_project_root_directory
-$ i18n extract -l en fr zh-CN zh-HK
+$ cargo i18n -l en fr zh-CN zh-HK
 
 Checking [en] and generating untranslated texts...
 Found 1 new texts need to translate.
@@ -161,15 +161,21 @@ Found 11 new texts need to translate.
 Writing to TODO.zh-HK.yml
 ```
 
-Run `i18n extract -h` to see details.
+Run `cargo i18n -h` to see details.
 
 ```bash
-$ i18n extract -h
-i18n-extract
-Extracts strings from source files
+$ cargo i18n -h
+cargo-i18n 0.4.0
+---------------------------------------
+Rust I18n command for help you simply to extract all untranslated texts from soruce code.
+
+It will iter all Rust files in and extract all untranslated texts that used `t!` macro.
+And then generate a YAML file and merge for existing texts.
+
+https://github.com/longbridgeapp/rust-i18n
 
 USAGE:
-    i18n extract [OPTIONS] [--] [source]
+    cargo i18n [OPTIONS] [--] [source]
 
 FLAGS:
     -h, --help       Prints help information
