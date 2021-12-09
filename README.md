@@ -12,6 +12,12 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Global `t!` macro for loading localized text in everywhere.
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
 
+## Installation
+
+```bash
+$ cargo install rust-i18n
+```
+
 ## Usage
 
 Add crate dependencies in your Cargo.toml:
@@ -111,6 +117,42 @@ rust_i18n::set_locale("zh-CN");
 
 let locale = rust_i18n::locale();
 assert_eq!(locale, "zh-CN");
+```
+
+### Extract the untranslated texts
+
+Rust I18n providered a `i18n` bin for help you extract the untranslated texts from the source code and then write into YAML file.
+
+```bash
+$ cd your_project_root_directory
+$ cargo install rust-i18n
+
+# Now you have `i18n` command
+$ i18n extract .
+```
+
+After that the untranslated texts will be extracted and saved into `locales/TODO.en.yml` file.
+
+You also can special the locale by use `--locale` option, run `i18n extract -h` to see details.
+
+```bash
+$ i18n extract -h
+i18n-extract
+Extracts strings from source files
+
+USAGE:
+    i18n extract [OPTIONS] [source]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -l <locale>        Source locale [default: en]
+    -o <output>        Path for output locales YAML files. [default: ./locales]
+
+ARGS:
+    <source>    Path of the Rust source code [default: ./]
 ```
 
 ## Debugging the Codegen Process

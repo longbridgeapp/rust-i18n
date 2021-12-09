@@ -1,0 +1,18 @@
+[package]
+edition = "2021"
+name = "rust-i18n-extract"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+glob = "0.3"
+proc-macro2 = {version = "1", features = ["span-locations"]}
+quote = "1"
+regex = "1"
+rust-i18n-support = {path = "../support"}
+serde = "1"
+serde_json = "1"
+serde_yaml = "0.8"
+syn = {version = "1", features = ["full"]}
