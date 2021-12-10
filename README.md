@@ -23,12 +23,22 @@ $ cargo install rust-i18n
 
 ## Usage
 
-Add crate dependencies in your Cargo.toml:
+Add crate dependencies in your Cargo.toml and setup I18n config:
 
 ```toml
 [dependencies]
 lazy_static = "1.4.0"
 rust-i18n = "0"
+
+[i18n]
+# The available locales for your application, default: ["en"].
+# available-locales = ["en", "zh-CN"]
+
+# The default locale, default: "en".
+# default-locale = "en"
+
+# Path for your translations YAML file, default: "locales".
+# load-path = "locales"
 ```
 
 Load macro and init translations in `lib.rs`
@@ -137,7 +147,7 @@ You also can special the locale by use `--locale` option:
 
 ```bash
 $ cd your_project_root_directory
-$ cargo i18n -l en fr zh-CN zh-HK
+$ cargo i18n
 
 Checking [en] and generating untranslated texts...
 Found 1 new texts need to translate.
@@ -162,7 +172,7 @@ Run `cargo i18n -h` to see details.
 
 ```bash
 $ cargo i18n -h
-cargo-i18n 0.4.0
+cargo-i18n 0.5.0
 ---------------------------------------
 Rust I18n command for help you simply to extract all untranslated texts from soruce code.
 
@@ -177,10 +187,6 @@ USAGE:
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
-
-OPTIONS:
-    -l <locale>...        Source locale [default: en]
-    -o <output>           Path for output locales YAML files. [default: ./locales]
 
 ARGS:
     <source>    Path of your Rust crate root [default: ./]

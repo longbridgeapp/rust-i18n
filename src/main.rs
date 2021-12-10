@@ -4,6 +4,10 @@ use clap::{App, Arg, SubCommand};
 use std::collections::HashMap;
 
 use rust_i18n_extract::{extractor, generator, iter};
+mod config;
+
+#[macro_use]
+extern crate serde_derive;
 
 fn main() -> Result<(), Error> {
     let extract_command = SubCommand::with_name("i18n")
@@ -19,21 +23,8 @@ https://github.com/longbridgeapp/rust-i18n
         )
         .version(clap::crate_version!())
         .arg(
-            Arg::with_name("output")
-                .short("o")
-                .default_value("./locales")
-                .help("Path for output locales YAML files."),
-        )
-        .arg(
-            Arg::with_name("locale")
-                .short("l")
-                .help("Source locale")
-                .multiple(true)
-                .default_value("en"),
-        )
-        .arg(
             Arg::with_name("source")
-                .help("Path of your Rust crate root")
+                .help("Path of your Rust crate root and Cargo.toml")
                 .default_value("./"),
         );
 
@@ -48,8 +39,8 @@ https://github.com/longbridgeapp/rust-i18n
     match app.subcommand() {
         ("i18n", Some(sub_m)) => {
             let source_path = sub_m.value_of("source").expect("Missing source path");
-            let output_path = sub_m.value_of("output").expect("Missing output path");
-            let source_locales = sub_m.values_of("locale").expect("Missing source locale");
+
+            let cfg = config::load(std::path::Path::new(source_path))?;
 
             iter::iter_crate(source_path, |path, source| {
                 extractor::extract(&mut results, path, source)
@@ -60,8 +51,9 @@ https://github.com/longbridgeapp/rust-i18n
 
             let mut has_error = false;
 
-            for source_locale in source_locales.into_iter() {
-                let result = generator::generate(output_path, source_locale, messages.clone());
+            for available_locale in cfg.available_locales.into_iter() {
+                let result =
+                    generator::generate(&cfg.load_path, &available_locale, messages.clone());
                 if result.is_err() {
                     has_error = true;
                 }

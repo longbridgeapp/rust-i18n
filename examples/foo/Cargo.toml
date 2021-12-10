@@ -9,3 +9,7 @@ version = "0.1.0"
 [dependencies]
 lazy_static = "1.4.0"
 rust-i18n = {path = "../../../rust-i18n"}
+
+[i18n]
+available-locales = ["en", "zh-CN"]
+default-locale = "en"
