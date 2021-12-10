@@ -30,7 +30,7 @@ Add crate dependencies in your Cargo.toml and setup I18n config:
 lazy_static = "1.4.0"
 rust-i18n = "0"
 
-[i18n]
+[package.metadata.i18n]
 # The available locales for your application, default: ["en"].
 # available-locales = ["en", "zh-CN"]
 

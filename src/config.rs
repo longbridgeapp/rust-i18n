@@ -7,7 +7,6 @@ use std::fs;
 use std::io;
 use std::io::Read;
 use std::path::Path;
-use toml;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -60,10 +59,10 @@ pub fn load(cargo_root: &Path) -> io::Result<I18nConfig> {
 }
 
 pub fn parse(contents: &str) -> io::Result<I18nConfig> {
-    if !contents.contains("[i18n]") {
+    if !contents.contains("[i18n]") && !contents.contains("[package.metadata.i18n]") {
         return Ok(I18nConfig::default());
     }
-
+    let contents = contents.replace("[package.metadata.i18n]", "[i18n]");
     let mut config: MainConfig = toml::from_str(&contents)?;
 
     // Push default_locale
@@ -107,6 +106,21 @@ fn test_parse() {
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en"]);
     assert_eq!(cfg.load_path, "./locales");
+}
+
+#[test]
+fn test_parse_with_metadata() {
+    let contents = r#"
+    [package.metadata.i18n]
+    default-locale = "en"
+    available-locales = ["zh-CN"]
+    load-path = "./my-locales"
+"#;
+
+    let cfg = parse(contents).unwrap();
+    assert_eq!(cfg.default_locale, "en");
+    assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
+    assert_eq!(cfg.load_path, "./my-locales");
 }
 
 #[test]
