@@ -46,7 +46,7 @@ https://github.com/longbridgeapp/rust-i18n
 
     #[allow(clippy::single_match)]
     match app.subcommand() {
-        ("extract", Some(sub_m)) => {
+        ("i18n", Some(sub_m)) => {
             let source_path = sub_m.value_of("source").expect("Missing source path");
             let output_path = sub_m.value_of("output").expect("Missing output path");
             let source_locales = sub_m.values_of("locale").expect("Missing source locale");
