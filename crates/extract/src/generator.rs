@@ -36,7 +36,11 @@ pub fn generate<'a, P: AsRef<Path>>(
             continue;
         }
 
-        new_values.entry(m.key.clone()).or_insert_with(|| "".into());
+        let value = m.key.split(".").last().unwrap_or_default();
+
+        new_values
+            .entry(m.key.clone())
+            .or_insert_with(|| value.into());
     }
 
     new_translations.insert(locale.to_string(), serde_json::to_value(&new_values)?);
