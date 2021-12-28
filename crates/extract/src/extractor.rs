@@ -1,8 +1,13 @@
 use anyhow::Error;
+use proc_macro2::Span;
 use proc_macro2::{TokenStream, TokenTree};
+use quote::__private::ext::RepToTokensExt;
+use quote::quote;
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use syn::spanned::Spanned;
+use syn::Expr;
 
 pub type Results = HashMap<String, Message>;
 
@@ -75,44 +80,75 @@ impl<'a> Extractor<'a> {
         Ok(())
     }
 
-    fn take_message(&mut self, stream: TokenStream) {
+    fn take_message_key(&self, stream: TokenStream) -> String {
         let mut token_iter = stream.into_iter().peekable();
 
-        let literal = if let Some(TokenTree::Literal(literal)) = token_iter.next() {
-            literal
-        } else {
-            return;
-        };
+        let mut key = String::from("");
 
-        let key: Option<proc_macro2::Literal> = Some(literal);
+        let token = token_iter.next();
 
-        if let Some(lit) = key {
-            if let Some(key) = literal_to_string(&lit) {
-                let message_key = format_message_key(&key);
+        if let Some(token) = token {
+            match token {
+                TokenTree::Literal(lit) => key.push_str(&lit.to_string()),
+                TokenTree::Ident(ident) => {
+                    key.push_str(&ident.to_string());
+                    match token_iter.peek() {
+                        Some(TokenTree::Punct(punct)) if punct.to_string() == "!" => {
+                            token_iter.next();
+                            key.push_str("!");
+                        }
+                        _ => {}
+                    }
 
-                let index = self.results.len();
-                let message = self
-                    .results
-                    .entry(message_key.clone())
-                    .or_insert_with(|| Message::new(&message_key, index));
+                    if let Some(TokenTree::Group(group)) = token_iter.peek() {
+                        key.push_str(&group.to_string());
+                    }
 
-                let span = lit.span();
-                let line = span.start().line;
-                if line > 0 {
-                    message.locations.push(Location {
-                        file: self.path.clone(),
-                        line,
-                    });
+                    let expr = syn::parse_str::<syn::Expr>(&key);
+                    if expr.is_err() {
+                        return "".to_string();
+                    }
+
+                    key = format!("{}", expr);
                 }
+                _ => {}
             }
         }
-    }
-}
 
-fn literal_to_string(lit: &proc_macro2::Literal) -> Option<String> {
-    match syn::parse_str::<syn::LitStr>(&lit.to_string()) {
-        Ok(lit) => Some(lit.value()),
-        Err(_) => None,
+        key
+    }
+
+    fn take_message(&mut self, stream: TokenStream) {
+        let key = self.take_message_key(stream.clone());
+
+        println!("--------------- key: {}", key);
+        let mut token_iter = stream.into_iter().peekable();
+
+        let token = token_iter.next();
+
+        if token.is_none() {
+            return;
+        }
+
+        let span = token.span();
+
+        if !key.is_empty() {
+            let message_key = format_message_key(&key);
+
+            let index = self.results.len();
+            let message = self
+                .results
+                .entry(message_key.clone())
+                .or_insert_with(|| Message::new(&message_key, index));
+
+            let line = span.start().line;
+            if line > 0 {
+                message.locations.push(Location {
+                    file: self.path.clone(),
+                    line,
+                });
+            }
+        }
     }
 }
 
@@ -190,7 +226,7 @@ mod tests {
         let stream = proc_macro2::TokenStream::from_str(source).unwrap();
 
         let expected = build_messages![
-            ("hello", 4),
+            ("hello", 6),
             ("views.message.title", 5),
             ("views.message.description", 7),
             (
