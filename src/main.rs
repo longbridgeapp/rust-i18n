@@ -1,10 +1,7 @@
 use anyhow::Error;
 use clap::{App, Arg, SubCommand};
 
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::Path};
 
 use rust_i18n_extract::{extractor, generator, iter};
 mod config;

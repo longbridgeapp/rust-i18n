@@ -9,17 +9,37 @@ where
 {
     let src_path = src_path.trim_end_matches('/');
 
-    let pattern = format!("{}/**/*.rs", src_path);
-    for entry in glob::glob(&pattern)? {
-        let entry = entry.unwrap();
-        let file_path = entry.as_path();
+    let mut walker = ignore::WalkBuilder::new(src_path);
+    walker
+        .skip_stdout(true)
+        .parents(true)
+        .git_ignore(true)
+        .follow_links(false);
 
-        let mut s = String::new();
-        let mut f = File::open(&file_path).expect("Failed to open file");
-        f.read_to_string(&mut s).expect("Failed to read file");
+    for result in walker.build() {
+        match result {
+            Ok(entry) => {
+                let path = entry.path();
+                if !path.is_file() {
+                    continue;
+                }
 
-        callback(&entry, &s)?;
+                if path.extension() != Some("rs".as_ref()) {
+                    continue;
+                }
+
+                let filepath = String::from(path.to_str().unwrap());
+
+                let mut s = String::new();
+                let mut f = File::open(&filepath).expect("Failed to open file");
+                f.read_to_string(&mut s).expect("Failed to read file");
+
+                callback(&PathBuf::from(filepath), &s)?;
+            }
+            Err(err) => {
+                eprintln!("{}", err);
+            }
+        }
     }
-
     Ok(())
 }
