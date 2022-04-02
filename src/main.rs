@@ -1,7 +1,10 @@
 use anyhow::Error;
 use clap::{App, Arg, SubCommand};
 
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use rust_i18n_extract::{extractor, generator, iter};
 mod config;
@@ -51,9 +54,10 @@ https://github.com/longbridgeapp/rust-i18n
 
             let mut has_error = false;
 
+            let output_path = Path::new(source_path).join(&cfg.load_path);
+
             for available_locale in cfg.available_locales.into_iter() {
-                let result =
-                    generator::generate(&cfg.load_path, &available_locale, messages.clone());
+                let result = generator::generate(&output_path, &available_locale, messages.clone());
                 if result.is_err() {
                     has_error = true;
                 }
