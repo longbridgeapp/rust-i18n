@@ -10,7 +10,7 @@ Add crate dependencies in your Cargo.toml:
 
 ```toml
 [dependencies]
-lazy_static = "1.4.0"
+once_cell = "1.10.0"
 rust-i18n = "0"
 ```
 
@@ -67,13 +67,12 @@ rust_i18n::locale();
 ```
 */
 // include!(concat!(env!("OUT_DIR"), "/i18n.rs"));
+use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 pub use rust_i18n_macro::i18n;
 
-lazy_static::lazy_static! {
-    static ref CURRENT_LOCALE: Mutex<String> = Mutex::new(String::from("en"));
-}
+static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));
 
 pub fn set_locale(locale: &str) {
     let mut current_locale = CURRENT_LOCALE.lock().unwrap();

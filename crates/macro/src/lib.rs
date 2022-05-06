@@ -59,12 +59,10 @@ fn generate_code(translations: HashMap<String, String>) -> proc_macro2::TokenStr
 
     // result
     quote! {
-        lazy_static::lazy_static! {
-            static ref LOCALES: std::collections::HashMap<&'static str, &'static str> = rust_i18n::map! [
-                #(#locales)*
-                "" => ""
-            ];
-        }
+        static LOCALES: once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = once_cell::sync::Lazy::new(|| rust_i18n::map! [
+            #(#locales)*
+            "" => ""
+        ]);
 
 
         pub fn translate(locale: &str, key: &str) -> String {

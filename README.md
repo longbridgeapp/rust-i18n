@@ -27,7 +27,7 @@ Add crate dependencies in your Cargo.toml and setup I18n config:
 
 ```toml
 [dependencies]
-lazy_static = "1.4.0"
+once_cell = "1.10.0"
 rust-i18n = "0"
 
 [package.metadata.i18n]
