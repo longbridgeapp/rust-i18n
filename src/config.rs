@@ -111,11 +111,11 @@ fn test_parse() {
 #[test]
 fn test_parse_with_metadata() {
     let contents = r#"
-    [package.metadata.i18n]
-    default-locale = "en"
-    available-locales = ["zh-CN"]
-    load-path = "./my-locales"
-"#;
+        [package.metadata.i18n]
+        default-locale = "en"
+        available-locales = ["zh-CN"]
+        load-path = "./my-locales"
+    "#;
 
     let cfg = parse(contents).unwrap();
     assert_eq!(cfg.default_locale, "en");
