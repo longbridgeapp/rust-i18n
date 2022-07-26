@@ -36,10 +36,9 @@ locales/
 For example of `en.yml`:
 
 ```yml
-en:
-  hello: Hello world
-  messages:
-    hello: Hello, %{name}
+hello: Hello world
+messages:
+  hello: Hello, %{name}
 ```
 
 Now you can use `t!` macro in anywhere.

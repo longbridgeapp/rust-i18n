@@ -82,19 +82,17 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 In the YAML files, specify the localization keys and their corresponding values, for example, in `en.yml`:
 
 ```yml
-en: # The language code of this mapping file
-  hello: Hello world # A simple key -> value mapping
-  messages:
-    hello: Hello, %{name} # A nested key.sub_key -> value mapping, in this case "messages.hello" maps to "Hello, %{name}"
+hello: Hello world # A simple key -> value mapping
+messages:
+  hello: Hello, %{name} # A nested key.sub_key -> value mapping, in this case "messages.hello" maps to "Hello, %{name}"
 ```
 
 And example of the `zh-CN.yml`:
 
 ```yml
-zh-CN:
-  hello: 你好世界
-  messages:
-    hello: 你好, %{name}
+hello: 你好世界
+messages:
+  hello: 你好, %{name}
 ```
 
 ### Loading Localized Strings in Rust

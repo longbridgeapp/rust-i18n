@@ -1,6 +1,5 @@
-en:
+user:
+  title: User Title
+messages:
   user:
-    title: User Title
-  messages:
-    user:
-      title: Message User Title
+    title: Message User Title
