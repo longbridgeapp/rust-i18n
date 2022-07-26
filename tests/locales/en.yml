@@ -1,15 +1,14 @@
-en:
-  hello: Bar - Hello, World!
-  custom:
-    greeting: Hello, %{name}!!!
-  a:
-    very:
-      nested:
-        message: "Hello, %{name}. Your message is: %{msg}"
-  messages:
-    zero: You have no messages.
-    one: You have one message.
-    other: You have %{count} messages.
-    hello: Hello, %{name}!
-  missing:
-    default: Sorry, that translation doesn't exist.
+hello: Bar - Hello, World!
+custom:
+  greeting: Hello, %{name}!!!
+a:
+  very:
+    nested:
+      message: "Hello, %{name}. Your message is: %{msg}"
+messages:
+  zero: You have no messages.
+  one: You have one message.
+  other: You have %{count} messages.
+  hello: Hello, %{name}!
+missing:
+  default: Sorry, that translation doesn't exist.

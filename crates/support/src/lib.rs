@@ -48,6 +48,13 @@ pub fn load_locales<F: Fn(&str) -> bool>(
             continue;
         }
 
+        let locale = entry
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .and_then(|s| s.split('.').last())
+            .unwrap()
+            .to_string();
+
         let file = File::open(entry).expect("Failed to open the YAML file");
         let mut reader = std::io::BufReader::new(file);
         let mut content = String::new();
@@ -56,9 +63,11 @@ pub fn load_locales<F: Fn(&str) -> bool>(
             .read_to_string(&mut content)
             .expect("Read YAML file failed.");
 
-        let trs: Translations =
-            serde_yaml::from_str(&content).expect("Invalid YAML format, parse error");
-
+        let trs = Translations::from([(
+            locale,
+            serde_yaml::from_str::<serde_json::Value>(&content)
+                .expect("Invalid YAML format, parse error"),
+        )]);
         trs.into_iter().for_each(|(k, new_value)| {
             translations
                 .entry(k)
