@@ -1,2 +1,1 @@
-en:
-  hello: Hello, %{name}!
+hello: Hello, %{name}!
