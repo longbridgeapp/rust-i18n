@@ -1,3 +1,4 @@
 {
-  "i18n-ally.localesPaths": ["examples/foo/locales", "examples/app/locales"]
+  "i18n-ally.localesPaths": ["examples/foo/locales", "examples/app/locales"],
+  "i18n-ally.keystyle": "nested"
 }
