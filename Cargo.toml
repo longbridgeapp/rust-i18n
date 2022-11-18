@@ -10,7 +10,7 @@ license = "MIT"
 name = "rust-i18n"
 readme = "README.md"
 repository = "https://github.com/longbridgeapp/rust-i18n"
-version = "0.6.2-alpha.0"
+version = "1.0.0"
 
 [dependencies]
 anyhow = {version = "1", optional = true}
