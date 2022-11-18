@@ -1,5 +1,5 @@
 use crate::extractor::Message;
-use rust_i18n_support::{load_locales, Translations};
+use rust_i18n_support::load_locales;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::io::Result;
@@ -20,7 +20,6 @@ pub fn generate<'a, P: AsRef<Path>>(
     let ignore_file = |fname: &str| fname.ends_with(&filename);
     let old_translations = load_locales(&output_path, ignore_file);
 
-    let mut new_translations: Translations = HashMap::new();
     let mut new_values: HashMap<String, String> = HashMap::new();
 
     for m in messages {
@@ -43,8 +42,7 @@ pub fn generate<'a, P: AsRef<Path>>(
             .or_insert_with(|| value.into());
     }
 
-    new_translations.insert(locale.to_string(), serde_json::to_value(&new_values)?);
-    write_file(&output, &filename, &new_translations)?;
+    write_file(&output, &filename, &new_values)?;
 
     if new_values.is_empty() {
         println!("All thing done.\n");
@@ -56,7 +54,7 @@ pub fn generate<'a, P: AsRef<Path>>(
     eprintln!("----------------------------------------");
     eprintln!("Writing to {}\n", filename);
 
-    write_file(&output, &filename, &new_translations)?;
+    write_file(&output, &filename, &new_values)?;
 
     // Finally, return error for let CI fail
     let err = std::io::Error::new(std::io::ErrorKind::Other, "");
@@ -66,7 +64,7 @@ pub fn generate<'a, P: AsRef<Path>>(
 fn write_file<'a, P: AsRef<Path>>(
     output: &P,
     filename: &str,
-    translations: &Translations,
+    translations: &HashMap<String, String>,
 ) -> Result<()> {
     let output_file = std::path::Path::new(output.as_ref()).join(String::from(filename));
     let mut output = ::std::fs::File::create(&output_file)
