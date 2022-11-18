@@ -92,7 +92,7 @@ And example of the `zh-CN.yml`:
 ```yml
 hello: 你好世界
 messages:
-  hello: 你好, %{name}
+  hello: 你好，%{name}
 ```
 
 ### Loading Localized Strings in Rust
@@ -116,7 +116,7 @@ t!("messages.hello", name = "world");
 // => "Hello, world"
 
 t!("messages.hello", locale = "zh-CN", name = "Jason");
-// => "你好, Jason"
+// => "你好，Jason"
 ```
 
 ### Setting and Getting the Global Locale
@@ -201,6 +201,12 @@ $ RUST_I18N_DEBUG=1 cargo build
 ## Example
 
 A minimal example of using rust-i18n can be found [here](https://github.com/longbridgeapp/rust-i18n/tree/main/examples).
+
+## I18n Ally
+
+I18n Ally is a VS Code extension for helping you translate your Rust project.
+
+You can add [i18n-ally-custom-framework.yml](https://github.com/longbridgeapp/rust-i18n/blob/main/.vscode/i18n-ally-custom-framework.yml) to your project `.vscode` directory, and then use I18n Ally can parse `t!` marco to show translate text in VS Code editor.
 
 ## License
 
