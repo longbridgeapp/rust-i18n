@@ -5,12 +5,14 @@ mod tests {
     use rust_i18n::t;
 
     #[test]
-    fn it_foo_title() {
+    fn test_foo_title() {
+        rust_i18n::set_locale("en");
         assert_eq!(foo::t("hello"), "Foo - Hello, World!");
     }
 
     #[test]
-    fn it_t() {
+    fn test_t() {
+        rust_i18n::set_locale("en");
         assert_eq!(t!("hello"), "Bar - Hello, World!");
 
         // Vars
@@ -35,7 +37,8 @@ mod tests {
     }
 
     #[test]
-    fn it_t_with_locale_and_args() {
+    fn test_t_with_locale_and_args() {
+        rust_i18n::set_locale("en");
         assert_eq!(t!("hello", locale = "de"), "Bar - Hallo Welt!");
         assert_eq!(t!("hello", locale = "en"), "Bar - Hello, World!");
 
@@ -56,14 +59,14 @@ mod tests {
     }
 
     #[test]
-    fn it_with_merge_file() {
+    fn test_with_merge_file() {
         rust_i18n::set_locale("en");
         assert_eq!(t!("user.title"), "User Title");
         assert_eq!(t!("messages.user.title"), "Message User Title");
     }
 
     #[test]
-    fn it_support_expr() {
+    fn test_support_expr() {
         rust_i18n::set_locale("en");
         let name = "Jason Lee";
         let locale = "en";
@@ -76,10 +79,7 @@ mod tests {
         );
         assert_eq!(t!(key, name = name), "Hello, Jason Lee!");
 
-        assert_eq!(
-            t!("messages.hello", name = &name.to_string()),
-            "Hello, Jason Lee!"
-        );
+        assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");
         assert_eq!(
             t!("messages.hello", name = &format!("this is {}", name)),
             "Hello, this is Jason Lee!"
@@ -92,7 +92,7 @@ mod tests {
             "Hello, Jason Lee!"
         );
         assert_eq!(
-            t!("messages.hello", name = name, locale = &locale.to_string()),
+            t!("messages.hello", name = name, locale = locale),
             "Hello, Jason Lee!"
         );
     }
