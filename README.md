@@ -78,9 +78,13 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 └── src
 │   └── main.rs
 └── sub_app
-└───────locales
-└───────src
-└───────Cargo.toml
+│   └── locales
+│   │   └── en.yml
+│   │   └── zh-CN.yml
+│   │   └── zh-HK.yml
+│   └── src
+│   │   └── main.rs
+│   └── Cargo.toml
 ```
 
 In the YAML files, specify the localization keys and their corresponding values, for example, in `en.yml`:
