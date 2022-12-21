@@ -10,12 +10,16 @@ jobs:
     env:
       RUST_I18N_DEBUG: 1
     steps:
-      - uses: actions/checkout@master
-      - name: Install Rust
-        run: rustup update stable && rustup default stable
-
-      - name: Checkout
-        uses: actions/checkout@v1
-
+      - uses: actions/checkout@v3
+      - name: Setup | Cache Cargo
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ubuntu-test-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Test
-        run: cargo test
+        run: make test
