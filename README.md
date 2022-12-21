@@ -38,6 +38,8 @@ rust-i18n = "1"
 # default-locale = "en"
 
 # Path for your translations YAML file, default: "locales".
+# This config for let `cargo i18n` command line tool know where to find your translations.
+# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
 # load-path = "locales"
 ```
 
@@ -49,6 +51,7 @@ Load macro and init translations in `lib.rs`
 extern crate rust_i18n;
 
 // Init translations for current crate.
+// You must keep this path is same as the path you set `load-path` in [package.metadata.i18n] in Cargo.toml.
 i18n!("locales");
 ```
 
