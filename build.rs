@@ -1,14 +1,20 @@
 // https://github.com/longbridgeapp/rust-i18n/blob/v0.1.6/crates/support/src/lib.rs#L9
 fn workdir(dest: &str) -> Option<String> {
-    let seperator = regex::Regex::new(r"(/target/(.+?)/build/)|(\\target\\(.+?)\\build\\)")
-        .expect("Invalid regex");
-    let parts = seperator.split(dest).collect::<Vec<_>>();
+    let workdir = std::env::var("WORKDIR");
 
-    if parts.len() >= 2 {
-        return Some(parts[0].to_string());
+    if workdir.is_ok() {
+        return Some(workdir.unwrap());
+    } else {
+        let seperator = regex::Regex::new(r"(/target/(.+?)/build/)|(\\target\\(.+?)\\build\\)")
+            .expect("Invalid regex");
+        let parts = seperator.split(dest).collect::<Vec<_>>();
+
+        if parts.len() >= 2 {
+            return Some(parts[0].to_string());
+        }
+
+        None
     }
-
-    None
 }
 
 fn find_all_yaml_for_cargo_cache() {
@@ -16,6 +22,7 @@ fn find_all_yaml_for_cargo_cache() {
     // Because in cargo install OUT_DIR is:
     // /var/folders/qb/.../T/cargo-installcBf9L5/release/build/rust-i18n-xxx/build-script-build
     let dest = std::env::var("OUT_DIR");
+
     if dest.is_err() {
         return;
     }
@@ -27,6 +34,7 @@ fn find_all_yaml_for_cargo_cache() {
     }
 
     let workdir = workdir.unwrap();
+
     let locale_path = format!("{}/**/locales/**/*.yml", workdir);
 
     for entry in glob::glob(&locale_path).expect("Failed to read glob pattern") {
