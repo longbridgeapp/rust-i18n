@@ -76,12 +76,9 @@ mod tests {
         );
         assert_eq!(t!(key, name = name), "Hello, Jason Lee!");
 
+        assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");
         assert_eq!(
-            t!("messages.hello", name = &name.to_string()),
-            "Hello, Jason Lee!"
-        );
-        assert_eq!(
-            t!("messages.hello", name = &format!("this is {}", name)),
+            t!("messages.hello", name = &format!("this is {name}")),
             "Hello, this is Jason Lee!"
         );
 
@@ -92,7 +89,7 @@ mod tests {
             "Hello, Jason Lee!"
         );
         assert_eq!(
-            t!("messages.hello", name = name, locale = &locale.to_string()),
+            t!("messages.hello", name = name, locale = locale),
             "Hello, Jason Lee!"
         );
     }
