@@ -18,7 +18,7 @@ pub fn generate<'a, P: AsRef<Path>>(
     let output_path = output.as_ref().display().to_string();
 
     let ignore_file = |fname: &str| fname.ends_with(&filename);
-    let old_translations = load_locales(&output_path, ignore_file);
+    let data = load_locales(&output_path, ignore_file);
 
     let mut new_values: HashMap<String, String> = HashMap::new();
 
@@ -31,7 +31,7 @@ pub fn generate<'a, P: AsRef<Path>>(
             }
         }
 
-        if old_translations.get(&key).is_some() {
+        if data.translations.get(&key).is_some() {
             continue;
         }
 
