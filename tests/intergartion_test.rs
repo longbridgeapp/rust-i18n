@@ -81,7 +81,7 @@ mod tests {
 
         assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");
         assert_eq!(
-            t!("messages.hello", name = &format!("this is {}", name)),
+            t!("messages.hello", name = &format!("this is {name}")),
             "Hello, this is Jason Lee!"
         );
 
