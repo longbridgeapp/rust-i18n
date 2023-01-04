@@ -28,7 +28,7 @@ Add crate dependencies in your Cargo.toml and setup I18n config:
 ```toml
 [dependencies]
 once_cell = "1.10.0"
-rust-i18n = "0"
+rust-i18n = "1"
 
 [package.metadata.i18n]
 # The available locales for your application, default: ["en"].
@@ -38,6 +38,8 @@ rust-i18n = "0"
 # default-locale = "en"
 
 # Path for your translations YAML file, default: "locales".
+# This config for let `cargo i18n` command line tool know where to find your translations.
+# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
 # load-path = "locales"
 ```
 
@@ -49,6 +51,7 @@ Load macro and init translations in `lib.rs`
 extern crate rust_i18n;
 
 // Init translations for current crate.
+// You must keep this path is same as the path you set `load-path` in [package.metadata.i18n] in Cargo.toml.
 i18n!("locales");
 ```
 
@@ -76,7 +79,15 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 │   ├── zh-CN.yml
 │   └── zh-HK.yml
 └── src
-    └── main.rs
+│   └── main.rs
+└── sub_app
+│   └── locales
+│   │   └── en.yml
+│   │   └── zh-CN.yml
+│   │   └── zh-HK.yml
+│   └── src
+│   │   └── main.rs
+│   └── Cargo.toml
 ```
 
 In the YAML files, specify the localization keys and their corresponding values, for example, in `en.yml`:
