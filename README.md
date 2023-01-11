@@ -43,6 +43,8 @@ rust-i18n = "1"
 # load-path = "locales"
 ```
 
+> NOTE: `package.metadata.i18n` config is just work for `cargo i18n` command.
+
 Load macro and init translations in `lib.rs`
 
 ```rs
