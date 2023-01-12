@@ -1,6 +1,6 @@
 // https://github.com/longbridgeapp/rust-i18n/blob/v0.1.6/crates/support/src/lib.rs#L9
 fn workdir(dest: &str) -> Option<String> {
-    let workdir = std::env::var("WORKDIR");
+    let workdir = std::env::var("PWD");
 
     if workdir.is_ok() {
         return Some(workdir.unwrap());
@@ -27,7 +27,6 @@ fn find_all_yaml_for_cargo_cache() {
         return;
     }
     let dest = dest.unwrap();
-
     let workdir = workdir(&dest);
     if workdir.is_none() {
         return;
