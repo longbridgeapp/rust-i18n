@@ -25,12 +25,18 @@ pub fn merge_value(a: &mut Value, b: &Value) {
     }
 }
 
+pub struct LocaleData {
+    pub translations: HashMap<String, String>,
+    pub locales: Vec<String>,
+}
+
 // Load locales into flatten key, value HashMap
-pub fn load_locales<F: Fn(&str) -> bool>(
-    locales_path: &str,
-    ignore_if: F,
-) -> HashMap<String, String> {
+pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> LocaleData {
     let mut translations: Translations = HashMap::new();
+    let mut data = LocaleData {
+        translations: HashMap::new(),
+        locales: Vec::new(),
+    };
 
     let path_pattern = format!("{}/**/*.yml", locales_path);
 
@@ -55,6 +61,8 @@ pub fn load_locales<F: Fn(&str) -> bool>(
             .unwrap()
             .to_string();
 
+        data.locales.push(locale.clone());
+
         let file = File::open(entry).expect("Failed to open the YAML file");
         let mut reader = std::io::BufReader::new(file);
         let mut content = String::new();
@@ -76,13 +84,12 @@ pub fn load_locales<F: Fn(&str) -> bool>(
         });
     }
 
-    let mut locale_vars = HashMap::<String, String>::new();
     translations.iter().for_each(|(locale, trs)| {
         let new_vars = extract_vars(locale.as_str(), &trs);
-        locale_vars.extend(new_vars);
+        data.translations.extend(new_vars);
     });
 
-    locale_vars
+    data
 }
 
 pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {

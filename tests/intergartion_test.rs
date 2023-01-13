@@ -5,7 +5,17 @@ mod tests {
     use rust_i18n::t;
 
     #[test]
-    fn test_foo_title() {
+    fn test_translate() {
+        assert_eq!(crate::translate("en", "hello"), "Bar - Hello, World!");
+    }
+
+    #[test]
+    fn test_available_locales() {
+        assert_eq!(crate::available_locales(), &["de", "en"]);
+    }
+
+    #[test]
+    fn it_foo_title() {
         rust_i18n::set_locale("en");
         assert_eq!(foo::t("hello"), "Foo - Hello, World!");
     }
@@ -81,7 +91,7 @@ mod tests {
 
         assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");
         assert_eq!(
-            t!("messages.hello", name = &format!("this is {}", name)),
+            t!("messages.hello", name = &format!("this is {name}")),
             "Hello, this is Jason Lee!"
         );
 
