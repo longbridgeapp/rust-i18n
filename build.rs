@@ -4,23 +4,23 @@ fn workdir() -> Option<String> {
 
     if workdir.is_ok() {
         return Some(workdir.unwrap());
-    } else {
-        let dest = std::env::var("OUT_DIR");
-        if dest.is_err() {
-            return None;
-        }
-        let dest = dest.unwrap();
-
-        let seperator = regex::Regex::new(r"(/target/(.+?)/build/)|(\\target\\(.+?)\\build\\)")
-            .expect("Invalid regex");
-        let parts = seperator.split(dest.as_str()).collect::<Vec<_>>();
-
-        if parts.len() >= 2 {
-            return Some(parts[0].to_string());
-        }
-
-        None
     }
+
+    let dest = std::env::var("OUT_DIR");
+    if dest.is_err() {
+        return None;
+    }
+    let dest = dest.unwrap();
+
+    let seperator = regex::Regex::new(r"(/target/(.+?)/build/)|(\\target\\(.+?)\\build\\)")
+        .expect("Invalid regex");
+    let parts = seperator.split(dest.as_str()).collect::<Vec<_>>();
+
+    if parts.len() >= 2 {
+        return Some(parts[0].to_string());
+    }
+
+    None
 }
 
 fn main() {
