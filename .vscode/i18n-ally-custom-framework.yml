@@ -2,6 +2,6 @@ languageIds:
   - rust
 
 usageMatchRegex:
-  - "[^\\w\\d]t!\\(['\"]({key})['\"]"
+  - "[^\\w\\d]t!\\([\\s\\n\\r]*['\"]({key})['\"]"
 
 monopoly: true
