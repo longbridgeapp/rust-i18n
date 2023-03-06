@@ -47,6 +47,20 @@ mod tests {
     }
 
     #[test]
+    fn test_t_with_tt_val() {
+        rust_i18n::set_locale("en");
+        assert_eq!(t!("messages.other", count = 100), "You have 100 messages.");
+        assert_eq!(
+            t!("messages.other", count = 1.01),
+            "You have 1.01 messages."
+        );
+        assert_eq!(t!("messages.other", count = 1 + 2), "You have 3 messages.");
+
+        let a = 100;
+        assert_eq!(t!("messages.other", count = a / 2), "You have 50 messages.");
+    }
+
+    #[test]
     fn test_t_with_locale_and_args() {
         rust_i18n::set_locale("en");
         assert_eq!(t!("hello", locale = "de"), "Bar - Hallo Welt!");
@@ -58,6 +72,7 @@ mod tests {
             t!("messages.hello", locale = "en", name = "Jason"),
             "Hello, Jason!"
         );
+        // Invalid locale position, will ignore
         assert_eq!(
             t!("messages.hello", name = "Jason", locale = "en"),
             "Hello, Jason!"

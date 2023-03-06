@@ -109,23 +109,23 @@ macro_rules! t {
         crate::translate($locale, $key)
     };
 
-    // t!("foo", locale="en")
+    // t!("foo", locale="en", a=1, b="Foo")
     ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+) => {
         {
             let mut message = crate::translate($locale, $key);
             $(
-                message = message.replace(concat!("%{", stringify!($var_name), "}"), $var_val);
+                message = message.replace(concat!("%{", stringify!($var_name), "}"), &format!("{}", $var_val));
             )+
             message
         }
     };
 
-    // t!("foo {} {}", "bar", "baz")
+    // t!("foo %{a} %{b}", a="bar", b="baz")
     ($key:expr, $($var_name:tt = $var_val:expr),+) => {
         {
             let mut message = crate::translate(rust_i18n::locale().as_str(), $key);
             $(
-                message = message.replace(concat!("%{", stringify!($var_name), "}"), $var_val);
+                message = message.replace(concat!("%{", stringify!($var_name), "}"), &format!("{}", $var_val));
             )+
             message
         }
