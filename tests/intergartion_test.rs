@@ -11,7 +11,7 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        assert_eq!(crate::available_locales(), &["de", "en"]);
+        assert_eq!(crate::available_locales(), &["en", "zh-CN"]);
     }
 
     #[test]
@@ -39,8 +39,8 @@ mod tests {
             "Hello, Jason. Your message is: Bla bla"
         );
 
-        rust_i18n::set_locale("de");
-        assert_eq!(t!("messages.hello", name = "world"), "Hallo, world!");
+        rust_i18n::set_locale("zh-CN");
+        assert_eq!(t!("messages.hello", name = "world"), "你好，world！");
 
         rust_i18n::set_locale("en");
         assert_eq!(t!("messages.hello", name = "world"), "Hello, world!");
@@ -56,6 +56,12 @@ mod tests {
         );
         assert_eq!(t!("messages.other", count = 1 + 2), "You have 3 messages.");
 
+        // Test end with a comma
+        assert_eq!(
+            t!("messages.other", locale = "zh-CN", count = 1 + 2,),
+            "你收到了 3 条新消息。"
+        );
+
         let a = 100;
         assert_eq!(t!("messages.other", count = a / 2), "You have 50 messages.");
     }
@@ -63,7 +69,7 @@ mod tests {
     #[test]
     fn test_t_with_locale_and_args() {
         rust_i18n::set_locale("en");
-        assert_eq!(t!("hello", locale = "de"), "Bar - Hallo Welt!");
+        assert_eq!(t!("hello", locale = "zh-CN"), "Bar - 你好世界！");
         assert_eq!(t!("hello", locale = "en"), "Bar - Hello, World!");
 
         rust_i18n::set_locale("en");
@@ -78,8 +84,8 @@ mod tests {
             "Hello, Jason!"
         );
         assert_eq!(
-            t!("messages.hello", locale = "de", name = "Jason"),
-            "Hallo, Jason!"
+            t!("messages.hello", locale = "zh-CN", name = "Jason"),
+            "你好，Jason！"
         );
     }
 

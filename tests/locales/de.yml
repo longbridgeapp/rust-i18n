@@ -1,3 +1,0 @@
-hello: Bar - Hallo Welt!
-messages:
-  hello: Hallo, %{name}!
