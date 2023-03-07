@@ -134,7 +134,7 @@ let locale = rust_i18n::locale();
 assert_eq!(locale, "zh-CN");
 ```
 
-### Extract the untranslated texts
+## Extractor
 
 We provided a `cargo i18n` command line tool for help you extract the untranslated texts from the source code and then write into YAML file.
 
