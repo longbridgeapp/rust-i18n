@@ -2,7 +2,11 @@
 
 [![CI](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml/badge.svg)](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml) [![Docs](https://docs.rs/rust-i18n/badge.svg)](https://docs.rs/rust-i18n/) [![Crates.io](https://img.shields.io/crates/v/rust-i18n.svg)](https://crates.io/crates/rust-i18n)
 
+> 🎯 Let's make I18n things to easy!
+
 Rust I18n is a crate for loading localized text from a set of YAML mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
+
+Unlike other I18n libraries, Rust I18n's goal is to provide a simple and easy-to-use API.
 
 The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n) and [Rails I18n](https://guides.rubyonrails.org/i18n.html).
 
@@ -13,14 +17,6 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Use YAML for mapping localized text, and support mutiple YAML files merging.
 - `cargo i18n` Command line tool for checking and extract untranslated texts into YAML files.
 
-## Installation
-
-Rust I18n also provided a `cargo i18n` command line tool help you process translations.
-
-```bash
-$ cargo install rust-i18n
-```
-
 ## Usage
 
 Add crate dependencies in your Cargo.toml and setup I18n config:
@@ -29,21 +25,7 @@ Add crate dependencies in your Cargo.toml and setup I18n config:
 [dependencies]
 once_cell = "1.10.0"
 rust-i18n = "1"
-
-[package.metadata.i18n]
-# The available locales for your application, default: ["en"].
-# available-locales = ["en", "zh-CN"]
-
-# The default locale, default: "en".
-# default-locale = "en"
-
-# Path for your translations YAML file, default: "locales".
-# This config for let `cargo i18n` command line tool know where to find your translations.
-# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
-# load-path = "locales"
 ```
-
-> NOTE: `package.metadata.i18n` config is just work for `cargo i18n` command.
 
 Load macro and init translations in `lib.rs`
 
@@ -153,6 +135,32 @@ assert_eq!(locale, "zh-CN");
 ```
 
 ### Extract the untranslated texts
+
+We provided a `cargo i18n` command line tool for help you extract the untranslated texts from the source code and then write into YAML file.
+
+You can install it via `cargo install rust-i18n`, then you get `cargo i18n` command.
+
+```bash
+$ cargo install rust-i18n
+```
+
+### Configuration for `cargo i18n` command
+
+💡 NOTE: `package.metadata.i18n` config is just work for `cargo i18n` command, if you don't use that, you don't need this config.
+
+```toml
+[package.metadata.i18n]
+# The available locales for your application, default: ["en"].
+# available-locales = ["en", "zh-CN"]
+
+# The default locale, default: "en".
+# default-locale = "en"
+
+# Path for your translations YAML file, default: "locales".
+# This config for let `cargo i18n` command line tool know where to find your translations.
+# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
+# load-path = "locales"
+```
 
 Rust I18n providered a `i18n` bin for help you extract the untranslated texts from the source code and then write into YAML file.
 
