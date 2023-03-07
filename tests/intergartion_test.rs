@@ -49,6 +49,7 @@ mod tests {
     #[test]
     fn test_t_with_tt_val() {
         rust_i18n::set_locale("en");
+
         assert_eq!(t!("messages.other", count = 100), "You have 100 messages.");
         assert_eq!(
             t!("messages.other", count = 1.01),
@@ -69,10 +70,10 @@ mod tests {
     #[test]
     fn test_t_with_locale_and_args() {
         rust_i18n::set_locale("en");
+
         assert_eq!(t!("hello", locale = "zh-CN"), "Bar - 你好世界！");
         assert_eq!(t!("hello", locale = "en"), "Bar - Hello, World!");
 
-        rust_i18n::set_locale("en");
         assert_eq!(t!("messages.hello", name = "Jason"), "Hello, Jason!");
         assert_eq!(
             t!("messages.hello", locale = "en", name = "Jason"),
@@ -85,6 +86,19 @@ mod tests {
         );
         assert_eq!(
             t!("messages.hello", locale = "zh-CN", name = "Jason"),
+            "你好，Jason！"
+        );
+    }
+
+    #[test]
+    fn test_t_with_hash_args() {
+        rust_i18n::set_locale("en");
+
+        // Hash args
+        assert_eq!(t!("messages.hello", name => "Jason"), "Hello, Jason!");
+        assert_eq!(t!("messages.hello", "name" => "Jason"), "Hello, Jason!");
+        assert_eq!(
+            t!("messages.hello", locale = "zh-CN", "name" => "Jason"),
             "你好，Jason！"
         );
     }

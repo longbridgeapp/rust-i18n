@@ -110,21 +110,39 @@ macro_rules! t {
     };
 
     // t!("foo", locale="en", a=1, b="Foo")
-    ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),* $(,)?) => {
+    ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
             let mut message = crate::translate($locale, $key);
             $(
-                message = message.replace(concat!("%{", stringify!($var_name), "}"), &format!("{}", $var_val));
+                let var = stringify!($var_name).trim_matches('"');
+                let mut holder = String::from("%{");
+                holder.push_str(var);
+                holder.push('}');
+
+                message = message.replace(&holder, &format!("{}", $var_val));
             )+
             message
         }
     };
 
     // t!("foo %{a} %{b}", a="bar", b="baz")
-    ($key:expr, $($var_name:tt = $var_val:expr),* $(,)?) => {
+    ($key:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let locale = rust_i18n::locale();
-            t!($key, locale = &locale, $($var_name = $var_val),*)
+            t!($key, locale = &rust_i18n::locale(), $($var_name = $var_val),*)
+        }
+    };
+
+    // t!("foo %{a} %{b}", locale = "en", "a" => "bar", "b" => "baz")
+    ($key:expr, locale = $locale:expr, $($var_name:expr => $var_val:expr),+ $(,)?) => {
+        {
+            t!($key, locale = $locale, $($var_name = $var_val),*)
+        }
+    };
+
+    // t!("foo %{a} %{b}", "a" => "bar", "b" => "baz")
+    ($key:expr, $($var_name:expr => $var_val:expr),+ $(,)?) => {
+        {
+            t!($key, locale = &rust_i18n::locale(), $($var_name = $var_val),*)
         }
     };
 }

@@ -108,7 +108,7 @@ And example of the `zh-CN.yml`:
 ```yml
 hello: 你好世界
 messages:
-  hello: 你好，%{name}
+  hello: 你好，%{name} (%{count})
 ```
 
 ### Loading Localized Strings in Rust
@@ -131,8 +131,14 @@ t!("hello", locale = "zh-CN");
 t!("messages.hello", name = "world");
 // => "Hello, world"
 
-t!("messages.hello", locale = "zh-CN", name = "Jason");
-// => "你好，Jason"
+t!("messages.hello", "name" => "world");
+// => "Hello, world"
+
+t!("messages.hello", locale = "zh-CN", name = "Jason", count = 2);
+// => "你好，Jason (2)"
+
+t!("messages.hello", locale = "zh-CN", "name" => "Jason", "count" => 3 + 2);
+// => "你好，Jason (5)"
 ```
 
 ### Setting and Getting the Global Locale
