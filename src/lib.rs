@@ -115,7 +115,7 @@ macro_rules! t {
             let mut message = crate::translate($locale, $key);
             $(
                 let var = stringify!($var_name).trim_matches('"');
-                let mut holder = String::from("%{");
+                let mut holder = std::string::String::from("%{");
                 holder.push_str(var);
                 holder.push('}');
 
