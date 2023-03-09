@@ -22,12 +22,13 @@ fn workdir() -> Option<String> {
 }
 
 fn main() {
-    let workdir = workdir().expect("Failed to find work directory");
+    let workdir = workdir().unwrap_or("./".to_string());
 
     let locale_path = format!("{workdir}/**/locales/**/*.yml");
-
-    for entry in glob::glob(&locale_path).expect("Failed to read glob pattern") {
-        let entry = entry.unwrap();
-        println!("cargo:rerun-if-changed={}", entry.display());
+    if let Ok(globs) = glob::glob(&locale_path) {
+        for entry in globs {
+            let entry = entry.unwrap();
+            println!("cargo:rerun-if-changed={}", entry.display());
+        }
     }
 }
