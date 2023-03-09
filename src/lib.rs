@@ -98,6 +98,7 @@ pub fn locale() -> String {
 /// t!("messages.hello", locale = "de", "Jason"); // messages.hello: "Hallo, {}" => "Hallo, Jason"
 /// ```
 #[macro_export]
+#[allow(clippy::crate_in_macro_def)]
 macro_rules! t {
     // t!("foo")
     ($key:expr) => {
