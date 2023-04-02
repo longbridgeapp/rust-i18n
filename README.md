@@ -158,7 +158,7 @@ $ cargo install rust-i18n
 
 # Path for your translations YAML file, default: "locales".
 # This config for let `cargo i18n` command line tool know where to find your translations.
-# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
+# You must keep this path same as the one you pass to method `rust_i18n::i18n!`.
 # load-path = "locales"
 ```
 
