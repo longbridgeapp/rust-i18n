@@ -146,7 +146,7 @@ $ cargo install rust-i18n
 
 ### Configuration for `cargo i18n` command
 
-💡 NOTE: `package.metadata.i18n` config is just work for `cargo i18n` command, if you don't use that, you don't need this config.
+💡 NOTE: `package.metadata.i18n` config section in Cargo.toml is just work for `cargo i18n` command, if you don't use that, you don't need this config.
 
 ```toml
 [package.metadata.i18n]
