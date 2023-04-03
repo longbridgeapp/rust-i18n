@@ -146,7 +146,7 @@ $ cargo install rust-i18n
 
 ### Configuration for `cargo i18n` command
 
-💡 NOTE: `package.metadata.i18n` config is just work for `cargo i18n` command, if you don't use that, you don't need this config.
+💡 NOTE: `package.metadata.i18n` config section in Cargo.toml is just work for `cargo i18n` command, if you don't use that, you don't need this config.
 
 ```toml
 [package.metadata.i18n]
@@ -158,7 +158,7 @@ $ cargo install rust-i18n
 
 # Path for your translations YAML file, default: "locales".
 # This config for let `cargo i18n` command line tool know where to find your translations.
-# You must keep this path is same as the path you pass to `rust_i18n::i18n!` method.
+# You must keep this path same as the one you pass to method `rust_i18n::i18n!`.
 # load-path = "locales"
 ```
 
