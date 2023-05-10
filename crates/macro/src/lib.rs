@@ -145,6 +145,10 @@ fn generate_code(
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
 
+        pub fn translate(locale: &str, key: &str) -> String {
+            _rust_i18n_translate(locale, key)
+        }
+
         /// Get I18n text by locale and key
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
