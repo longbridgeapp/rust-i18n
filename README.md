@@ -35,8 +35,14 @@ Load macro and init translations in `lib.rs`
 extern crate rust_i18n;
 
 // Init translations for current crate.
-// You must keep this path is same as the path you set `load-path` in [package.metadata.i18n] in Cargo.toml.
 i18n!("locales");
+
+// Or just use `i18n!`, default locales path is: "locales" in current crate.
+i18n!();
+
+// Config fallback missing translations to "en" locale.
+// Use `fallback` option to set fallback locale.
+i18n!("locales", fallback = "en");
 ```
 
 Or you can import by use directly:

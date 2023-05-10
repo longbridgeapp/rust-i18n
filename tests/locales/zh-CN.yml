@@ -2,3 +2,4 @@ hello: Bar - 你好世界！
 messages:
   hello: 你好，%{name}！
   other: 你收到了 %{count} 条新消息。
+fallback_to_cn: 这是一个中文的翻译。

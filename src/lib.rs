@@ -102,18 +102,18 @@ pub fn locale() -> String {
 macro_rules! t {
     // t!("foo")
     ($key:expr) => {
-        crate::translate(rust_i18n::locale().as_str(), $key)
+        crate::_rust_i18n_translate(rust_i18n::locale().as_str(), $key)
     };
 
     // t!("foo", locale="en")
     ($key:expr, locale=$locale:expr) => {
-        crate::translate($locale, $key)
+        crate::_rust_i18n_translate($locale, $key)
     };
 
     // t!("foo", locale="en", a=1, b="Foo")
     ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let mut message = crate::translate($locale, $key);
+            let mut message = crate::_rust_i18n_translate($locale, $key);
             $(
                 let var = stringify!($var_name).trim_matches('"');
                 let mut holder = std::string::String::from("%{");
