@@ -11,4 +11,4 @@ messages:
   other: You have %{count} messages.
   hello: Hello, %{name}!
 missing:
-  default: Sorry, that translation doesn't exist.
+  default: This is missing key fallbacked to en.

@@ -1,12 +1,51 @@
-rust_i18n::i18n!("./tests/locales");
+rust_i18n::i18n!("./tests/locales", fallback = "en");
 
 #[cfg(test)]
 mod tests {
     use rust_i18n::t;
 
+    mod test0 {
+        rust_i18n::i18n!();
+    }
+
+    mod test1 {
+        rust_i18n::i18n!("./tests/locales");
+    }
+
+    mod test2 {
+        rust_i18n::i18n!("./tests/locales", fallback = "en");
+
+        #[test]
+        fn test_fallback() {
+            assert_eq!(
+                crate::tests::test2::_rust_i18n_translate("en", "missing.default"),
+                "This is missing key fallbacked to en."
+            );
+        }
+    }
+
+    mod test3 {
+        rust_i18n::i18n!("./tests/locales", fallback = "zh-CN");
+
+        #[test]
+        fn test_fallback() {
+            assert_eq!(
+                crate::tests::test3::_rust_i18n_translate("en", "fallback_to_cn"),
+                "这是一个中文的翻译。"
+            );
+        }
+    }
+
+    mod test4 {
+        rust_i18n::i18n!(fallback = "foo");
+    }
+
     #[test]
     fn test_translate() {
-        assert_eq!(crate::translate("en", "hello"), "Bar - Hello, World!");
+        assert_eq!(
+            crate::_rust_i18n_translate("en", "hello"),
+            "Bar - Hello, World!"
+        );
     }
 
     #[test]
@@ -139,6 +178,18 @@ mod tests {
         assert_eq!(
             t!("messages.hello", name = name, locale = locale),
             "Hello, Jason Lee!"
+        );
+    }
+
+    #[test]
+    fn test_fallback_missing_locale() {
+        assert_eq!(
+            t!("missing.default", locale = "zh-CN"),
+            "This is missing key fallbacked to en."
+        );
+        assert_eq!(
+            t!("missing.default", locale = "foo"),
+            "This is missing key fallbacked to en."
         );
     }
 }
