@@ -1,7 +1,7 @@
 // https://github.com/longbridgeapp/rust-i18n/blob/v0.1.6/crates/support/src/lib.rs#L9
 fn workdir() -> Option<String> {
-    if let Ok(pwd) = std::env::var("PWD") {
-        return Some(pwd);
+    if let Ok(cargo_manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        return Some(cargo_manifest_dir);
     }
 
     let dest = std::env::var("OUT_DIR");
