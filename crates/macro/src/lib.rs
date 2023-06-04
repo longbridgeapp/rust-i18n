@@ -134,10 +134,14 @@ fn generate_code(
 
     // result
     quote! {
-        static _RUST_I18N_ALL_TRANSLATIONS: once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = once_cell::sync::Lazy::new(|| rust_i18n::map! [
-            #(#all_translations)*
-            "" => ""
-        ]);
+        static _RUST_I18N_ALL_TRANSLATIONS: std::sync::OnceLock<std::collections::HashMap<&'static str, &'static str>> = std::sync::OnceLock::new();
+
+        fn _ensure_rust_i18n_all_translations() -> &'static std::collections::HashMap<&'static str, &'static str> {
+            _RUST_I18N_ALL_TRANSLATIONS.get_or_init(|| rust_i18n::map! [
+                #(#all_translations)*
+                "" => ""
+            ])
+        }
 
         static _RUST_I18N_AVAILABLE_LOCALES: &[&'static str] = &[
             #(#all_locales)*
@@ -152,14 +156,14 @@ fn generate_code(
         /// Get I18n text by locale and key
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
-            if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(target_key.as_str()) {
+            if let Some(value) = _ensure_rust_i18n_all_translations().get(target_key.as_str()) {
                 return value.to_string();
             }
 
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
                 let fallback_key = format!("{}.{}", fallback, key);
-                if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(fallback_key.as_str()) {
+                if let Some(value) = _ensure_rust_i18n_all_translations().get(fallback_key.as_str()) {
                     return value.to_string();
                 }
             }
