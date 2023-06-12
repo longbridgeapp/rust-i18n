@@ -10,7 +10,6 @@ Add crate dependencies in your Cargo.toml:
 
 ```toml
 [dependencies]
-once_cell = "1.10.0"
 rust-i18n = "0"
 ```
 
