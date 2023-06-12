@@ -134,7 +134,7 @@ fn generate_code(
 
     // result
     quote! {
-        static _RUST_I18N_ALL_TRANSLATIONS: once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = once_cell::sync::Lazy::new(|| rust_i18n::map! [
+        static _RUST_I18N_ALL_TRANSLATIONS: rust_i18n::once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = rust_i18n::once_cell::sync::Lazy::new(|| rust_i18n::map! [
             #(#all_translations)*
             "" => ""
         ]);

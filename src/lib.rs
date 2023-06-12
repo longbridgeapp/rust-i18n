@@ -69,6 +69,8 @@ rust_i18n::locale();
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
+#[doc(hidden)]
+pub use once_cell;
 pub use rust_i18n_macro::i18n;
 
 static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));

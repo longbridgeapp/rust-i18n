@@ -4,7 +4,5 @@ name = "rust-i18n-example"
 version = "0.1.0"
 
 [dependencies]
-example-base = {path = "../crates/example-base"}
-lazy_static = "1.4"
-once_cell = "1.10.0"
-rust-i18n = {path = "../../../../rust-i18n"}
+example-base = { path = "../crates/example-base" }
+rust-i18n = { path = "../../../../rust-i18n" }
