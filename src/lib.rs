@@ -7,6 +7,7 @@ use std::sync::Mutex;
 #[doc(hidden)]
 pub use once_cell;
 pub use rust_i18n_macro::i18n;
+pub use rust_i18n_support::{Backend, SimpleBackend};
 
 static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));
 
@@ -41,18 +42,18 @@ pub fn locale() -> String {
 macro_rules! t {
     // t!("foo")
     ($key:expr) => {
-        crate::_rust_i18n_translate(rust_i18n::locale().as_str(), $key)
+        crate::_rust_i18n_lookup(rust_i18n::locale().as_str(), $key)
     };
 
     // t!("foo", locale="en")
     ($key:expr, locale=$locale:expr) => {
-        crate::_rust_i18n_translate($locale, $key)
+        crate::_rust_i18n_lookup($locale, $key)
     };
 
     // t!("foo", locale="en", a=1, b="Foo")
     ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let mut message = crate::_rust_i18n_translate($locale, $key);
+            let mut message = crate::_rust_i18n_lookup($locale, $key);
             $(
                 let var = stringify!($var_name).trim_matches('"');
                 let mut holder = std::string::String::from("%{");

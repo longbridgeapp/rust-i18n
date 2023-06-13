@@ -83,7 +83,7 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let locales_path = current_dir.join(args.locales_path);
 
     let data = load_locales(&locales_path.display().to_string(), |_| false);
-    let code = generate_code(data.translations, data.locales, args.fallback);
+    let code = generate_code(data, args.fallback);
 
     if is_debug() {
         println!("{}", code.to_string());
@@ -93,33 +93,24 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn generate_code(
-    translations: HashMap<String, String>,
-    locales: Vec<String>,
+    translations: HashMap<String, HashMap<String, String>>,
     fallback: Option<String>,
 ) -> proc_macro2::TokenStream {
     let mut all_translations = Vec::<proc_macro2::TokenStream>::new();
     let mut all_locales = Vec::<proc_macro2::TokenStream>::new();
-    // For keep locales unique
-    let mut locale_names = HashMap::<String, String>::new();
 
-    translations.iter().for_each(|(k, v)| {
-        let k = k.to_string();
-        let v = v.to_string();
-
-        all_translations.push(quote! {
-            #k => #v,
-        });
-    });
-
-    locales.iter().for_each(|l| {
-        if locale_names.contains_key(l) {
-            return;
-        }
-
-        locale_names.insert(l.to_string(), l.to_string());
+    translations.iter().for_each(|(locale, trs)| {
         all_locales.push(quote! {
-            #l,
+            #locale
         });
+
+        trs.iter().for_each(|(k, v)| {
+            let k = k.to_string();
+            let v = v.to_string();
+            all_translations.push(quote! {
+                (#k, #v)
+            });
+        })
     });
 
     let fallback = if let Some(fallback) = fallback {
@@ -134,32 +125,25 @@ fn generate_code(
 
     // result
     quote! {
-        static _RUST_I18N_ALL_TRANSLATIONS: rust_i18n::once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = rust_i18n::once_cell::sync::Lazy::new(|| rust_i18n::map! [
-            #(#all_translations)*
-            "" => ""
-        ]);
-
-        static _RUST_I18N_AVAILABLE_LOCALES: &[&'static str] = &[
-            #(#all_locales)*
-        ];
+        static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
+            let items = [#(#all_translations),*];
+            let locales = [#(#all_locales),*];
+            Box::new(rust_i18n::SimpleBackend::new(items.into_iter().collect(), locales.into_iter().collect()))
+        });
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
 
-        pub fn translate(locale: &str, key: &str) -> String {
-            _rust_i18n_translate(locale, key)
-        }
-
         /// Get I18n text by locale and key
-        pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
+        pub fn _rust_i18n_lookup(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
-            if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(target_key.as_str()) {
+
+            if let Some(value) = i18n_backend().lookup(locale, key) {
                 return value.to_string();
             }
 
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                let fallback_key = format!("{}.{}", fallback, key);
-                if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(fallback_key.as_str()) {
+                if let Some(value) = i18n_backend().lookup(fallback, key) {
                     return value.to_string();
                 }
             }
@@ -167,9 +151,8 @@ fn generate_code(
             return target_key
         }
 
-        /// Return all available locales, for example: `&["en", "zh-CN"]`
-        pub fn available_locales() -> &'static [&'static str] {
-            _RUST_I18N_AVAILABLE_LOCALES
+        pub fn i18n_backend() -> &'static dyn rust_i18n::Backend {
+            &**_RUST_I18N_BACKEND
         }
     }
 }

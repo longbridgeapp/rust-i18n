@@ -18,7 +18,7 @@ mod tests {
         #[test]
         fn test_fallback() {
             assert_eq!(
-                crate::tests::test2::_rust_i18n_translate("en", "missing.default"),
+                crate::tests::test2::_rust_i18n_lookup("en", "missing.default"),
                 "This is missing key fallbacked to en."
             );
         }
@@ -30,7 +30,7 @@ mod tests {
         #[test]
         fn test_fallback() {
             assert_eq!(
-                crate::tests::test3::_rust_i18n_translate("en", "fallback_to_cn"),
+                crate::tests::test3::_rust_i18n_lookup("en", "fallback_to_cn"),
                 "这是一个中文的翻译。"
             );
         }
@@ -43,14 +43,14 @@ mod tests {
     #[test]
     fn test_translate() {
         assert_eq!(
-            crate::_rust_i18n_translate("en", "hello"),
+            crate::_rust_i18n_lookup("en", "hello"),
             "Bar - Hello, World!"
         );
     }
 
     #[test]
     fn test_available_locales() {
-        let mut locales = crate::available_locales().to_vec();
+        let mut locales = crate::i18n_backend().available_locales();
         locales.sort();
 
         assert_eq!(locales, &["en", "zh-CN"]);
