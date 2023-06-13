@@ -1,70 +1,6 @@
-/*!
-[![CI](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml/badge.svg)](https://github.com/longbridgeapp/rust-i18n/actions/workflows/ci.yml) [![Docs](https://docs.rs/rust-i18n/badge.svg)](https://docs.rs/rust-i18n/) [![Crates.io](https://img.shields.io/crates/v/rust-i18n.svg)](https://crates.io/crates/rust-i18n)
+#![allow(rustdoc::invalid_rust_codeblocks)]
+#![doc = include_str!("../README.md")]
 
-Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts.
-
-> Inspired by [ruby-i18n](https://github.com/ruby-i18n/i18n).
-
-### Usage
-Add crate dependencies in your Cargo.toml:
-
-```toml
-[dependencies]
-rust-i18n = "0"
-```
-
-Load macro and init translations in `lib.rs`
-
-```ignore
-// Load I18n macro, for allow you use `t!` macro in anywhere.
-#[macro_use]
-extern crate rust_i18n;
-
-// Init translations for current crate.
-i18n!("locales");
-```
-
-You must put I18n YAML files in `locales/` folder.
-
-```bash
-locales/
-├── en.yml
-├── zh-CN.yml
-```
-
-For example of `en.yml`:
-
-```yml
-hello: Hello world
-messages:
-  hello: Hello, %{name}
-```
-
-Now you can use `t!` macro in anywhere.
-
-```ignore
-t!("hello");
-// => "Hello world"
-
-t!("hello", locale = "zh-CN);
-// => "你好世界"
-
-t!("messages.hello", name = "world");
-// => "Hello, world"
-
-t!("messages.hello", locale = "zh-CN", name = "Jason");
-// => "你好, Jason"
-```
-
-You can use `rust_i18n::set_locale` to change the current locale in runtime.
-
-```rs
-rust_i18n::set_locale("zh-CN");
-rust_i18n::locale();
-// => "zh-CN"
-```
-*/
-// include!(concat!(env!("OUT_DIR"), "/i18n.rs"));
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
@@ -74,11 +10,13 @@ pub use rust_i18n_macro::i18n;
 
 static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));
 
+/// Set current locale
 pub fn set_locale(locale: &str) {
     let mut current_locale = CURRENT_LOCALE.lock().unwrap();
     *current_locale = locale.to_string();
 }
 
+/// Get current locale
 pub fn locale() -> String {
     CURRENT_LOCALE.lock().unwrap().to_string()
 }
@@ -149,6 +87,7 @@ macro_rules! t {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! map {
     {$($key:expr => $value:expr),+} => {{

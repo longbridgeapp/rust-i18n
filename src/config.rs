@@ -2,6 +2,7 @@
 //! to load and inspect `Cargo.toml` metadata.
 //!
 //! See `Manifest::from_slice`.
+
 use itertools::Itertools;
 use std::fs;
 use std::io;
