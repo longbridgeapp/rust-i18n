@@ -9,6 +9,15 @@ mod config;
 #[macro_use]
 extern crate serde_derive;
 
+const APP_NAME: &str = "rust-i18n";
+const ABOUT: &str = r#"Rust I18n command for help you simply to extract all untranslated texts from soruce code.
+
+It will iter all Rust files in and extract all untranslated texts that used `t!` macro.
+And then generate a YAML file and merge for existing texts.
+
+https://github.com/longbridgeapp/rust-i18n
+"#;
+
 fn main() -> Result<(), Error> {
     let extract_command = SubCommand::with_name("i18n")
         .about("Extract all untranslated I18n texts from soruce code")
@@ -19,17 +28,9 @@ fn main() -> Result<(), Error> {
                 .default_value("./"),
         );
 
-    let app = App::new("rust-i18n")
+    let app = App::new(APP_NAME)
         .bin_name("cargo")
-        .about(
-            r#"Rust I18n command for help you simply to extract all untranslated texts from soruce code.
-
-It will iter all Rust files in and extract all untranslated texts that used `t!` macro.
-And then generate a YAML file and merge for existing texts.
-
-https://github.com/longbridgeapp/rust-i18n
-"#,
-        )
+        .about(ABOUT)
         .subcommand(extract_command)
         .get_matches();
 

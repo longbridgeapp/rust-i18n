@@ -1,0 +1,7 @@
+toml-key = "This is a toml key"
+
+[custom]
+toml-key = "This is a toml key under the custom"
+
+[custom.foo]
+toml-key = "This is a toml key under the custom.foo"

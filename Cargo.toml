@@ -31,7 +31,7 @@ foo = {path = "examples/foo"}
 default = ["rust-i18n-extract", "clap", "anyhow", "quote", "itertools"]
 
 [build-dependencies]
-glob = "0.3"
+globwalk = "0.8.1"
 regex = "1"
 
 [[example]]

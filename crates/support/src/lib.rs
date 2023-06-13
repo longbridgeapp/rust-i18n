@@ -1,7 +1,7 @@
-use glob::glob;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::PathBuf;
 
 pub type Locale = String;
 pub type Value = serde_json::Value;
@@ -12,7 +12,7 @@ pub fn is_debug() -> bool {
 }
 
 /// Merge JSON Values, merge b into a
-pub fn merge_value(a: &mut Value, b: &Value) {
+fn merge_value(a: &mut Value, b: &Value) {
     match (a, b) {
         (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
             for (k, v) in b {
@@ -38,14 +38,22 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
         locales: Vec::new(),
     };
 
-    let path_pattern = format!("{}/**/*.yml", locales_path);
+    let path_pattern = format!("{locales_path}/**/*.{{yml,yaml,json,toml}}");
 
     if is_debug() {
         println!("cargo:i18n-locale={}", &path_pattern);
     }
 
-    for entry in glob(&path_pattern).expect("Failed to read glob pattern") {
-        let entry = entry.unwrap();
+    // check dir exists
+    if !PathBuf::from(locales_path).exists() {
+        if is_debug() {
+            println!("cargo:i18n-error=path not exists: {}", locales_path);
+        }
+        return data;
+    }
+
+    for entry in globwalk::glob(&path_pattern).expect("Failed to read glob pattern") {
+        let entry = entry.unwrap().into_path();
         if is_debug() {
             println!("cargo:i18n-load={}", &entry.display());
         }
@@ -58,24 +66,22 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
             .file_stem()
             .and_then(|s| s.to_str())
             .and_then(|s| s.split('.').last())
-            .unwrap()
-            .to_string();
+            .unwrap();
 
-        data.locales.push(locale.clone());
+        let ext = entry.extension().and_then(|s| s.to_str()).unwrap();
 
-        let file = File::open(entry).expect("Failed to open the YAML file");
+        data.locales.push(locale.to_string());
+
+        let file = File::open(&entry).expect("Failed to open file");
         let mut reader = std::io::BufReader::new(file);
         let mut content = String::new();
 
         reader
             .read_to_string(&mut content)
-            .expect("Read YAML file failed.");
+            .expect("Read file failed.");
 
-        let trs = Translations::from([(
-            locale,
-            serde_yaml::from_str::<serde_json::Value>(&content)
-                .expect("Invalid YAML format, parse error"),
-        )]);
+        let trs = parse_file(&content, ext, locale).expect("Parse file failed.");
+
         trs.into_iter().for_each(|(k, new_value)| {
             translations
                 .entry(k)
@@ -90,6 +96,24 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
     });
 
     data
+}
+
+// Parse Translations from file to support multiple formats
+fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, String> {
+    let result = match ext {
+        "yml" | "yaml" => serde_yaml::from_str::<serde_json::Value>(content)
+            .map_err(|err| format!("Invalid YAML format, {}", err)),
+        "json" => serde_json::from_str::<serde_json::Value>(content)
+            .map_err(|err| format!("Invalid JSON format, {}", err)),
+        "toml" => toml::from_str::<serde_json::Value>(content)
+            .map_err(|err| format!("Invalid TOML format, {}", err)),
+        _ => Err("Invalid file extension".into()),
+    };
+
+    match result {
+        Ok(v) => Ok(Translations::from([(locale.to_string(), v)])),
+        Err(e) => Err(e),
+    }
 }
 
 pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
@@ -121,4 +145,71 @@ pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
     }
 
     v
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{merge_value, parse_file};
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_merge_value() {
+        let a = serde_json::from_str::<serde_json::Value>(
+            r#"{"foo": "Foo", "dar": { "a": "1", "b": "2" }}"#,
+        )
+        .unwrap();
+        let b = serde_json::from_str::<serde_json::Value>(
+            r#"{"foo": "Foo1", "bar": "Bar", "dar": { "b": "21" }}"#,
+        )
+        .unwrap();
+
+        let mut c = a.clone();
+        merge_value(&mut c, &b);
+
+        assert_eq!(c["foo"], "Foo1");
+        assert_eq!(c["bar"], "Bar");
+        assert_eq!(c["dar"]["a"], "1");
+        assert_eq!(c["dar"]["b"], "21");
+    }
+
+    #[test]
+    fn test_parse_file_in_yaml() {
+        let content = "foo: Foo\nbar: Bar";
+        let mut trs = parse_file(content, "yml", "en").expect("Should ok");
+        assert_eq!(trs["en"]["foo"], "Foo");
+        assert_eq!(trs["en"]["bar"], "Bar");
+
+        trs = parse_file(content, "yaml", "en").expect("Should ok");
+        assert_eq!(trs["en"]["foo"], "Foo");
+
+        trs = parse_file(content, "yml", "zh-CN").expect("Should ok");
+        assert_eq!(trs["zh-CN"]["foo"], "Foo");
+
+        parse_file(content, "foo", "en").expect_err("Should error");
+        parse_file("invalid content", "yml", "en").expect_err("Should error");
+    }
+
+    #[test]
+    fn test_parse_file_in_json() {
+        let content = r#"
+        {
+            "foo": "Foo",
+            "bar": "Bar"
+        }
+        "#;
+        let trs = parse_file(content, "json", "en").expect("Should ok");
+        assert_eq!(trs["en"]["foo"], "Foo");
+        assert_eq!(trs["en"]["bar"], "Bar");
+    }
+
+    #[test]
+    fn test_parse_file_in_toml() {
+        let content = r#"
+        foo = "Foo"
+        bar = "Bar"
+        "#;
+        let trs = parse_file(content, "toml", "en").expect("Should ok");
+        assert_eq!(trs["en"]["foo"], "Foo");
+        assert_eq!(trs["en"]["bar"], "Bar");
+    }
 }

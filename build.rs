@@ -24,10 +24,15 @@ fn workdir() -> Option<String> {
 fn main() {
     let workdir = workdir().unwrap_or("./".to_string());
 
-    let locale_path = format!("{workdir}/**/locales/**/*.yml");
-    if let Ok(globs) = glob::glob(&locale_path) {
+    let locale_path = format!("{workdir}/**/locales/**/*");
+    if let Ok(globs) = globwalk::glob(&locale_path) {
         for entry in globs {
-            let entry = entry.unwrap();
+            if let Err(e) = entry {
+                println!("cargo:i18n-error={}", e);
+                continue;
+            }
+
+            let entry = entry.unwrap().into_path();
             println!("cargo:rerun-if-changed={}", entry.display());
         }
     }

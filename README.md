@@ -4,7 +4,7 @@
 
 > 🎯 Let's make I18n things to easy!
 
-Rust I18n is a crate for loading localized text from a set of YAML mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
+Rust I18n is a crate for loading localized text from a set of (YAML, JSON or TOML) mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
 
 Unlike other I18n libraries, Rust I18n's goal is to provide a simple and easy-to-use API.
 
@@ -14,7 +14,7 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 
 - Codegen on compile time for includes translations into binary.
 - Global `t!` macro for loading localized text in everywhere.
-- Use YAML for mapping localized text, and support mutiple YAML files merging.
+- Use YAML (default), JSON or TOML format for mapping localized text, and support mutiple files merging.
 - `cargo i18n` Command line tool for checking and extract untranslated texts into YAML files.
 
 ## Usage
@@ -60,9 +60,11 @@ fn main() {
 }
 ```
 
-Make sure all YAML files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
+Make sure all localized files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
-```
+> 💡Since: v1.3.0, the localized files supports use multiple formats, including `*.{yml,yaml,json,toml}`, and will merge all them.
+
+```bash
 .
 ├── Cargo.lock
 ├── Cargo.toml
@@ -82,7 +84,7 @@ Make sure all YAML files (containing the localized mappings) are located in the 
 │   └── Cargo.toml
 ```
 
-In the YAML files, specify the localization keys and their corresponding values, for example, in `en.yml`:
+In the localized files, specify the localization keys and their corresponding values, for example, in `en.yml`:
 
 ```yml
 hello: Hello world # A simple key -> value mapping
@@ -96,6 +98,26 @@ And example of the `zh-CN.yml`:
 hello: 你好世界
 messages:
   hello: 你好，%{name} (%{count})
+```
+
+If you wants use JSON format, just rename the file to `en.json` and the content is like this:
+
+```json
+{
+  "hello": "Hello world",
+  "messages": {
+    "hello": "Hello, %{name}"
+  }
+}
+```
+
+Or use TOML format, just rename the file to `en.toml` and the content is like this:
+
+```toml
+hello = "Hello world"
+
+[messages]
+hello = "Hello, %{name}"
 ```
 
 ### Loading Localized Strings in Rust

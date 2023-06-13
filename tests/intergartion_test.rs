@@ -50,7 +50,10 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        assert_eq!(crate::available_locales(), &["en", "zh-CN"]);
+        let mut locales = crate::available_locales().to_vec();
+        locales.sort();
+
+        assert_eq!(locales, &["en", "zh-CN"]);
     }
 
     #[test]
@@ -190,6 +193,27 @@ mod tests {
         assert_eq!(
             t!("missing.default", locale = "foo"),
             "This is missing key fallbacked to en."
+        );
+    }
+
+    #[test]
+    fn test_multiple_formats() {
+        // Test from JSON
+        assert_eq!(t!("json-key", locale = "en"), "This is from test.json");
+        assert_eq!(
+            t!("custom.json-key", locale = "en"),
+            "This is from nested merged from test.json"
+        );
+
+        // Test from TOML
+        assert_eq!(t!("toml-key", locale = "en"), "This is a toml key");
+        assert_eq!(
+            t!("custom.toml-key", locale = "en"),
+            "This is a toml key under the custom"
+        );
+        assert_eq!(
+            t!("custom.foo.toml-key", locale = "en"),
+            "This is a toml key under the custom.foo"
         );
     }
 }
