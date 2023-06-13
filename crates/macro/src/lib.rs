@@ -125,9 +125,11 @@ fn generate_code(
 
     // result
     quote! {
-        static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
+        /// I18n backend instance
+        static I18n: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
             let items = [#(#all_translations),*];
             let locales = [#(#all_locales),*];
+
             Box::new(rust_i18n::SimpleBackend::new(items.into_iter().collect(), locales.into_iter().collect()))
         });
 
@@ -137,22 +139,18 @@ fn generate_code(
         pub fn _rust_i18n_lookup(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
 
-            if let Some(value) = i18n_backend().lookup(locale, key) {
+            if let Some(value) = I18n.lookup(locale, key) {
                 return value.to_string();
             }
 
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                if let Some(value) = i18n_backend().lookup(fallback, key) {
+                if let Some(value) = I18n.lookup(fallback, key) {
                     return value.to_string();
                 }
             }
 
             return target_key
-        }
-
-        pub fn i18n_backend() -> &'static dyn rust_i18n::Backend {
-            &**_RUST_I18N_BACKEND
         }
     }
 }

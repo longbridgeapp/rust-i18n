@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        let mut locales = crate::i18n_backend().available_locales();
+        let mut locales = crate::I18n.available_locales();
         locales.sort();
 
         assert_eq!(locales, &["en", "zh-CN"]);
