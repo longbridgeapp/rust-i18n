@@ -192,4 +192,25 @@ mod tests {
             "This is missing key fallbacked to en."
         );
     }
+
+    #[test]
+    fn test_multiple_formats() {
+        // Test from JSON
+        assert_eq!(t!("json-key", locale = "en"), "This is from test.json");
+        assert_eq!(
+            t!("custom.json-key", locale = "en"),
+            "This is from nested merged from test.json"
+        );
+
+        // Test from TOML
+        assert_eq!(t!("toml-key", locale = "en"), "This is a toml key");
+        assert_eq!(
+            t!("custom.toml-key", locale = "en"),
+            "This is a toml key under the custom"
+        );
+        assert_eq!(
+            t!("custom.foo.toml-key", locale = "en"),
+            "This is a toml key under the custom.foo"
+        );
+    }
 }

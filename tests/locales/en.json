@@ -1,0 +1,6 @@
+{
+  "json-key": "This is from test.json",
+  "custom": {
+    "json-key": "This is from nested merged from test.json"
+  }
+}
