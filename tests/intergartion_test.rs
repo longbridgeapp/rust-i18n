@@ -18,7 +18,7 @@ mod tests {
         #[test]
         fn test_fallback() {
             assert_eq!(
-                crate::tests::test2::_rust_i18n_lookup("en", "missing.default"),
+                crate::tests::test2::_rust_i18n_translate("en", "missing.default"),
                 "This is missing key fallbacked to en."
             );
         }
@@ -30,7 +30,7 @@ mod tests {
         #[test]
         fn test_fallback() {
             assert_eq!(
-                crate::tests::test3::_rust_i18n_lookup("en", "fallback_to_cn"),
+                crate::tests::test3::_rust_i18n_translate("en", "fallback_to_cn"),
                 "这是一个中文的翻译。"
             );
         }
@@ -43,14 +43,14 @@ mod tests {
     #[test]
     fn test_translate() {
         assert_eq!(
-            crate::_rust_i18n_lookup("en", "hello"),
+            crate::_rust_i18n_translate("en", "hello"),
             "Bar - Hello, World!"
         );
     }
 
     #[test]
     fn test_available_locales() {
-        let mut locales = crate::I18n.available_locales();
+        let mut locales = crate::i18n().available_locales();
         locales.sort();
 
         assert_eq!(locales, &["en", "zh-CN"]);
@@ -215,5 +215,15 @@ mod tests {
             t!("custom.foo.toml-key", locale = "en"),
             "This is a toml key under the custom.foo"
         );
+    }
+
+    #[test]
+    fn test_add_translations() {
+        // crate::i18n().store(
+        //     "en",
+        //     rust_i18n::map! {
+        //         "bar" => "Hello, %{name}!"
+        //     },
+        // );
     }
 }

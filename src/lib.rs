@@ -42,18 +42,18 @@ pub fn locale() -> String {
 macro_rules! t {
     // t!("foo")
     ($key:expr) => {
-        crate::_rust_i18n_lookup(rust_i18n::locale().as_str(), $key)
+        crate::_rust_i18n_translate(rust_i18n::locale().as_str(), $key)
     };
 
     // t!("foo", locale="en")
     ($key:expr, locale=$locale:expr) => {
-        crate::_rust_i18n_lookup($locale, $key)
+        crate::_rust_i18n_translate($locale, $key)
     };
 
     // t!("foo", locale="en", a=1, b="Foo")
     ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let mut message = crate::_rust_i18n_lookup($locale, $key);
+            let mut message = crate::_rust_i18n_translate($locale, $key);
             $(
                 let var = stringify!($var_name).trim_matches('"');
                 let mut holder = std::string::String::from("%{");
@@ -98,4 +98,12 @@ macro_rules! map {
         )+
         m
     }};
+}
+
+/// Set I18n backend
+#[macro_export]
+macro_rules! set_backend {
+    ($backend:tt) => {
+        // $crate::_rust_i18n_set_backend($backend);
+    };
 }

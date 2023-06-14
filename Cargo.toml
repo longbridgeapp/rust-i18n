@@ -43,3 +43,12 @@ test = true
 name = "cargo-i18n"
 path = "src/main.rs"
 required-features = ["default"]
+
+[workspace]
+members = [
+    "crates/extract",
+    "crates/support",
+    "crates/macro",
+    "examples/app-load-path",
+    "examples/foo",
+]

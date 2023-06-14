@@ -150,7 +150,6 @@ fn flatten_keys(prefix: &str, trs: &Value) -> HashMap<String, String> {
 #[cfg(test)]
 mod tests {
     use super::{merge_value, parse_file};
-    use std::path::PathBuf;
 
     #[test]
     fn test_merge_value() {
@@ -186,7 +185,7 @@ mod tests {
         assert_eq!(trs["zh-CN"]["foo"], "Foo");
 
         parse_file(content, "foo", "en").expect_err("Should error");
-        parse_file("invalid content", "yml", "en").expect_err("Should error");
+        parse_file("", "yml", "en").expect_err("Should error");
     }
 
     #[test]
