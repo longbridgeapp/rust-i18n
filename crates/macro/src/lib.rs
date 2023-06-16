@@ -152,7 +152,7 @@ fn generate_code(
         use rust_i18n::BackendExt;
 
         /// I18n backend instance
-        static _RUEST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
+        static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
             let trs = [#(#all_translations),*];
             let locales = [#(#all_locales),*];
 
@@ -168,13 +168,13 @@ fn generate_code(
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
 
-            if let Some(value) = i18n().translate(locale, key) {
+            if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
                 return value.to_string();
             }
 
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                if let Some(value) = i18n().translate(fallback, key) {
+                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
                     return value.to_string();
                 }
             }
@@ -182,8 +182,10 @@ fn generate_code(
             return target_key
         }
 
-        pub fn i18n() -> &'static dyn rust_i18n::Backend {
-            &**_RUEST_I18N_BACKEND
+        pub fn _rust_i18n_available_locales() -> Vec<String> {
+            let mut locales = _RUST_I18N_BACKEND.available_locales();
+            locales.sort();
+            locales
         }
     }
 }

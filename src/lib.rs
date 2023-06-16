@@ -88,22 +88,15 @@ macro_rules! t {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! map {
-    {$($key:expr => $value:expr),+} => {{
-        let mut m = std::collections::HashMap::new();
-        $(
-            m.insert($key, $value);
-        )+
-        m
-    }};
-}
-
-/// Set I18n backend
-#[macro_export]
-macro_rules! set_backend {
-    ($backend:tt) => {
-        // $crate::_rust_i18n_set_backend($backend);
+/// Get available locales
+///
+/// ```ignore
+/// rust_i18n::available_locales!();
+/// // => ["en", "zh-CN"]
+/// ```
+#[macro_export(local_inner_macros)]
+macro_rules! available_locales {
+    () => {
+        crate::_rust_i18n_available_locales()
     };
 }

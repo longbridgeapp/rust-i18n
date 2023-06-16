@@ -55,8 +55,8 @@ rust_i18n::i18n!("locales");
 fn main() {
     println!("{}", t!("hello"));
 
-    // Use `available_locales` method to get all available locales.
-    println!("{:?}", available_locales());
+    // Use `available_locales!` method to get all available locales.
+    println!("{:?}", rust_i18n::available_locales!());
 }
 ```
 

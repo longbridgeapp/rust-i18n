@@ -76,10 +76,7 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        let mut locales = crate::i18n().available_locales();
-        locales.sort();
-
-        assert_eq!(locales, &["en", "pt", "zh-CN"]);
+        assert_eq!(rust_i18n::available_locales!(), &["en", "pt", "zh-CN"]);
     }
 
     #[test]
