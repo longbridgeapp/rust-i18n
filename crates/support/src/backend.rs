@@ -3,9 +3,9 @@ use std::collections::HashMap;
 /// I18n backend trait
 pub trait Backend: Send + Sync + 'static {
     /// Return the available locales
-    fn available_locales(&self) -> Vec<String>;
+    fn available_locales(&self) -> Vec<&str>;
     /// Get the translation for the given locale and key
-    fn translate(&self, locale: &str, key: &str) -> Option<String>;
+    fn translate(&self, locale: &str, key: &str) -> Option<&str>;
 }
 
 pub trait BackendExt: Backend {
@@ -25,7 +25,7 @@ where
     A: Backend,
     B: Backend,
 {
-    fn available_locales(&self) -> Vec<String> {
+    fn available_locales(&self) -> Vec<&str> {
         let mut available_locales = self.0.available_locales();
         for locale in self.1.available_locales() {
             if !available_locales.contains(&locale) {
@@ -35,7 +35,7 @@ where
         available_locales
     }
 
-    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+    fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         self.1
             .translate(locale, key)
             .or_else(|| self.0.translate(locale, key))
@@ -92,19 +92,15 @@ impl SimpleBackend {
 }
 
 impl Backend for SimpleBackend {
-    fn available_locales(&self) -> Vec<String> {
-        let mut locales = self
-            .locales
-            .keys()
-            .map(|k| k.to_string())
-            .collect::<Vec<_>>();
+    fn available_locales(&self) -> Vec<&str> {
+        let mut locales = self.locales.keys().map(|k| k.as_str()).collect::<Vec<_>>();
         locales.sort();
         locales
     }
 
-    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+    fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         let flatten_key = format!("{}.{}", locale, key);
-        self.translations.get(&flatten_key).map(|v| v.to_string())
+        self.translations.get(&flatten_key).map(|v| v.as_str())
     }
 }
 

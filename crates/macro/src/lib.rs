@@ -182,7 +182,7 @@ fn generate_code(
             return target_key
         }
 
-        pub fn _rust_i18n_available_locales() -> Vec<String> {
+        pub fn _rust_i18n_available_locales() -> Vec<&'static str> {
             let mut locales = _RUST_I18N_BACKEND.available_locales();
             locales.sort();
             locales

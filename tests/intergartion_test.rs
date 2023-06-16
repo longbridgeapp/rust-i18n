@@ -1,19 +1,26 @@
-struct TestBackend {}
+use std::collections::HashMap;
+
+struct TestBackend {
+    trs: HashMap<String, String>,
+}
 
 impl TestBackend {
     fn new() -> Self {
-        return Self {};
+        let mut trs = HashMap::new();
+        trs.insert("foo".into(), format!("pt-fake.foo"));
+
+        return Self { trs };
     }
 }
 
 impl rust_i18n::Backend for TestBackend {
-    fn available_locales(&self) -> Vec<String> {
-        return vec!["pt".to_string(), "en".to_string()];
+    fn available_locales(&self) -> Vec<&str> {
+        return vec!["pt", "en"];
     }
 
-    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+    fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         if locale == "pt" {
-            return Some(format!("pt-fake.{key}"));
+            return self.trs.get(key).map(|v| v.as_str());
         }
 
         return None;
