@@ -8,7 +8,7 @@ pub trait Backend: Send + Sync + 'static {
     fn translate(&self, locale: &str, key: &str) -> Option<String>;
 }
 
-trait BackendExt: Backend {
+pub trait BackendExt: Backend {
     /// Extend backend to add more translations
     fn extend<T: Backend>(self, other: T) -> CombinedBackend<Self, T>
     where
@@ -18,7 +18,7 @@ trait BackendExt: Backend {
     }
 }
 
-struct CombinedBackend<A, B>(A, B);
+pub struct CombinedBackend<A, B>(A, B);
 
 impl<A, B> Backend for CombinedBackend<A, B>
 where

@@ -4,8 +4,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 
 mod backend;
-pub use backend::Backend;
-pub use backend::SimpleBackend;
+pub use backend::{Backend, BackendExt, SimpleBackend};
 
 type Locale = String;
 type Value = serde_json::Value;

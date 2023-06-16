@@ -7,7 +7,7 @@ use std::sync::Mutex;
 #[doc(hidden)]
 pub use once_cell;
 pub use rust_i18n_macro::i18n;
-pub use rust_i18n_support::{Backend, SimpleBackend};
+pub use rust_i18n_support::{Backend, BackendExt, SimpleBackend};
 
 static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));
 

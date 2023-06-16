@@ -1,4 +1,30 @@
-rust_i18n::i18n!("./tests/locales", fallback = "en");
+struct TestBackend {}
+
+impl TestBackend {
+    fn new() -> Self {
+        return Self {};
+    }
+}
+
+impl rust_i18n::Backend for TestBackend {
+    fn available_locales(&self) -> Vec<String> {
+        return vec!["pt".to_string(), "en".to_string()];
+    }
+
+    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+        if locale == "pt" {
+            return Some(format!("pt-fake.{key}"));
+        }
+
+        return None;
+    }
+}
+
+rust_i18n::i18n!(
+    "./tests/locales",
+    fallback = "en",
+    backend = TestBackend::new()
+);
 
 #[cfg(test)]
 mod tests {
@@ -53,7 +79,7 @@ mod tests {
         let mut locales = crate::i18n().available_locales();
         locales.sort();
 
-        assert_eq!(locales, &["en", "zh-CN"]);
+        assert_eq!(locales, &["en", "pt", "zh-CN"]);
     }
 
     #[test]
@@ -218,12 +244,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_translations() {
-        // crate::i18n().store(
-        //     "en",
-        //     rust_i18n::map! {
-        //         "bar" => "Hello, %{name}!"
-        //     },
-        // );
+    fn test_extend_backend() {
+        assert_eq!(t!("foo", locale = "pt"), "pt-fake.foo")
     }
 }
