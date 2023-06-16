@@ -1,12 +1,12 @@
 use quote::quote;
 use rust_i18n_support::{is_debug, load_locales};
 use std::collections::HashMap;
-use syn::{parse_macro_input, Ident, LitStr, Token};
+use syn::{parse_macro_input, Expr, Ident, LitStr, Token};
 
-#[derive(Debug)]
 struct Args {
     locales_path: String,
     fallback: Option<String>,
+    extend: Option<Expr>,
 }
 
 impl Args {
@@ -18,12 +18,24 @@ impl Args {
     }
 
     fn consume_options(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
-        let ident = input.parse::<Ident>()?;
+        let ident = input.parse::<Ident>()?.to_string();
         input.parse::<Token![=]>()?;
-        let val = input.parse::<LitStr>()?.value();
 
-        if ident == "fallback" {
-            self.fallback = Some(val);
+        match ident.as_str() {
+            "fallback" => {
+                let val = input.parse::<LitStr>()?.value();
+                self.fallback = Some(val);
+            }
+            "backend" => {
+                let val = input.parse::<Expr>()?;
+                self.extend = Some(val);
+            }
+            _ => {}
+        }
+
+        // Continue to consume reset of options
+        if input.parse::<Token![,]>().is_ok() {
+            self.consume_options(input)?;
         }
 
         Ok(())
@@ -46,6 +58,7 @@ impl syn::parse::Parse for Args {
         let mut result = Self {
             locales_path: String::from("locales"),
             fallback: None,
+            extend: None,
         };
 
         if lookahead.peek(LitStr) {
@@ -80,49 +93,43 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // CARGO_MANIFEST_DIR is current build directory
     let cargo_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is empty");
     let current_dir = std::path::PathBuf::from(cargo_dir);
-    let locales_path = current_dir.join(args.locales_path);
+    let locales_path = current_dir.join(&args.locales_path);
 
     let data = load_locales(&locales_path.display().to_string(), |_| false);
-    let code = generate_code(data.translations, data.locales, args.fallback);
+    let code = generate_code(data, args);
 
     if is_debug() {
-        println!("{}", code.to_string());
+        println!(
+            "\n\n-------------- code --------------\n{}\n----------------------------------\n\n",
+            code.to_string()
+        );
     }
 
     code.into()
 }
 
 fn generate_code(
-    translations: HashMap<String, String>,
-    locales: Vec<String>,
-    fallback: Option<String>,
+    translations: HashMap<String, HashMap<String, String>>,
+    args: Args,
 ) -> proc_macro2::TokenStream {
     let mut all_translations = Vec::<proc_macro2::TokenStream>::new();
     let mut all_locales = Vec::<proc_macro2::TokenStream>::new();
-    // For keep locales unique
-    let mut locale_names = HashMap::<String, String>::new();
 
-    translations.iter().for_each(|(k, v)| {
-        let k = k.to_string();
-        let v = v.to_string();
-
-        all_translations.push(quote! {
-            #k => #v,
-        });
-    });
-
-    locales.iter().for_each(|l| {
-        if locale_names.contains_key(l) {
-            return;
-        }
-
-        locale_names.insert(l.to_string(), l.to_string());
+    translations.iter().for_each(|(locale, trs)| {
         all_locales.push(quote! {
-            #l,
+            #locale
         });
+
+        trs.iter().for_each(|(k, v)| {
+            let k = k.to_string();
+            let v = v.to_string();
+            all_translations.push(quote! {
+                (#k, #v)
+            });
+        })
     });
 
-    let fallback = if let Some(fallback) = fallback {
+    let fallback = if let Some(fallback) = args.fallback {
         quote! {
             Some(#fallback)
         }
@@ -132,34 +139,42 @@ fn generate_code(
         }
     };
 
+    let extend_code = if let Some(extend) = args.extend {
+        quote! {
+            let backend = backend.extend(#extend);
+        }
+    } else {
+        quote! {}
+    };
+
     // result
     quote! {
-        static _RUST_I18N_ALL_TRANSLATIONS: rust_i18n::once_cell::sync::Lazy<std::collections::HashMap<&'static str, &'static str>> = rust_i18n::once_cell::sync::Lazy::new(|| rust_i18n::map! [
-            #(#all_translations)*
-            "" => ""
-        ]);
+        use rust_i18n::BackendExt;
 
-        static _RUST_I18N_AVAILABLE_LOCALES: &[&'static str] = &[
-            #(#all_locales)*
-        ];
+        /// I18n backend instance
+        static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
+            let trs = [#(#all_translations),*];
+            let locales = [#(#all_locales),*];
+
+            let mut backend = rust_i18n::SimpleBackend::new(trs.into_iter().collect(), locales.into_iter().collect());
+            #extend_code
+
+            Box::new(backend)
+        });
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
-
-        pub fn translate(locale: &str, key: &str) -> String {
-            _rust_i18n_translate(locale, key)
-        }
 
         /// Get I18n text by locale and key
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             let target_key = format!("{}.{}", locale, key);
-            if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(target_key.as_str()) {
+
+            if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
                 return value.to_string();
             }
 
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                let fallback_key = format!("{}.{}", fallback, key);
-                if let Some(value) = _RUST_I18N_ALL_TRANSLATIONS.get(fallback_key.as_str()) {
+                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
                     return value.to_string();
                 }
             }
@@ -167,9 +182,10 @@ fn generate_code(
             return target_key
         }
 
-        /// Return all available locales, for example: `&["en", "zh-CN"]`
-        pub fn available_locales() -> &'static [&'static str] {
-            _RUST_I18N_AVAILABLE_LOCALES
+        pub fn _rust_i18n_available_locales() -> Vec<&'static str> {
+            let mut locales = _RUST_I18N_BACKEND.available_locales();
+            locales.sort();
+            locales
         }
     }
 }

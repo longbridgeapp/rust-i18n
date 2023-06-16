@@ -7,6 +7,7 @@ use std::sync::Mutex;
 #[doc(hidden)]
 pub use once_cell;
 pub use rust_i18n_macro::i18n;
+pub use rust_i18n_support::{Backend, BackendExt, SimpleBackend};
 
 static CURRENT_LOCALE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::from("en")));
 
@@ -87,14 +88,15 @@ macro_rules! t {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! map {
-    {$($key:expr => $value:expr),+} => {{
-        let mut m = std::collections::HashMap::new();
-        $(
-            m.insert($key, $value);
-        )+
-        m
-    }};
+/// Get available locales
+///
+/// ```ignore
+/// rust_i18n::available_locales!();
+/// // => ["en", "zh-CN"]
+/// ```
+#[macro_export(local_inner_macros)]
+macro_rules! available_locales {
+    () => {
+        crate::_rust_i18n_available_locales()
+    };
 }

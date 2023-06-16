@@ -55,8 +55,8 @@ rust_i18n::i18n!("locales");
 fn main() {
     println!("{}", t!("hello"));
 
-    // Use `available_locales` method to get all available locales.
-    println!("{:?}", available_locales());
+    // Use `available_locales!` method to get all available locales.
+    println!("{:?}", rust_i18n::available_locales!());
 }
 ```
 
@@ -170,6 +170,54 @@ You can install it via `cargo install rust-i18n`, then you get `cargo i18n` comm
 ```bash
 $ cargo install rust-i18n
 ```
+
+### Extend Backend
+
+Since v2.0 rust-i18n support extend backend for cusomize your translation implementation.
+
+For example, you can use HTTP API for load translations from remote server:
+
+```rs
+use rust_i18n::Backend;
+
+pub struct RemoteI18n {
+    trs: HashMap<String, HashMap<String, String>>,
+}
+
+impl RemoteI18n {
+    fn new() -> Self {
+        // fetch translations from remote URL
+        let response = reqwest::blocking::get("https://your-host.com/assets/locales.yml").unwrap();
+        let trs = serde_yaml::from_str::<HashMap<String, HashMap<String, String>>>(&response.text().unwrap()).unwrap();
+
+        return Self {
+            trs
+        };
+    }
+}
+
+impl Backend for RemoteI18n {
+    fn available_locales(&self) -> Vec<String> {
+        return self.trs.keys().cloned().collect();
+    }
+
+    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+        // Write your own lookup logic here.
+        // For example load from database
+        return self.trs.get(locale)?.get(key).cloned();
+    }
+}
+```
+
+Now you can init rust_i18n by extend your own backend:
+
+```rs
+rust_i18n::i18n!("locales", backend = RemoteI18n::new());
+```
+
+This also will load local translates from ./locales path, but your own `RemoteI18n` will priority than it.
+
+Now you call `t!` will lookup translates from your own backend first, if not found, will lookup from local files.
 
 ### Configuration for `cargo i18n` command
 

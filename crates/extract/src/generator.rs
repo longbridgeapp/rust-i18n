@@ -23,16 +23,16 @@ pub fn generate<'a, P: AsRef<Path>>(
     let mut new_values: HashMap<String, String> = HashMap::new();
 
     for m in messages {
-        let key = format!("{}.{}", locale, m.key);
-
         if !m.locations.is_empty() {
             for _l in &m.locations {
                 // TODO: write file and line as YAML comment
             }
         }
 
-        if data.translations.get(&key).is_some() {
-            continue;
+        if let Some(trs) = data.get(locale) {
+            if trs.get(&m.key).is_some() {
+                continue;
+            }
         }
 
         let value = m.key.split(".").last().unwrap_or_default();

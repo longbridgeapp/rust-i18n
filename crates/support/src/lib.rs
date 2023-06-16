@@ -3,9 +3,12 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-pub type Locale = String;
-pub type Value = serde_json::Value;
-pub type Translations = HashMap<Locale, Value>;
+mod backend;
+pub use backend::{Backend, BackendExt, SimpleBackend};
+
+type Locale = String;
+type Value = serde_json::Value;
+type Translations = HashMap<Locale, Value>;
 
 pub fn is_debug() -> bool {
     std::env::var("RUST_I18N_DEBUG").unwrap_or_else(|_| "0".to_string()) == "1"
@@ -25,18 +28,13 @@ fn merge_value(a: &mut Value, b: &Value) {
     }
 }
 
-pub struct LocaleData {
-    pub translations: HashMap<String, String>,
-    pub locales: Vec<String>,
-}
-
 // Load locales into flatten key, value HashMap
-pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> LocaleData {
-    let mut translations: Translations = HashMap::new();
-    let mut data = LocaleData {
-        translations: HashMap::new(),
-        locales: Vec::new(),
-    };
+pub fn load_locales<F: Fn(&str) -> bool>(
+    locales_path: &str,
+    ignore_if: F,
+) -> HashMap<String, HashMap<String, String>> {
+    let mut result: HashMap<String, HashMap<String, String>> = HashMap::new();
+    let mut translations = HashMap::new();
 
     let path_pattern = format!("{locales_path}/**/*.{{yml,yaml,json,toml}}");
 
@@ -49,7 +47,7 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
         if is_debug() {
             println!("cargo:i18n-error=path not exists: {}", locales_path);
         }
-        return data;
+        return result;
     }
 
     for entry in globwalk::glob(&path_pattern).expect("Failed to read glob pattern") {
@@ -70,8 +68,6 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
 
         let ext = entry.extension().and_then(|s| s.to_str()).unwrap();
 
-        data.locales.push(locale.to_string());
-
         let file = File::open(&entry).expect("Failed to open file");
         let mut reader = std::io::BufReader::new(file);
         let mut content = String::new();
@@ -91,11 +87,10 @@ pub fn load_locales<F: Fn(&str) -> bool>(locales_path: &str, ignore_if: F) -> Lo
     }
 
     translations.iter().for_each(|(locale, trs)| {
-        let new_vars = extract_vars(locale.as_str(), &trs);
-        data.translations.extend(new_vars);
+        result.insert(locale.to_string(), flatten_keys(locale, trs));
     });
 
-    data
+    result
 }
 
 // Parse Translations from file to support multiple formats
@@ -116,7 +111,7 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
     }
 }
 
-pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
+fn flatten_keys(prefix: &str, trs: &Value) -> HashMap<String, String> {
     let mut v = HashMap::<String, String>::new();
     let prefix = prefix.to_string();
 
@@ -126,8 +121,12 @@ pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
         }
         serde_json::Value::Object(o) => {
             for (k, vv) in o {
-                let key = format!("{}.{}", prefix, k);
-                v.extend(extract_vars(key.as_str(), vv));
+                let key = if prefix.is_empty() {
+                    k.clone()
+                } else {
+                    format!("{}.{}", prefix, k)
+                };
+                v.extend(flatten_keys(key.as_str(), vv));
             }
         }
         serde_json::Value::Null => {
@@ -150,7 +149,6 @@ pub fn extract_vars(prefix: &str, trs: &Value) -> HashMap<String, String> {
 #[cfg(test)]
 mod tests {
     use super::{merge_value, parse_file};
-    use std::path::PathBuf;
 
     #[test]
     fn test_merge_value() {
@@ -186,7 +184,7 @@ mod tests {
         assert_eq!(trs["zh-CN"]["foo"], "Foo");
 
         parse_file(content, "foo", "en").expect_err("Should error");
-        parse_file("invalid content", "yml", "en").expect_err("Should error");
+        parse_file("", "yml", "en").expect_err("Should error");
     }
 
     #[test]

@@ -1,4 +1,37 @@
-rust_i18n::i18n!("./tests/locales", fallback = "en");
+use std::collections::HashMap;
+
+struct TestBackend {
+    trs: HashMap<String, String>,
+}
+
+impl TestBackend {
+    fn new() -> Self {
+        let mut trs = HashMap::new();
+        trs.insert("foo".into(), format!("pt-fake.foo"));
+
+        return Self { trs };
+    }
+}
+
+impl rust_i18n::Backend for TestBackend {
+    fn available_locales(&self) -> Vec<&str> {
+        return vec!["pt", "en"];
+    }
+
+    fn translate(&self, locale: &str, key: &str) -> Option<&str> {
+        if locale == "pt" {
+            return self.trs.get(key).map(|v| v.as_str());
+        }
+
+        return None;
+    }
+}
+
+rust_i18n::i18n!(
+    "./tests/locales",
+    fallback = "en",
+    backend = TestBackend::new()
+);
 
 #[cfg(test)]
 mod tests {
@@ -50,10 +83,7 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        let mut locales = crate::available_locales().to_vec();
-        locales.sort();
-
-        assert_eq!(locales, &["en", "zh-CN"]);
+        assert_eq!(rust_i18n::available_locales!(), &["en", "pt", "zh-CN"]);
     }
 
     #[test]
@@ -215,5 +245,10 @@ mod tests {
             t!("custom.foo.toml-key", locale = "en"),
             "This is a toml key under the custom.foo"
         );
+    }
+
+    #[test]
+    fn test_extend_backend() {
+        assert_eq!(t!("foo", locale = "pt"), "pt-fake.foo")
     }
 }
