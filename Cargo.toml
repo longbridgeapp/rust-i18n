@@ -27,6 +27,7 @@ toml = "0.5.8"
 
 [dev-dependencies]
 foo = {path = "examples/foo"}
+criterion = "0.3"
 
 [features]
 default = ["rust-i18n-extract", "clap", "anyhow", "quote", "itertools"]
@@ -52,3 +53,7 @@ members = [
     "examples/app-load-path",
     "examples/foo",
 ]
+
+[[bench]]
+harness = false
+name = "bench"
