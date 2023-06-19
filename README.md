@@ -313,6 +313,17 @@ I18n Ally is a VS Code extension for helping you translate your Rust project.
 
 You can add [i18n-ally-custom-framework.yml](https://github.com/longbridgeapp/rust-i18n/blob/main/.vscode/i18n-ally-custom-framework.yml) to your project `.vscode` directory, and then use I18n Ally can parse `t!` marco to show translate text in VS Code editor.
 
+## Benchmark
+
+Benchmark `t!` method, result on Apple M1:
+
+```
+t                       time:   [110.94 ns 113.66 ns 117.06 ns]
+t_with_args             time:   [495.56 ns 497.88 ns 500.64 ns]
+```
+
+The result `140 ns (0.00014 ms)` means if there have 10K translate texts, it will cost 1.4ms.
+
 ## License
 
 MIT
