@@ -322,7 +322,7 @@ t                       time:   [100.91 ns 101.06 ns 101.24 ns]
 t_with_args             time:   [495.56 ns 497.88 ns 500.64 ns]
 ```
 
-The result `140 ns (0.00014 ms)` means if there have 10K translate texts, it will cost 1.4ms.
+The result `101 ns (0.0001 ms)` means if there have 10K translate texts, it will cost 1ms.
 
 ## License
 
