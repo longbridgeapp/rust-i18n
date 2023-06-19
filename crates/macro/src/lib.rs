@@ -166,8 +166,6 @@ fn generate_code(
 
         /// Get I18n text by locale and key
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
-            let target_key = format!("{}.{}", locale, key);
-
             if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
                 return value.to_string();
             }
@@ -179,7 +177,7 @@ fn generate_code(
                 }
             }
 
-            return target_key
+            return format!("{}.{}", locale, key);
         }
 
         pub fn _rust_i18n_available_locales() -> Vec<&'static str> {

@@ -45,20 +45,21 @@ macro_rules! t {
         crate::_rust_i18n_translate(rust_i18n::locale().as_str(), $key)
     };
 
-    // t!("foo", locale="en")
-    ($key:expr, locale=$locale:expr) => {
+    // t!("foo", locale = "en")
+    ($key:expr, locale = $locale:expr) => {
         crate::_rust_i18n_translate($locale, $key)
     };
 
-    // t!("foo", locale="en", a=1, b="Foo")
-    ($key:expr, locale=$locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
+    // t!("foo", locale = "en", a = 1, b = "Foo")
+    ($key:expr, locale = $locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
             let mut message = crate::_rust_i18n_translate($locale, $key);
+
             $(
-                let var = stringify!($var_name).trim_matches('"');
-                let mut holder = std::string::String::from("%{");
-                holder.push_str(var);
-                holder.push('}');
+                // Get the variable name as a string, and remove quotes surrounding the variable name
+                let var_name = stringify!($var_name).trim_matches('"');
+                // Make a holder string to replace the variable name with: %{var_name}
+                let holder = format!("%{{{var_name}}}");
 
                 message = message.replace(&holder, &format!("{}", $var_val));
             )+
@@ -66,7 +67,7 @@ macro_rules! t {
         }
     };
 
-    // t!("foo %{a} %{b}", a="bar", b="baz")
+    // t!("foo %{a} %{b}", a = "bar", b = "baz")
     ($key:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
             t!($key, locale = &rust_i18n::locale(), $($var_name = $var_val),*)
@@ -74,14 +75,14 @@ macro_rules! t {
     };
 
     // t!("foo %{a} %{b}", locale = "en", "a" => "bar", "b" => "baz")
-    ($key:expr, locale = $locale:expr, $($var_name:expr => $var_val:expr),+ $(,)?) => {
+    ($key:expr, locale = $locale:expr, $($var_name:tt => $var_val:expr),+ $(,)?) => {
         {
             t!($key, locale = $locale, $($var_name = $var_val),*)
         }
     };
 
     // t!("foo %{a} %{b}", "a" => "bar", "b" => "baz")
-    ($key:expr, $($var_name:expr => $var_val:expr),+ $(,)?) => {
+    ($key:expr, $($var_name:tt => $var_val:expr),+ $(,)?) => {
         {
             t!($key, locale = &rust_i18n::locale(), $($var_name = $var_val),*)
         }

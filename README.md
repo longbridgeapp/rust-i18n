@@ -317,8 +317,8 @@ You can add [i18n-ally-custom-framework.yml](https://github.com/longbridgeapp/ru
 
 Benchmark `t!` method, result on Apple M1:
 
-```
-t                       time:   [110.94 ns 113.66 ns 117.06 ns]
+```bash
+t                       time:   [100.91 ns 101.06 ns 101.24 ns]
 t_with_args             time:   [495.56 ns 497.88 ns 500.64 ns]
 ```
 

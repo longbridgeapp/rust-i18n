@@ -27,7 +27,7 @@ toml = "0.5.8"
 
 [dev-dependencies]
 foo = {path = "examples/foo"}
-criterion = "0.3"
+criterion = "0.5"
 
 [features]
 default = ["rust-i18n-extract", "clap", "anyhow", "quote", "itertools"]
