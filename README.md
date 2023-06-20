@@ -62,7 +62,7 @@ fn main() {
 
 Make sure all localized files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
-> 💡Since: v1.3.0, the localized files supports use multiple formats, including `*.{yml,yaml,json,toml}`, and will merge all them.
+> 💡Since: v2.0.0, the localized files supports use multiple formats, including `*.{yml,yaml,json,toml}`, and will merge all them.
 
 ```bash
 .
@@ -173,7 +173,7 @@ $ cargo install rust-i18n
 
 ### Extend Backend
 
-Since v2.0 rust-i18n support extend backend for cusomize your translation implementation.
+Since v2.0.0 rust-i18n support extend backend for cusomize your translation implementation.
 
 For example, you can use HTTP API for load translations from remote server:
 
