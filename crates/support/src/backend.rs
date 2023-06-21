@@ -35,6 +35,7 @@ where
         available_locales
     }
 
+    #[inline]
     fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         self.1
             .translate(locale, key)
@@ -45,32 +46,14 @@ where
 /// Simple KeyValue storage backend
 pub struct SimpleBackend {
     /// All translations key is flatten key, like `en.hello.world`
-    translations: HashMap<String, String>,
-    /// All available locales
-    locales: HashMap<String, bool>,
+    translations: HashMap<String, HashMap<String, String>>,
 }
 
 impl SimpleBackend {
     /// Create a new SimpleBackend.
-    ///
-    /// In `translations` HashMap, the key is flatten key, like `en.hello.world`.
-    ///
-    /// ```ignore
-    /// let trs = HashMap::<String, String>::new();
-    /// trs.insert("en.hello".into(), "Hello".into());
-    /// trs.insert("en.foo".into(), "Foo bar".into());
-    /// trs.insert("zh-CN.hello".into(), "你好".into());
-    /// trs.insert("zh-CN.foo".into(), "Foo 测试".into());
-    /// let locales = vec!["en", "zh-CN"];
-    /// let backend = SimpleBackend::new(trs, locales);
-    /// ```
-    pub fn new(translations: HashMap<&str, &str>, locales: Vec<&str>) -> Self {
+    pub fn new() -> Self {
         SimpleBackend {
-            locales: locales.iter().map(|l| (l.to_string(), true)).collect(),
-            translations: translations
-                .iter()
-                .map(|(k, v)| (k.to_string(), v.to_string()))
-                .collect(),
+            translations: HashMap::new(),
         }
     }
 
@@ -82,25 +65,38 @@ impl SimpleBackend {
     /// trs.insert("foo".into(), "Foo bar".into());
     /// backend.add_translations("en", &data);
     /// ```
-    pub fn add_translations(&mut self, locale: &str, data: &HashMap<String, String>) {
-        data.iter().for_each(|(k, v)| {
-            let k = format!("{}.{}", locale, k);
-            self.translations.insert(k, v.to_string());
-        });
-        self.locales.insert(locale.into(), true);
+    pub fn add_translations(&mut self, locale: &str, data: &HashMap<&str, &str>) {
+        let data = data
+            .clone()
+            .into_iter()
+            .map(|(k, v)| (k.into(), v.into()))
+            .collect::<HashMap<_, _>>();
+
+        if let Some(trs) = self.translations.get_mut(locale) {
+            trs.extend(data.clone());
+        } else {
+            self.translations.insert(locale.into(), data.clone());
+        }
     }
 }
 
 impl Backend for SimpleBackend {
     fn available_locales(&self) -> Vec<&str> {
-        let mut locales = self.locales.keys().map(|k| k.as_str()).collect::<Vec<_>>();
+        let mut locales = self
+            .translations
+            .keys()
+            .map(|k| k.as_str())
+            .collect::<Vec<_>>();
         locales.sort();
         locales
     }
 
     fn translate(&self, locale: &str, key: &str) -> Option<&str> {
-        let flatten_key = format!("{}.{}", locale, key);
-        self.translations.get(&flatten_key).map(|v| v.as_str())
+        if let Some(trs) = self.translations.get(locale) {
+            return trs.get(key).map(|s| s.as_str());
+        }
+
+        None
     }
 }
 
@@ -115,15 +111,15 @@ mod tests {
 
     #[test]
     fn test_simple_backend() {
-        let mut backend = SimpleBackend::new(HashMap::new(), vec![]);
-        let mut data = HashMap::<String, String>::new();
-        data.insert("hello".into(), "Hello".into());
-        data.insert("foo".into(), "Foo bar".into());
+        let mut backend = SimpleBackend::new();
+        let mut data = HashMap::<&str, &str>::new();
+        data.insert("hello", "Hello");
+        data.insert("foo", "Foo bar");
         backend.add_translations("en", &data);
 
-        let mut data_cn = HashMap::<String, String>::new();
-        data_cn.insert("hello".into(), "你好".into());
-        data_cn.insert("foo".into(), "Foo 测试".into());
+        let mut data_cn = HashMap::<&str, &str>::new();
+        data_cn.insert("hello", "你好");
+        data_cn.insert("foo", "Foo 测试");
         backend.add_translations("zh-CN", &data_cn);
 
         assert_eq!(backend.translate("en", "hello"), Some("Hello".into()));
@@ -136,24 +132,24 @@ mod tests {
 
     #[test]
     fn test_combined_backend() {
-        let mut backend = SimpleBackend::new(HashMap::new(), vec![]);
-        let mut data = HashMap::<String, String>::new();
-        data.insert("hello".into(), "Hello".into());
-        data.insert("foo".into(), "Foo bar".into());
+        let mut backend = SimpleBackend::new();
+        let mut data = HashMap::<&str, &str>::new();
+        data.insert("hello", "Hello");
+        data.insert("foo", "Foo bar");
         backend.add_translations("en", &data);
 
-        let mut data_cn = HashMap::<String, String>::new();
-        data_cn.insert("hello".into(), "你好".into());
-        data_cn.insert("foo".into(), "Foo 测试".into());
+        let mut data_cn = HashMap::<&str, &str>::new();
+        data_cn.insert("hello", "你好");
+        data_cn.insert("foo", "Foo 测试");
         backend.add_translations("zh-CN", &data_cn);
 
-        let mut backend2 = SimpleBackend::new(HashMap::new(), vec![]);
-        let mut data2 = HashMap::<String, String>::new();
-        data2.insert("hello".into(), "Hello2".into());
+        let mut backend2 = SimpleBackend::new();
+        let mut data2 = HashMap::<&str, &str>::new();
+        data2.insert("hello", "Hello2");
         backend2.add_translations("en", &data2);
 
-        let mut data_cn2 = HashMap::<String, String>::new();
-        data_cn2.insert("hello".into(), "你好2".into());
+        let mut data_cn2 = HashMap::<&str, &str>::new();
+        data_cn2.insert("hello", "你好2");
         backend2.add_translations("zh-CN", &data_cn2);
 
         let combined = backend.extend(backend2);

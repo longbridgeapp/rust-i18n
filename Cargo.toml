@@ -28,6 +28,7 @@ toml = "0.5.8"
 [dev-dependencies]
 foo = {path = "examples/foo"}
 criterion = "0.5"
+lazy_static = "1"
 
 [features]
 default = ["rust-i18n-extract", "clap", "anyhow", "quote", "itertools"]
