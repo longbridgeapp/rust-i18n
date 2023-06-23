@@ -35,7 +35,7 @@ pub fn generate<'a, P: AsRef<Path>>(
             }
         }
 
-        let value = m.key.split(".").last().unwrap_or_default();
+        let value = m.key.split('.').last().unwrap_or_default();
 
         new_values
             .entry(m.key.clone())
@@ -61,7 +61,7 @@ pub fn generate<'a, P: AsRef<Path>>(
     Err(err)
 }
 
-fn write_file<'a, P: AsRef<Path>>(
+fn write_file<P: AsRef<Path>>(
     output: &P,
     filename: &str,
     translations: &HashMap<String, String>,
