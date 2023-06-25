@@ -101,7 +101,7 @@ pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     if is_debug() {
         println!(
             "\n\n-------------- code --------------\n{}\n----------------------------------\n\n",
-            code.to_string()
+            code
         );
     }
 

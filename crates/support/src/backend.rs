@@ -126,10 +126,10 @@ mod tests {
         data_cn.insert("foo".into(), "Foo 测试".into());
         backend.add_translations("zh-CN", &data_cn);
 
-        assert_eq!(backend.translate("en", "hello"), Some("Hello".into()));
-        assert_eq!(backend.translate("en", "foo"), Some("Foo bar".into()));
-        assert_eq!(backend.translate("zh-CN", "hello"), Some("你好".into()));
-        assert_eq!(backend.translate("zh-CN", "foo"), Some("Foo 测试".into()));
+        assert_eq!(backend.translate("en", "hello"), Some("Hello"));
+        assert_eq!(backend.translate("en", "foo"), Some("Foo bar"));
+        assert_eq!(backend.translate("zh-CN", "hello"), Some("你好"));
+        assert_eq!(backend.translate("zh-CN", "foo"), Some("Foo 测试"));
 
         assert_eq!(backend.available_locales(), vec!["en", "zh-CN"]);
     }
@@ -157,8 +157,8 @@ mod tests {
         backend2.add_translations("zh-CN", &data_cn2);
 
         let combined = backend.extend(backend2);
-        assert_eq!(combined.translate("en", "hello"), Some("Hello2".into()));
-        assert_eq!(combined.translate("zh-CN", "hello"), Some("你好2".into()));
+        assert_eq!(combined.translate("en", "hello"), Some("Hello2"));
+        assert_eq!(combined.translate("zh-CN", "hello"), Some("你好2"));
 
         assert_eq!(combined.available_locales(), vec!["en", "zh-CN"]);
     }

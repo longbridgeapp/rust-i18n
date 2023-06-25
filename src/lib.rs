@@ -96,6 +96,7 @@ macro_rules! t {
 /// // => ["en", "zh-CN"]
 /// ```
 #[macro_export(local_inner_macros)]
+#[allow(clippy::crate_in_macro_def)]
 macro_rules! available_locales {
     () => {
         crate::_rust_i18n_available_locales()

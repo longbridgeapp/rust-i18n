@@ -7,23 +7,21 @@ struct TestBackend {
 impl TestBackend {
     fn new() -> Self {
         let mut trs = HashMap::new();
-        trs.insert("foo".into(), format!("pt-fake.foo"));
-
-        return Self { trs };
+        trs.insert("foo".into(), "pt-fake.foo".to_string());
+        Self { trs }
     }
 }
 
 impl rust_i18n::Backend for TestBackend {
     fn available_locales(&self) -> Vec<&str> {
-        return vec!["pt", "en"];
+        vec!["pt", "en"]
     }
 
     fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         if locale == "pt" {
             return self.trs.get(key).map(|v| v.as_str());
         }
-
-        return None;
+        None
     }
 }
 

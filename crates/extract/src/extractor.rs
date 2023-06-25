@@ -35,8 +35,8 @@ static METHOD_NAME: &str = "t";
 pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<(), Error> {
     let mut ex = Extractor { results, path };
 
-    let file =
-        syn::parse_file(source).expect(&format!("Failed to parse file, file: {}", path.display()));
+    let file = syn::parse_file(source)
+        .unwrap_or_else(|_| panic!("Failed to parse file, file: {}", path.display()));
     let stream = file.into_token_stream();
     ex.invoke(stream)
 }

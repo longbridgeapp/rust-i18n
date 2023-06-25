@@ -17,7 +17,7 @@ pub fn is_debug() -> bool {
 /// Merge JSON Values, merge b into a
 fn merge_value(a: &mut Value, b: &Value) {
     match (a, b) {
-        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
+        (Value::Object(a), Value::Object(b)) => {
             for (k, v) in b {
                 merge_value(a.entry(k.clone()).or_insert(Value::Null), v);
             }
@@ -161,7 +161,7 @@ mod tests {
         )
         .unwrap();
 
-        let mut c = a.clone();
+        let mut c = a;
         merge_value(&mut c, &b);
 
         assert_eq!(c["foo"], "Foo1");
