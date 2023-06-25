@@ -113,20 +113,22 @@ fn generate_code(
     args: Args,
 ) -> proc_macro2::TokenStream {
     let mut all_translations = Vec::<proc_macro2::TokenStream>::new();
-    let mut all_locales = Vec::<proc_macro2::TokenStream>::new();
 
     translations.iter().for_each(|(locale, trs)| {
-        all_locales.push(quote! {
-            #locale
-        });
+        let mut sub_trs = Vec::<proc_macro2::TokenStream>::new();
 
         trs.iter().for_each(|(k, v)| {
             let k = k.to_string();
             let v = v.to_string();
-            all_translations.push(quote! {
+            sub_trs.push(quote! {
                 (#k, #v)
             });
-        })
+        });
+
+        all_translations.push(quote! {
+            let trs = [#(#sub_trs),*];
+            backend.add_translations(#locale, &trs.into_iter().collect());
+        });
     });
 
     let fallback = if let Some(fallback) = args.fallback {
@@ -153,10 +155,8 @@ fn generate_code(
 
         /// I18n backend instance
         static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
-            let trs = [#(#all_translations),*];
-            let locales = [#(#all_locales),*];
-
-            let mut backend = rust_i18n::SimpleBackend::new(trs.into_iter().collect(), locales.into_iter().collect());
+            let mut backend = rust_i18n::SimpleBackend::new();
+            #(#all_translations)*
             #extend_code
 
             Box::new(backend)
@@ -165,6 +165,7 @@ fn generate_code(
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
 
         /// Get I18n text by locale and key
+        #[inline]
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
                 return value.to_string();

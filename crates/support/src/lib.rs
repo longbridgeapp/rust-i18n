@@ -87,7 +87,7 @@ pub fn load_locales<F: Fn(&str) -> bool>(
     }
 
     translations.iter().for_each(|(locale, trs)| {
-        result.insert(locale.to_string(), flatten_keys(locale, trs));
+        result.insert(locale.to_string(), flatten_keys("", trs));
     });
 
     result
