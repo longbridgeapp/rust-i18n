@@ -23,7 +23,7 @@ rust-i18n-support = {path = "./crates/support", version = "2.0.0"}
 rust-i18n-macro = {path = "./crates/macro", version = "2.0.0"}
 serde = "1"
 serde_derive = "1"
-toml = "0.5.8"
+toml = "0.7.4"
 
 [dev-dependencies]
 foo = {path = "examples/foo"}

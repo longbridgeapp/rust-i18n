@@ -64,7 +64,8 @@ pub fn parse(contents: &str) -> io::Result<I18nConfig> {
         return Ok(I18nConfig::default());
     }
     let contents = contents.replace("[package.metadata.i18n]", "[i18n]");
-    let mut config: MainConfig = toml::from_str(&contents)?;
+    let mut config: MainConfig = toml::from_str(&contents)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
     // Push default_locale
     config
