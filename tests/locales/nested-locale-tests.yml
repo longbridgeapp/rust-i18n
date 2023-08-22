@@ -1,0 +1,8 @@
+nested_locale_test:
+  en: "Hello test"
+  ja: "こんにちは test"
+  zh-CN: "你好 test"
+nested_locale_test.hello:
+  en: "Hello test2"
+  ja: "こんにちは test2"
+  zh-CN: "你好 test2"

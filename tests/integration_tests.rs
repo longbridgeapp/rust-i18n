@@ -96,7 +96,10 @@ mod tests {
 
     #[test]
     fn test_available_locales() {
-        assert_eq!(rust_i18n::available_locales!(), &["en", "pt", "zh-CN"]);
+        assert_eq!(
+            rust_i18n::available_locales!(),
+            &["en", "ja", "pt", "zh-CN"]
+        );
     }
 
     #[test]
@@ -212,11 +215,7 @@ mod tests {
         assert_eq!(t!("messages.hello", locale = locale), "Hello, %{name}!");
 
         assert_eq!(
-            t!("messages.hello", name = name, locale = locale),
-            "Hello, Jason Lee!"
-        );
-        assert_eq!(
-            t!("messages.hello", name = name, locale = locale),
+            t!("messages.hello", locale = locale, name = name),
             "Hello, Jason Lee!"
         );
     }
@@ -257,5 +256,22 @@ mod tests {
     #[test]
     fn test_extend_backend() {
         assert_eq!(t!("foo", locale = "pt"), "pt-fake.foo")
+    }
+
+    #[test]
+    fn test_nested_locale_texts() {
+        assert_eq!(t!("nested_locale_test", locale = "en"), "Hello test");
+        assert_eq!(t!("nested_locale_test", locale = "zh-CN"), "你好 test");
+        assert_eq!(t!("nested_locale_test", locale = "ja"), "こんにちは test");
+
+        assert_eq!(t!("nested_locale_test.hello", locale = "en"), "Hello test2");
+        assert_eq!(
+            t!("nested_locale_test.hello", locale = "zh-CN"),
+            "你好 test2"
+        );
+        assert_eq!(
+            t!("nested_locale_test.hello", locale = "ja"),
+            "こんにちは test2"
+        );
     }
 }

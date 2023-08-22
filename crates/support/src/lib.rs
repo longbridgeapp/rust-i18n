@@ -124,9 +124,84 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
     };
 
     match result {
-        Ok(v) => Ok(Translations::from([(locale.to_string(), v)])),
+        Ok(v) => {
+            if let Some(trs) = parse_file_v2(&v) {
+                return Ok(trs);
+            }
+
+            return Ok(Translations::from([(locale.to_string(), v.clone())]));
+        }
         Err(e) => Err(e),
     }
+}
+
+// Iter all nested keys, if the value is not a object (Map<locale, string>), then convert into multiple locale translations
+//
+// If the final value is Map<locale, string>, then convert them and insert into trs
+//
+// For example (only support 1 level):
+//
+// ```ignore
+// welcome.first:
+//   en: Welcome
+//   zh-CN: 欢迎
+// welcome1:
+//   en: Welcome 1
+//   zh-CN: 欢迎 1
+// ```
+//
+// into
+//
+// ```ignore
+// en.welcome.first: Welcome
+// zh-CN.welcome.first: 欢迎
+// en.welcome1: Welcome 1
+// zh-CN.welcome1: 欢迎 1
+// ```
+fn parse_file_v2(value: &serde_json::Value) -> Option<Translations> {
+    let mut trs = Translations::new();
+
+    if let serde_json::Value::Object(o) = value {
+        for (k, v) in o {
+            if let serde_json::Value::Object(o) = v {
+                // If all values are string, then convert them into multiple locale translations
+                for (locale, text) in o {
+                    // Ignore if the locale is not a locale
+                    if is_locale(locale) && text.is_string() {
+                        let sub_trs = HashMap::from([(k.clone(), text.clone())]);
+                        let sub_value = serde_json::to_value(&sub_trs).unwrap();
+
+                        trs.entry(locale.clone())
+                            .and_modify(|old_value| merge_value(old_value, &sub_value))
+                            .or_insert(sub_value);
+                    }
+                }
+            }
+        }
+    }
+
+    if trs.len() > 0 {
+        return Some(trs);
+    }
+
+    None
+}
+
+/// Detect if the text is a locale
+///
+/// ```ignore
+/// en
+/// en-US
+/// en_US
+/// zh
+/// zh-CN
+/// ```
+fn is_locale(text: &str) -> bool {
+    lazy_static::lazy_static! {
+        static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"^[a-z]{2}((_|-)[A-Z]{2})?$").unwrap();
+    }
+
+    LOCALE_RE.is_match(text)
 }
 
 fn flatten_keys(prefix: &str, trs: &Value) -> HashMap<String, String> {
@@ -227,5 +302,43 @@ mod tests {
         let trs = parse_file(content, "toml", "en").expect("Should ok");
         assert_eq!(trs["en"]["foo"], "Foo");
         assert_eq!(trs["en"]["bar"], "Bar");
+    }
+
+    #[test]
+    fn test_parse_file_in_json_with_nested_locale_texts() {
+        let content = r#"{
+            "welcome": {
+                "en": "Welcome",
+                "zh-CN": "欢迎",
+                "zh-HK": "歡迎"
+            }
+        }"#;
+
+        let trs = parse_file(content, "json", "filename").expect("Should ok");
+        assert_eq!(trs["en"]["welcome"], "Welcome");
+        assert_eq!(trs["zh-CN"]["welcome"], "欢迎");
+        assert_eq!(trs["zh-HK"]["welcome"], "歡迎");
+    }
+
+    #[test]
+    fn test_parse_file_in_yaml_with_nested_locale_texts() {
+        let content = r#"
+        welcome:
+            en: Welcome
+            zh-CN: 欢迎
+            jp: ようこそ
+        welcome.sub:
+            en: Welcome 1
+            zh-CN: 欢迎 1
+            jp: ようこそ 1
+        "#;
+
+        let trs = parse_file(content, "yml", "filename").expect("Should ok");
+        assert_eq!(trs["en"]["welcome"], "Welcome");
+        assert_eq!(trs["zh-CN"]["welcome"], "欢迎");
+        assert_eq!(trs["jp"]["welcome"], "ようこそ");
+        assert_eq!(trs["en"]["welcome.sub"], "Welcome 1");
+        assert_eq!(trs["zh-CN"]["welcome.sub"], "欢迎 1");
+        assert_eq!(trs["jp"]["welcome.sub"], "ようこそ 1");
     }
 }

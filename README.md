@@ -120,6 +120,25 @@ hello = "Hello world"
 hello = "Hello, %{name}"
 ```
 
+### All locale translations in a single file
+
+> Since: v2.2.0
+
+You can write all locale translations in a single file, for example:
+
+```yml
+hello:
+  en: Hello world
+  zh-CN: 你好世界
+welcome.message:
+  en: Welcome to %{name}
+  zh-CN: 欢迎来到 %{name}
+```
+
+This is useful when you use [GitHub Copilot](https://github.com/features/copilot), after you write a first translated text, then Copilot will auto generate other locale's translations for you.
+
+> NOTE: This format only supports 1 level nested, and the nested locale must be a valid locale format (Regex: `^[a-z]{2}((_|-)[A-Z]{2})?$`, For example: `en`, `zh-CN`, `en_US`, `zh_HK` ...).
+
 ### Loading Localized Strings in Rust
 
 Import the `t!` macro from this crate into your current scope:
