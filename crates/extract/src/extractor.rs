@@ -29,7 +29,8 @@ impl Message {
     }
 }
 
-static METHOD_NAME: &str = "t";
+static METHOD_NAME_MACRO: &str = "t";
+static METHOD_NAME_FN: &str = "_rust_i18n_translate";
 
 #[allow(clippy::ptr_arg)]
 pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<(), Error> {
@@ -63,9 +64,13 @@ impl<'a> Extractor<'a> {
                         }
                     }
 
-                    if ident == METHOD_NAME && is_macro {
+                    if ident == METHOD_NAME_MACRO && is_macro {
                         if let Some(TokenTree::Group(group)) = token_iter.peek() {
-                            self.take_message(group.stream());
+                            self.take_message_macro(group.stream());
+                        }
+                    } else if ident == METHOD_NAME_FN {
+                        if let Some(TokenTree::Group(group)) = token_iter.peek() {
+                            self.take_message_fn(group.stream());
                         }
                     }
                 }
@@ -76,36 +81,50 @@ impl<'a> Extractor<'a> {
         Ok(())
     }
 
-    fn take_message(&mut self, stream: TokenStream) {
-        let mut token_iter = stream.into_iter().peekable();
+    fn take_message_inner(&mut self, lit: proc_macro2::Literal) {
+        if let Some(key) = literal_to_string(&lit) {
+            let message_key = format_message_key(&key);
+
+            let index = self.results.len();
+            let message = self
+                .results
+                .entry(message_key.clone())
+                .or_insert_with(|| Message::new(&message_key, index));
+
+            let span = lit.span();
+            let line = span.start().line;
+            if line > 0 {
+                message.locations.push(Location {
+                    file: self.path.clone(),
+                    line,
+                });
+            }
+        }
+    }
+
+    fn take_message_macro(&mut self, stream: TokenStream) {
+        let mut token_iter = stream.into_iter();
 
         let literal = if let Some(TokenTree::Literal(literal)) = token_iter.next() {
             literal
         } else {
             return;
         };
+        self.take_message_inner(literal);
+    }
+    fn take_message_fn(&mut self, stream: TokenStream) {
 
-        let key: Option<proc_macro2::Literal> = Some(literal);
+        let mut token_iter = stream.into_iter();
 
-        if let Some(lit) = key {
-            if let Some(key) = literal_to_string(&lit) {
-                let message_key = format_message_key(&key);
-
-                let index = self.results.len();
-                let message = self
-                    .results
-                    .entry(message_key.clone())
-                    .or_insert_with(|| Message::new(&message_key, index));
-
-                let span = lit.span();
-                let line = span.start().line;
-                if line > 0 {
-                    message.locations.push(Location {
-                        file: self.path.clone(),
-                        line,
-                    });
-                }
+        let mut literal = None;
+        while let Some(tok) = token_iter.next() {
+            if let TokenTree::Literal(lit) = tok {
+                //take last literal in stream
+                literal = Some(lit);
             }
+        }
+        if let Some(literal) = literal {
+            self.take_message_inner(literal);
         }
     }
 }
@@ -203,6 +222,10 @@ mod tests {
                 "The table below describes some of those behaviours.",
                 18,
                 20
+            ),
+            (
+                "Unfolded.test1.test",
+                22
             )
         ];
 
