@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
 
 mod backend;
 pub use backend::{Backend, BackendExt, SimpleBackend};
@@ -35,19 +34,30 @@ pub fn load_locales<F: Fn(&str) -> bool>(
 ) -> HashMap<String, HashMap<String, String>> {
     let mut result: HashMap<String, HashMap<String, String>> = HashMap::new();
     let mut translations = HashMap::new();
+    let locales_path = match std::fs::canonicalize(locales_path) {
+        Ok(p) => p,
+        Err(e) => {
+            // Canoninicalization will fail if the path does not exist, so we don't have to check it later.
+            if is_debug() {
+                println!("cargo:i18n-error={}", e);
+            }
+            return result;
+        }
+    };
+    let locales_path = match locales_path.as_path().to_str() {
+        Some(p) => p,
+        None => {
+            if is_debug() {
+                println!("cargo:i18n-error=could not convert path");
+            }
+            return result;
+        }
+    };
 
     let path_pattern = format!("{locales_path}/**/*.{{yml,yaml,json,toml}}");
 
     if is_debug() {
         println!("cargo:i18n-locale={}", &path_pattern);
-    }
-
-    // check dir exists
-    if !PathBuf::from(locales_path).exists() {
-        if is_debug() {
-            println!("cargo:i18n-error=path not exists: {}", locales_path);
-        }
-        return result;
     }
 
     for entry in globwalk::glob(&path_pattern).expect("Failed to read glob pattern") {
