@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use normpath::PathExt;
 use std::fs::File;
 use std::io::prelude::*;
+use std::{collections::HashMap, path::Path};
 
 mod backend;
 pub use backend::{Backend, BackendExt, SimpleBackend};
@@ -34,10 +35,9 @@ pub fn load_locales<F: Fn(&str) -> bool>(
 ) -> HashMap<String, HashMap<String, String>> {
     let mut result: HashMap<String, HashMap<String, String>> = HashMap::new();
     let mut translations = HashMap::new();
-    let locales_path = match std::fs::canonicalize(locales_path) {
+    let locales_path = match Path::new(locales_path).normalize() {
         Ok(p) => p,
         Err(e) => {
-            // Canoninicalization will fail if the path does not exist, so we don't have to check it later.
             if is_debug() {
                 println!("cargo:i18n-error={}", e);
             }
@@ -58,6 +58,14 @@ pub fn load_locales<F: Fn(&str) -> bool>(
 
     if is_debug() {
         println!("cargo:i18n-locale={}", &path_pattern);
+    }
+
+    // check dir exists
+    if !Path::new(locales_path).exists() {
+        if is_debug() {
+            println!("cargo:i18n-error=path not exists: {}", locales_path);
+        }
+        return result;
     }
 
     for entry in globwalk::glob(&path_pattern).expect("Failed to read glob pattern") {
