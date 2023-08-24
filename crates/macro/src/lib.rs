@@ -178,6 +178,9 @@ fn generate_code(
                 }
             }
 
+            if locale.is_empty() {
+                return key.to_string();
+            }
             return format!("{}.{}", locale, key);
         }
 
