@@ -69,6 +69,17 @@ mod tests {
     }
 
     #[test]
+    fn check_test_environment() {
+        assert_eq!(
+            std::env::var("RUST_TEST_THREADS").unwrap_or_else(|_| "0".to_string()),
+            "1",
+            "The tests assume that they are run in single-threaded environment because \
+            setting the locale is a global state. If using cargo version prior to 1.56, \
+            You should set RUST_TEST_THREADS instead of running with --test-threads."
+        );
+    }
+
+    #[test]
     fn test_load() {
         assert!(load_locales("./tests/locales", |_| false)
             .get("en")
