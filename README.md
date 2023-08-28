@@ -251,6 +251,8 @@ You can add [i18n-ally-custom-framework.yml](https://github.com/longbridgeapp/ru
 
 We provided a `cargo i18n` command line tool for help you extract the untranslated texts from the source code and then write into YAML file.
 
+> In current only output YAML, and use `_version: 2` format.
+
 You can install it via `cargo install rust-i18n`, then you get `cargo i18n` command.
 
 ```bash
