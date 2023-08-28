@@ -61,6 +61,54 @@ fn main() {
 }
 ```
 
+## Locale file
+
+You can use `_version` key to specify the version of the locale file, and the default value is `1`.
+
+### Split Localized Texts into Difference Files
+
+> _version: 1
+
+You can also split the each language into difference files, and you can choise (YAML, JSON, TOML), for example: `en.json`:
+
+```bash
+.
+├── Cargo.lock
+├── Cargo.toml
+├── locales
+│   ├── zh-CN.yml
+│   ├── en.yml
+└── src
+│   └── main.rs
+```
+
+```yml
+_version: 1
+hello: "Hello world"
+messages.hello: "Hello, %{name}"
+```
+
+Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:
+
+```json
+{
+  "_version": 1,
+  "hello": "Hello world",
+  "messages.hello": "Hello, %{name}"
+}
+```
+
+```toml
+hello = "Hello world"
+
+[messages]
+hello = "Hello, %{name}"
+```
+
+### All Localized Texts in One File
+
+> _version: 2
+
 Make sure all localized files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
 ```bash
@@ -82,7 +130,9 @@ Make sure all localized files (containing the localized mappings) are located in
 
 In the localized files, specify the localization keys and their corresponding values, for example, in `app.yml`:
 
+
 ```yml
+_version: 2
 hello:
   en: Hello world
   zh-CN: 你好世界
@@ -94,41 +144,6 @@ messages.hello:
 This is useful when you use [GitHub Copilot](https://github.com/features/copilot), after you write a first translated text, then Copilot will auto generate other locale's translations for you.
 
 <img src="https://user-images.githubusercontent.com/5518/262332592-7b6cf058-7ef4-4ec7-8dea-0aa3619ce6eb.gif" width="446" />
-
-> NOTE: Locale key must be a valid locale format Regex: `^[a-z]{2}((_|-)[A-Z]{2})?$`, e.g: `en`, `zh-CN`, `en_US`, `zh_HK` are valid ...
-
-### Split Localized Files
-
-You can also split the each language into difference files, and you can choise (YAML, JSON, TOML), for example: `en.json`:
-
-```bash
-.
-├── Cargo.lock
-├── Cargo.toml
-├── locales
-│   ├── zh-CN.json
-│   ├── en.json
-└── src
-│   └── main.rs
-```
-
-```json
-{
-  "hello": "Hello world",
-  "messages.hello": {
-    "hello": "Hello, %{name}"
-  }
-}
-```
-
-Or use TOML format, just rename the file to `en.toml` and the content is like this:
-
-```toml
-hello = "Hello world"
-
-[messages]
-hello = "Hello, %{name}"
-```
 
 ### Get Localized Strings in Rust
 
