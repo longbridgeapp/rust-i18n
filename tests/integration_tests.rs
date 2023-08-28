@@ -273,5 +273,18 @@ mod tests {
             t!("nested_locale_test.hello", locale = "ja"),
             "こんにちは test2"
         );
+
+        assert_eq!(
+            t!("nested_locale_test.hello.world", locale = "en"),
+            "Hello test3"
+        );
+        assert_eq!(
+            t!("nested_locale_test.hello.world", locale = "zh-CN"),
+            "你好 test3"
+        );
+        assert_eq!(
+            t!("nested_locale_test.hello.world", locale = "ja"),
+            "こんにちは test3"
+        );
     }
 }

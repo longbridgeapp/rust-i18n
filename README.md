@@ -95,9 +95,7 @@ This is useful when you use [GitHub Copilot](https://github.com/features/copilot
 
 <img src="https://user-images.githubusercontent.com/5518/262332592-7b6cf058-7ef4-4ec7-8dea-0aa3619ce6eb.gif" width="446" />
 
-> NOTE: This format only supports 1 level nested.
->
-> Locale key must be a valid locale format Regex: `^[a-z]{2}((_|-)[A-Z]{2})?$`, e.g: `en`, `zh-CN`, `en_US`, `zh_HK` are valid ...
+> NOTE: Locale key must be a valid locale format Regex: `^[a-z]{2}((_|-)[A-Z]{2})?$`, e.g: `en`, `zh-CN`, `en_US`, `zh_HK` are valid ...
 
 ### Split Localized Files
 

@@ -2,7 +2,11 @@ nested_locale_test:
   en: "Hello test"
   ja: "こんにちは test"
   zh-CN: "你好 test"
-nested_locale_test.hello:
-  en: "Hello test2"
-  ja: "こんにちは test2"
-  zh-CN: "你好 test2"
+  hello:
+    en: "Hello test2"
+    ja: "こんにちは test2"
+    zh-CN: "你好 test2"
+    world:
+      en: "Hello test3"
+      ja: "こんにちは test3"
+      zh-CN: "你好 test3"

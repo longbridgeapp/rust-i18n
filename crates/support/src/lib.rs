@@ -125,7 +125,7 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
 
     match result {
         Ok(v) => {
-            if let Some(trs) = parse_file_v2(&v) {
+            if let Some(trs) = parse_file_v2("", &v) {
                 return Ok(trs);
             }
 
@@ -158,33 +158,62 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
 // en.welcome1: Welcome 1
 // zh-CN.welcome1: 欢迎 1
 // ```
-fn parse_file_v2(value: &serde_json::Value) -> Option<Translations> {
+fn parse_file_v2(key_prefix: &str, data: &serde_json::Value) -> Option<Translations> {
     let mut trs = Translations::new();
 
-    if let serde_json::Value::Object(o) = value {
-        for (k, v) in o {
-            if let serde_json::Value::Object(o) = v {
+    if let serde_json::Value::Object(messages) = data {
+        for (key, value) in messages {
+            if let serde_json::Value::Object(sub_messages) = value {
                 // If all values are string, then convert them into multiple locale translations
-                for (locale, text) in o {
+                for (locale, text) in sub_messages {
                     // Ignore if the locale is not a locale
+                    // e.g:
+                    //  en: Welcome
+                    //  zh-CN: 欢迎
                     if is_locale(locale) && text.is_string() {
-                        let sub_trs = HashMap::from([(k.clone(), text.clone())]);
+                        let key = format_keys(&[&key_prefix, &key]);
+                        let sub_trs = HashMap::from([(key, text.clone())]);
                         let sub_value = serde_json::to_value(&sub_trs).unwrap();
 
                         trs.entry(locale.clone())
                             .and_modify(|old_value| merge_value(old_value, &sub_value))
                             .or_insert(sub_value);
+                        continue;
+                    }
+
+                    if text.is_object() {
+                        // Parse the nested keys
+                        // If the value is object (Map<locale, string>), iter them and convert them and insert into trs
+                        let key = format_keys(&[&key_prefix, &key]);
+                        if let Some(sub_trs) = parse_file_v2(&key, &value) {
+                            // println!("--------------- sub_trs:\n{:?}", sub_trs);
+                            // Merge the sub_trs into trs
+                            for (locale, sub_value) in sub_trs {
+                                trs.entry(locale)
+                                    .and_modify(|old_value| merge_value(old_value, &sub_value))
+                                    .or_insert(sub_value);
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    if trs.len() > 0 {
+    if !trs.is_empty() {
         return Some(trs);
     }
 
     None
+}
+
+/// Join the keys with dot, if any key is empty, omit it.
+fn format_keys(keys: &[&str]) -> String {
+    keys.iter()
+        .filter(|k| !k.is_empty())
+        .map(|k| k.to_string())
+        .collect::<Vec<String>>()
+        .join(".")
 }
 
 /// Detect if the text is a locale
@@ -302,6 +331,20 @@ mod tests {
         let trs = parse_file(content, "toml", "en").expect("Should ok");
         assert_eq!(trs["en"]["foo"], "Foo");
         assert_eq!(trs["en"]["bar"], "Bar");
+    }
+
+    #[test]
+    fn test_is_locale() {
+        assert!(super::is_locale("en"));
+        assert!(super::is_locale("en-US"));
+        assert!(super::is_locale("en_US"));
+        assert!(super::is_locale("zh"));
+        assert!(super::is_locale("zh-CN"));
+        assert!(super::is_locale("zh_HK"));
+
+        assert!(!super::is_locale("zh-hk"));
+        assert!(!super::is_locale("foo"));
+        assert!(!super::is_locale("hello.world"));
     }
 
     #[test]
