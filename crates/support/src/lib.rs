@@ -124,9 +124,124 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
     };
 
     match result {
-        Ok(v) => Ok(Translations::from([(locale.to_string(), v)])),
+        Ok(v) => match get_version(&v) {
+            2 => {
+                if let Some(trs) = parse_file_v2("", &v) {
+                    return Ok(trs);
+                }
+
+                return Err("Invalid locale file format, please check the version field".into());
+            }
+            _ => {
+                return Ok(parse_file_v1(locale, &v));
+            }
+        },
         Err(e) => Err(e),
     }
+}
+
+/// Locale file format v1
+///
+/// For example:
+/// ```yml
+/// welcome: Welcome
+/// foo: Foo bar
+/// ```
+fn parse_file_v1(locale: &str, data: &serde_json::Value) -> Translations {
+    return Translations::from([(locale.to_string(), data.clone())]);
+}
+
+/// Locale file format v2
+/// Iter all nested keys, if the value is not a object (Map<locale, string>), then convert into multiple locale translations
+///
+/// If the final value is Map<locale, string>, then convert them and insert into trs
+///
+/// For example (only support 1 level):
+///
+/// ```yml
+/// _version: 2
+/// welcome.first:
+///   en: Welcome
+///   zh-CN: 欢迎
+/// welcome1:
+///   en: Welcome 1
+///   zh-CN: 欢迎 1
+/// ```
+///
+/// into
+///
+/// ```yml
+/// en.welcome.first: Welcome
+/// zh-CN.welcome.first: 欢迎
+/// en.welcome1: Welcome 1
+/// zh-CN.welcome1: 欢迎 1
+/// ```
+fn parse_file_v2(key_prefix: &str, data: &serde_json::Value) -> Option<Translations> {
+    let mut trs = Translations::new();
+
+    if let serde_json::Value::Object(messages) = data {
+        for (key, value) in messages {
+            if let serde_json::Value::Object(sub_messages) = value {
+                // If all values are string, then convert them into multiple locale translations
+                for (locale, text) in sub_messages {
+                    // Ignore if the locale is not a locale
+                    // e.g:
+                    //  en: Welcome
+                    //  zh-CN: 欢迎
+                    if text.is_string() {
+                        let key = format_keys(&[&key_prefix, &key]);
+                        let sub_trs = HashMap::from([(key, text.clone())]);
+                        let sub_value = serde_json::to_value(&sub_trs).unwrap();
+
+                        trs.entry(locale.clone())
+                            .and_modify(|old_value| merge_value(old_value, &sub_value))
+                            .or_insert(sub_value);
+                        continue;
+                    }
+
+                    if text.is_object() {
+                        // Parse the nested keys
+                        // If the value is object (Map<locale, string>), iter them and convert them and insert into trs
+                        let key = format_keys(&[&key_prefix, &key]);
+                        if let Some(sub_trs) = parse_file_v2(&key, &value) {
+                            // println!("--------------- sub_trs:\n{:?}", sub_trs);
+                            // Merge the sub_trs into trs
+                            for (locale, sub_value) in sub_trs {
+                                trs.entry(locale)
+                                    .and_modify(|old_value| merge_value(old_value, &sub_value))
+                                    .or_insert(sub_value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if !trs.is_empty() {
+        return Some(trs);
+    }
+
+    None
+}
+
+/// Get `_version` from JSON root
+/// If `_version` is not found, then return 1 as default.
+fn get_version(data: &serde_json::Value) -> usize {
+    if let Some(version) = data.get("_version") {
+        return version.as_u64().unwrap_or(1) as usize;
+    }
+
+    return 1;
+}
+
+/// Join the keys with dot, if any key is empty, omit it.
+fn format_keys(keys: &[&str]) -> String {
+    keys.iter()
+        .filter(|k| !k.is_empty())
+        .map(|k| k.to_string())
+        .collect::<Vec<String>>()
+        .join(".")
 }
 
 fn flatten_keys(prefix: &str, trs: &Value) -> HashMap<String, String> {
@@ -227,5 +342,58 @@ mod tests {
         let trs = parse_file(content, "toml", "en").expect("Should ok");
         assert_eq!(trs["en"]["foo"], "Foo");
         assert_eq!(trs["en"]["bar"], "Bar");
+    }
+
+    #[test]
+    fn test_get_version() {
+        let json = serde_yaml::from_str::<serde_json::Value>("_version: 2").unwrap();
+        assert_eq!(super::get_version(&json), 2);
+
+        let json = serde_yaml::from_str::<serde_json::Value>("_version: 1").unwrap();
+        assert_eq!(super::get_version(&json), 1);
+
+        // Default fallback to 1
+        let json = serde_yaml::from_str::<serde_json::Value>("foo: Foo").unwrap();
+        assert_eq!(super::get_version(&json), 1);
+    }
+
+    #[test]
+    fn test_parse_file_in_json_with_nested_locale_texts() {
+        let content = r#"{
+            "_version": 2,
+            "welcome": {
+                "en": "Welcome",
+                "zh-CN": "欢迎",
+                "zh-HK": "歡迎"
+            }
+        }"#;
+
+        let trs = parse_file(content, "json", "filename").expect("Should ok");
+        assert_eq!(trs["en"]["welcome"], "Welcome");
+        assert_eq!(trs["zh-CN"]["welcome"], "欢迎");
+        assert_eq!(trs["zh-HK"]["welcome"], "歡迎");
+    }
+
+    #[test]
+    fn test_parse_file_in_yaml_with_nested_locale_texts() {
+        let content = r#"
+        _version: 2
+        welcome:
+            en: Welcome
+            zh-CN: 欢迎
+            jp: ようこそ
+        welcome.sub:
+            en: Welcome 1
+            zh-CN: 欢迎 1
+            jp: ようこそ 1
+        "#;
+
+        let trs = parse_file(content, "yml", "filename").expect("Should ok");
+        assert_eq!(trs["en"]["welcome"], "Welcome");
+        assert_eq!(trs["zh-CN"]["welcome"], "欢迎");
+        assert_eq!(trs["jp"]["welcome"], "ようこそ");
+        assert_eq!(trs["en"]["welcome.sub"], "Welcome 1");
+        assert_eq!(trs["zh-CN"]["welcome.sub"], "欢迎 1");
+        assert_eq!(trs["jp"]["welcome.sub"], "ようこそ 1");
     }
 }

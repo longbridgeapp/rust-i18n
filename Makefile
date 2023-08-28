@@ -7,5 +7,5 @@ release\:extract:
 release:
 	cargo release
 test:
-	RUST_TEST_THREADS=1 cargo test --workspace
-	RUST_TEST_THREADS=1 cargo test --manifest-path examples/app-workspace/Cargo.toml --workspace
+	cargo test --workspace
+	cargo test --manifest-path examples/app-workspace/Cargo.toml --workspace

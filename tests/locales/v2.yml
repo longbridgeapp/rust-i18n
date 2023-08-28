@@ -1,0 +1,13 @@
+_version: 2
+nested_locale_test:
+  en: "Hello test"
+  ja: "こんにちは test"
+  zh-CN: "你好 test"
+  hello:
+    en: "Hello test2"
+    ja: "こんにちは test2"
+    zh-CN: "你好 test2"
+    world:
+      en: "Hello test3"
+      ja: "こんにちは test3"
+      zh-CN: "你好 test3"
