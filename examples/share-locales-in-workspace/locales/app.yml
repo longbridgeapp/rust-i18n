@@ -1,0 +1,5 @@
+_version: 2
+welcome:
+  en: Rust I18n Example for share locales in entire workspace.
+  zh-CN: Rust I18n 示例，用于在整个工作区中共享本地化。
+  zh-HK: Rust I18n 示例，用於在整個工作區中共享本地化。

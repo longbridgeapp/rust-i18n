@@ -1,0 +1,8 @@
+[package]
+edition = "2021"
+name = "my-app2"
+version = "0.1.0"
+
+[dependencies]
+rust-i18n = { path = "../../../../rust-i18n" }
+my-i18n.workspace = true

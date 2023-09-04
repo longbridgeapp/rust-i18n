@@ -2,3 +2,4 @@ target
 Cargo.lock
 debug.txt
 .idea/
+.DS_Store

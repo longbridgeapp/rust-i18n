@@ -154,6 +154,8 @@ fn generate_code(
         use rust_i18n::BackendExt;
 
         /// I18n backend instance
+        ///
+        /// [PUBLIC] This is a public API, and as an example in examples/
         static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
             let mut backend = rust_i18n::SimpleBackend::new();
             #(#all_translations)*
