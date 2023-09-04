@@ -212,14 +212,14 @@ impl RemoteI18n {
 }
 
 impl Backend for RemoteI18n {
-    fn available_locales(&self) -> Vec<String> {
-        return self.trs.keys().cloned().collect();
+    fn available_locales(&self) -> Vec<&str> {
+        return self.trs.keys().collect();
     }
 
-    fn translate(&self, locale: &str, key: &str) -> Option<String> {
+    fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         // Write your own lookup logic here.
         // For example load from database
-        return self.trs.get(locale)?.get(key).cloned();
+        return self.trs.get(locale)?.get(key);
     }
 }
 ```
