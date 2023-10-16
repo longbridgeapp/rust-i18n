@@ -156,6 +156,7 @@ fn generate_code(
         /// I18n backend instance
         ///
         /// [PUBLIC] This is a public API, and as an example in examples/
+        #[allow(missing_docs)]
         static _RUST_I18N_BACKEND: rust_i18n::once_cell::sync::Lazy<Box<dyn rust_i18n::Backend>> = rust_i18n::once_cell::sync::Lazy::new(|| {
             let mut backend = rust_i18n::SimpleBackend::new();
             #(#all_translations)*
@@ -168,6 +169,7 @@ fn generate_code(
 
         /// Get I18n text by locale and key
         #[inline]
+        #[allow(missing_docs)]
         pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
             if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
                 return value.to_string();
@@ -186,6 +188,7 @@ fn generate_code(
             return format!("{}.{}", locale, key);
         }
 
+        #[allow(missing_docs)]
         pub fn _rust_i18n_available_locales() -> Vec<&'static str> {
             let mut locales = _RUST_I18N_BACKEND.available_locales();
             locales.sort();
