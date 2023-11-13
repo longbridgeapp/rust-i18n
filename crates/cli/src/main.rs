@@ -6,9 +6,6 @@ use std::{collections::HashMap, path::Path};
 use rust_i18n_extract::{extractor, generator, iter};
 mod config;
 
-#[macro_use]
-extern crate serde_derive;
-
 const APP_NAME: &str = "rust-i18n";
 const ABOUT: &str = r#"Rust I18n command for help you simply to extract all untranslated texts from soruce code.
 
