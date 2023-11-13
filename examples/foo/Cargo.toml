@@ -6,7 +6,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust-i18n = { path = "../../../rust-i18n" }
+rust-i18n = { path = "../.." }
 
 [package.metadata.i18n]
 available-locales = ["en", "zh-CN"]
