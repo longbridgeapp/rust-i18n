@@ -33,23 +33,18 @@ Load macro and init translations in `lib.rs` or `main.rs`:
 // Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
 extern crate rust_i18n;
-# fn main() {
-# fn v1() {
+
 // Init translations for current crate.
 i18n!("locales");
-# }
 
-# fn v2() {
 // Or just use `i18n!`, default locales path is: "locales" in current crate.
-i18n!();
-# }
+//
+// i18n!();
 
-# fn v3() {
 // Config fallback missing translations to "en" locale.
 // Use `fallback` option to set fallback locale.
-i18n!("locales", fallback = "en");
-# }
-# }
+//
+// i18n!("locales", fallback = "en");
 ```
 
 Or you can import by use directly:
