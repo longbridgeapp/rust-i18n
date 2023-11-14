@@ -74,7 +74,7 @@ You can use `_version` key to specify the version of the locale file, and the de
 
 ### Split Localized Texts into Difference Files
 
-> _version: 1
+> \_version: 1
 
 You can also split the each language into difference files, and you can choise (YAML, JSON, TOML), for example: `en.json`:
 
@@ -91,8 +91,8 @@ You can also split the each language into difference files, and you can choise (
 
 ```yml
 _version: 1
-hello: "Hello world"
-messages.hello: "Hello, %{name}"
+hello: 'Hello world'
+messages.hello: 'Hello, %{name}'
 ```
 
 Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:
@@ -114,7 +114,7 @@ hello = "Hello, %{name}"
 
 ### All Localized Texts in One File
 
-> _version: 2
+> \_version: 2
 
 Make sure all localized files (containing the localized mappings) are located in the `locales/` folder of the project root directory:
 
@@ -136,7 +136,6 @@ Make sure all localized files (containing the localized mappings) are located in
 ```
 
 In the localized files, specify the localization keys and their corresponding values, for example, in `app.yml`:
-
 
 ```yml
 _version: 2
@@ -273,19 +272,18 @@ I18n Ally is a VS Code extension for helping you translate your Rust project.
 
 You can add [i18n-ally-custom-framework.yml](https://github.com/longbridgeapp/rust-i18n/blob/main/.vscode/i18n-ally-custom-framework.yml) to your project `.vscode` directory, and then use I18n Ally can parse `t!` marco to show translate text in VS Code editor.
 
-
 ## Extractor
 
-> __Experimental__
+> **Experimental**
 
 We provided a `cargo i18n` command line tool for help you extract the untranslated texts from the source code and then write into YAML file.
 
 > In current only output YAML, and use `_version: 2` format.
 
-You can install it via `cargo install rust-i18n`, then you get `cargo i18n` command.
+You can install it via `cargo install rust-i18n-cli`, then you get `cargo i18n` command.
 
 ```bash
-$ cargo install rust-i18n
+$ cargo install rust-i18n-cli
 ```
 
 ### Extractor Config
@@ -309,7 +307,7 @@ $ cargo install rust-i18n
 Rust I18n providered a `i18n` bin for help you extract the untranslated texts from the source code and then write into YAML file.
 
 ```bash
-$ cargo install rust-i18n
+$ cargo install rust-i18n-cli
 # Now you have `cargo i18n` command
 ```
 
