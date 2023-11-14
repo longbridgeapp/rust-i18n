@@ -1,4 +1,3 @@
-#![allow(rustdoc::invalid_rust_codeblocks)]
 #![doc = include_str!("../README.md")]
 
 use once_cell::sync::Lazy;
@@ -24,18 +23,22 @@ pub fn locale() -> String {
 
 /// Get I18n text
 ///
-/// ```ignore
+/// ```no_run
+/// #[macro_use] extern crate rust_i18n;
+/// # fn _rust_i18n_translate(locale: &str, key: &str) -> String { todo!() }
+/// # fn main() {
 /// // Simple get text with current locale
 /// t!("greeting"); // greeting: "Hello world" => "Hello world"
 /// // Get a special locale's text
 /// t!("greeting", locale = "de"); // greeting: "Hallo Welt!" => "Hallo Welt!"
 ///
 /// // With variables
-/// t!("messages.hello", "world"); // messages.hello: "Hello, {}" => "Hello, world"
-/// t!("messages.foo", "Foo", "Bar"); // messages.foo: "Hello, {} and {}" => "Hello, Foo and Bar"
+/// t!("messages.hello", name = "world"); // messages.hello: "Hello, {name}" => "Hello, world"
+/// t!("messages.foo", name = "Foo", other ="Bar"); // messages.foo: "Hello, {name} and {other}" => "Hello, Foo and Bar"
 ///
 /// // With locale and variables
-/// t!("messages.hello", locale = "de", "Jason"); // messages.hello: "Hallo, {}" => "Hallo, Jason"
+/// t!("messages.hello", locale = "de", name = "Jason"); // messages.hello: "Hallo, {name}" => "Hallo, Jason"
+/// # }
 /// ```
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]
@@ -91,8 +94,12 @@ macro_rules! t {
 
 /// Get available locales
 ///
-/// ```ignore
+/// ```no_run
+/// #[macro_use] extern crate rust_i18n;
+/// # pub fn _rust_i18n_available_locales() -> Vec<&'static str> { todo!() }
+/// # fn main() {
 /// rust_i18n::available_locales!();
+/// # }
 /// // => ["en", "zh-CN"]
 /// ```
 #[macro_export(local_inner_macros)]

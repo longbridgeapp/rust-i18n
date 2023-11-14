@@ -59,11 +59,14 @@ impl SimpleBackend {
 
     /// Add more translations for the given locale.
     ///
-    /// ```ignore
-    /// let trs = HashMap::<String, String>::new();
-    /// trs.insert("hello".into(), "Hello".into());
-    /// trs.insert("foo".into(), "Foo bar".into());
-    /// backend.add_translations("en", &data);
+    /// ```no_run
+    /// # use std::collections::HashMap;
+    /// # use rust_i18n_support::SimpleBackend;
+    /// # let mut backend = SimpleBackend::new();
+    /// let mut trs = HashMap::<&str, &str>::new();
+    /// trs.insert("hello", "Hello");
+    /// trs.insert("foo", "Foo bar");
+    /// backend.add_translations("en", &trs);
     /// ```
     pub fn add_translations(&mut self, locale: &str, data: &HashMap<&str, &str>) {
         let data = data

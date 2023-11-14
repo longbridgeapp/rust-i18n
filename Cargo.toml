@@ -29,6 +29,7 @@ toml = "0.7.4"
 foo = {path = "examples/foo"}
 criterion = "0.5"
 lazy_static = "1"
+serde_yaml = "0.8"
 
 [features]
 default = ["rust-i18n-extract", "clap", "anyhow", "quote", "itertools"]
