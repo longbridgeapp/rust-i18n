@@ -29,25 +29,32 @@ rust-i18n = "2"
 
 Load macro and init translations in `lib.rs` or `main.rs`:
 
-```rs
+```rust,no_run
 // Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
 extern crate rust_i18n;
-
+# fn main() {
+# fn v1() {
 // Init translations for current crate.
 i18n!("locales");
+# }
 
+# fn v2() {
 // Or just use `i18n!`, default locales path is: "locales" in current crate.
 i18n!();
+# }
 
+# fn v3() {
 // Config fallback missing translations to "en" locale.
 // Use `fallback` option to set fallback locale.
 i18n!("locales", fallback = "en");
+# }
+# }
 ```
 
 Or you can import by use directly:
 
-```rs
+```rust,no_run
 // You must import in each files when you wants use `t!` macro.
 use rust_i18n::t;
 
@@ -149,13 +156,16 @@ This is useful when you use [GitHub Copilot](https://github.com/features/copilot
 
 Import the `t!` macro from this crate into your current scope:
 
-```rs
+```rust,no_run
 use rust_i18n::t;
 ```
 
 Then, simply use it wherever a localized string is needed:
 
-```rs
+```rust,no_run
+# fn _rust_i18n_translate(locale: &str, key: &str) -> String { todo!() }
+# fn main() {
+use rust_i18n::t;
 t!("hello");
 // => "Hello world"
 
@@ -173,13 +183,14 @@ t!("messages.hello", locale = "zh-CN", name = "Jason", count = 2);
 
 t!("messages.hello", locale = "zh-CN", "name" => "Jason", "count" => 3 + 2);
 // => "你好，Jason (5)"
+# }
 ```
 
 ### Current Locale
 
 You can use `rust_i18n::set_locale` to set the global locale at runtime, so that you don't have to specify the locale on each `t!` invocation.
 
-```rs
+```rust
 rust_i18n::set_locale("zh-CN");
 
 let locale = rust_i18n::locale();
@@ -192,7 +203,17 @@ Since v2.0.0 rust-i18n support extend backend for cusomize your translation impl
 
 For example, you can use HTTP API for load translations from remote server:
 
-```rs
+```rust,no_run
+# pub mod reqwest {
+#  pub mod blocking {
+#    pub struct Response;
+#    impl Response {
+#       pub fn text(&self) -> Result<String, Box<dyn std::error::Error>> { todo!() }
+#    }
+#    pub fn get(_url: &str) -> Result<Response, Box<dyn std::error::Error>> { todo!() }
+#  }
+# }
+# use std::collections::HashMap;
 use rust_i18n::Backend;
 
 pub struct RemoteI18n {
@@ -213,20 +234,28 @@ impl RemoteI18n {
 
 impl Backend for RemoteI18n {
     fn available_locales(&self) -> Vec<&str> {
-        return self.trs.keys().collect();
+        return self.trs.keys().map(|k| k.as_str()).collect();
     }
 
     fn translate(&self, locale: &str, key: &str) -> Option<&str> {
         // Write your own lookup logic here.
         // For example load from database
-        return self.trs.get(locale)?.get(key);
+        return self.trs.get(locale)?.get(key).map(|k| k.as_str());
     }
 }
 ```
 
 Now you can init rust_i18n by extend your own backend:
 
-```rs
+```rust,no_run
+# struct RemoteI18n;
+# impl RemoteI18n {
+#   fn new() -> Self { todo!() }
+# }
+# impl rust_i18n::Backend for RemoteI18n {
+#   fn available_locales(&self) -> Vec<&str> { todo!() }
+#   fn translate(&self, locale: &str, key: &str) -> Option<&str> { todo!() }
+# }
 rust_i18n::i18n!("locales", backend = RemoteI18n::new());
 ```
 

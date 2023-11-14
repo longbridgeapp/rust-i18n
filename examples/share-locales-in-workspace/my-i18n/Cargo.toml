@@ -4,4 +4,4 @@ name = "my-i18n"
 version = "0.1.0"
 
 [dependencies]
-rust-i18n = { path = "../../../../rust-i18n" }
+rust-i18n = { path = "../../.." }

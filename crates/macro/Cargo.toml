@@ -20,5 +20,8 @@ serde_json = "1"
 serde_yaml = "0.8"
 syn = "2.0.18"
 
+[dev-dependencies]
+rust-i18n = { path = "../..", version = "*" }
+
 [lib]
 proc-macro = true

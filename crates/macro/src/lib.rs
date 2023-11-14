@@ -45,10 +45,17 @@ impl Args {
 impl syn::parse::Parse for Args {
     /// Parse macro arguments.
     ///
-    /// ```ignore
+    /// ```no_run
+    /// # use rust_i18n::i18n;
+    /// # fn v1() {
     /// i18n!();
+    /// # }
+    /// # fn v2() {
     /// i18n!("locales");
+    /// # }
+    /// # fn v3() {
     /// i18n!("locales", fallback = "en");
+    /// # }
     /// ```
     ///
     /// Ref: https://docs.rs/syn/latest/syn/parse/index.html
@@ -81,10 +88,17 @@ impl syn::parse::Parse for Args {
 ///
 /// Attribute `fallback` for set the fallback locale, if present `t` macro will use it as the fallback locale.
 ///
-/// ```ignore
+/// ```no_run
+/// # use rust_i18n::i18n;
+/// # fn v1() {
 /// i18n!();
+/// # }
+/// # fn v2() {
 /// i18n!("locales");
+/// # }
+/// # fn v3() {
 /// i18n!("locales", fallback = "en");
+/// # }
 /// ```
 #[proc_macro]
 pub fn i18n(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

@@ -4,6 +4,7 @@
 //! See `Manifest::from_slice`.
 
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
 use std::io::Read;
@@ -138,7 +139,7 @@ fn test_load_default() {
 #[test]
 fn test_load() {
     let workdir = Path::new(env!["CARGO_MANIFEST_DIR"]);
-    let cargo_root = workdir.join("examples/foo");
+    let cargo_root = workdir.join("../../examples/foo");
 
     let cfg = load(&cargo_root).unwrap();
     assert_eq!(cfg.default_locale, "en");

@@ -5,4 +5,4 @@ version = "0.1.0"
 
 [dependencies]
 example-base = { path = "../crates/example-base" }
-rust-i18n = { path = "../../../../rust-i18n" }
+rust-i18n = { path = "../../.." }
