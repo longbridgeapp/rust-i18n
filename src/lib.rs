@@ -21,6 +21,11 @@ pub fn locale() -> String {
     CURRENT_LOCALE.read().unwrap().to_string()
 }
 
+/// Get language territory from locale
+pub fn language_territory(locale: &str) -> Option<&str> {
+    locale.split_once(&['-', '_']).map(|(a, _)| a)
+}
+
 /// Get I18n text
 ///
 /// ```no_run

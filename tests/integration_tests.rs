@@ -68,6 +68,18 @@ mod tests {
         rust_i18n::i18n!(fallback = "foo");
     }
 
+    mod test4 {
+        rust_i18n::i18n!("./tests/locales", fallback = "en", auto_territory = true);
+
+        #[test]
+        fn test_auto_territory() {
+            assert_eq!(
+                crate::tests::test2::_rust_i18n_translate("zh-SG", "hello"),
+                "Bar - 你好世界！"
+            );
+        }
+    }
+
     #[test]
     fn check_test_environment() {
         assert_eq!(
@@ -98,7 +110,7 @@ mod tests {
     fn test_available_locales() {
         assert_eq!(
             rust_i18n::available_locales!(),
-            &["en", "ja", "pt", "zh-CN"]
+            &["en", "ja", "pt", "zh", "zh-CN"]
         );
     }
 

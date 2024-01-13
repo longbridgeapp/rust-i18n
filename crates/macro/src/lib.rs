@@ -1,12 +1,13 @@
 use quote::quote;
 use rust_i18n_support::{is_debug, load_locales};
 use std::collections::HashMap;
-use syn::{parse_macro_input, Expr, Ident, LitStr, Token};
+use syn::{parse_macro_input, Expr, Ident, LitBool, LitStr, Token};
 
 struct Args {
     locales_path: String,
     fallback: Option<String>,
     extend: Option<Expr>,
+    auto_territory: bool,
 }
 
 impl Args {
@@ -29,6 +30,9 @@ impl Args {
             "backend" => {
                 let val = input.parse::<Expr>()?;
                 self.extend = Some(val);
+            }
+            "auto_territory" => {
+                self.auto_territory = input.parse::<LitBool>()?.value();
             }
             _ => {}
         }
@@ -56,6 +60,9 @@ impl syn::parse::Parse for Args {
     /// # fn v3() {
     /// i18n!("locales", fallback = "en");
     /// # }
+    /// # fn v4() {
+    /// i18n!("locales", fallback = "en", auto_territory = true);
+    /// # }
     /// ```
     ///
     /// Ref: https://docs.rs/syn/latest/syn/parse/index.html
@@ -66,6 +73,7 @@ impl syn::parse::Parse for Args {
             locales_path: String::from("locales"),
             fallback: None,
             extend: None,
+            auto_territory: false,
         };
 
         if lookahead.peek(LitStr) {
@@ -88,6 +96,10 @@ impl syn::parse::Parse for Args {
 ///
 /// Attribute `fallback` for set the fallback locale, if present `t` macro will use it as the fallback locale.
 ///
+/// Attribute `auto_territory` for set the auto territory flag,
+/// if true `t` macro will auto fallback to the language territory of the locale when missing,
+/// like: `zh-SG` => `zh`, if `zh` still missing, then fallback to the `fallback` locale.
+///
 /// ```no_run
 /// # use rust_i18n::i18n;
 /// # fn v1() {
@@ -98,6 +110,9 @@ impl syn::parse::Parse for Args {
 /// # }
 /// # fn v3() {
 /// i18n!("locales", fallback = "en");
+/// # }
+/// # fn v4() {
+/// i18n!("locales", fallback = "en", auto_territory = true);
 /// # }
 /// ```
 #[proc_macro]
@@ -155,6 +170,12 @@ fn generate_code(
         }
     };
 
+    let auto_territory = if args.auto_territory {
+        quote! { true }
+    } else {
+        quote! { false }
+    };
+
     let extend_code = if let Some(extend) = args.extend {
         quote! {
             let backend = backend.extend(#extend);
@@ -180,6 +201,7 @@ fn generate_code(
         });
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
+        static _RUST_I18N_AUTO_TERRITORY: bool = #auto_territory;
 
         /// Get I18n text by locale and key
         #[inline]
@@ -189,6 +211,13 @@ fn generate_code(
                 return value.to_string();
             }
 
+            if _RUST_I18N_AUTO_TERRITORY {
+                if let Some(fallback) = rust_i18n::language_territory(locale) {
+                    if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
+                        return value.to_string();
+                    }
+                }
+            }
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
                 if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
