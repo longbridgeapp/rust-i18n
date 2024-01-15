@@ -10,7 +10,7 @@ license = "MIT"
 name = "rust-i18n"
 readme = "README.md"
 repository = "https://github.com/longbridgeapp/rust-i18n"
-version = "2.3.0"
+version = "2.3.1"
 
 [dependencies]
 once_cell = "1.10.0"
