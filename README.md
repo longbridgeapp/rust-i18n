@@ -29,7 +29,7 @@ rust-i18n = "2"
 
 Load macro and init translations in `lib.rs` or `main.rs`:
 
-```rust,no_run
+```rust,compile_fail,no_run
 // Load I18n macro, for allow you use `t!` macro in anywhere.
 #[macro_use]
 extern crate rust_i18n;

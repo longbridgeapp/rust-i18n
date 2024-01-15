@@ -98,7 +98,7 @@ mod tests {
     fn test_available_locales() {
         assert_eq!(
             rust_i18n::available_locales!(),
-            &["en", "ja", "pt", "zh-CN"]
+            &["en", "ja", "pt", "zh", "zh-CN"]
         );
     }
 
@@ -285,6 +285,18 @@ mod tests {
         assert_eq!(
             t!("nested_locale_test.hello.world", locale = "ja"),
             "こんにちは test3"
+        );
+    }
+
+    #[test]
+    fn test_lookup_fallback() {
+        assert_eq!(
+            t!("missing.lookup-fallback", locale = "zh-CN"),
+            "在 zh-XXX 中缺失的的翻译。"
+        );
+        assert_eq!(
+            t!("missing.default", locale = "zh-CN", fallback = "en"),
+            "This is missing key fallbacked to en."
         );
     }
 }

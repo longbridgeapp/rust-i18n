@@ -181,6 +181,17 @@ fn generate_code(
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
 
+        /// Lookup fallback locales
+        ///
+        /// For example: `"zh-Hant-CN-x-private1-private2"` -> `"zh-Hant-CN-x-private1"` -> `"zh-Hant-CN"` -> `"zh-Hant"` -> `"zh"`.
+        ///
+        /// https://datatracker.ietf.org/doc/html/rfc4647#section-3.4
+        #[inline]
+        #[allow(missing_docs)]
+        pub fn _rust_i18n_lookup_fallback(locale: &str) -> Option<&str> {
+            locale.rfind('-').map(|n| locale[..n].trim_end_matches("-x"))
+        }
+
         /// Get I18n text by locale and key
         #[inline]
         #[allow(missing_docs)]
@@ -189,6 +200,13 @@ fn generate_code(
                 return value.to_string();
             }
 
+            let mut current_locale = locale;
+            while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
+                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key) {
+                    return value.to_string();
+                }
+                current_locale = fallback_locale;
+            }
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
                 if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
