@@ -262,3 +262,15 @@ fn generate_code(
         }
     }
 }
+
+#[proc_macro]
+pub fn key(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let output = syn::parse::<syn::LitStr>(input.clone())
+        .map(|str| str.value())
+        .or(syn::parse::<syn::Ident>(input.clone()).map(|ident| format!("{}", ident)));
+
+    match output {
+        Ok(value) => quote! { #value }.into(),
+        Err(err) => err.to_compile_error().into(),
+    }
+}
