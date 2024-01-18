@@ -68,6 +68,22 @@ mod tests {
         rust_i18n::i18n!(fallback = "foo");
     }
 
+    mod test4 {
+        rust_i18n::i18n!("./tests/locales", fallback = ["zh", "en"]);
+
+        #[test]
+        fn test_fallback() {
+            assert_eq!(
+                crate::tests::test4::_rust_i18n_translate("zh-CN", "messages.zero"),
+                "你没有消息。"
+            );
+            assert_eq!(
+                crate::tests::test4::_rust_i18n_translate("zh-CN", "messages.one"),
+                "You have one message."
+            );
+        }
+    }
+
     #[test]
     fn check_test_environment() {
         assert_eq!(
