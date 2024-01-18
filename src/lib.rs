@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 #[doc(hidden)]
 pub use once_cell;
-pub use rust_i18n_macro::i18n;
+pub use rust_i18n_macro::{i18n, key};
 pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, SimpleBackend};
 
 static CURRENT_LOCALE: Lazy<AtomicStr> = Lazy::new(|| AtomicStr::from("en"));
@@ -121,17 +121,15 @@ macro_rules! t {
     // t!("foo", locale = "en", a = 1, b = "Foo")
     ($key:expr, locale = $locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let mut message = crate::_rust_i18n_translate($locale, $key);
+            let message = crate::_rust_i18n_translate($locale, $key);
+            let patterns: &[&str] = &[
+                $(rust_i18n::key!($var_name)),+
+            ];
+            let values = &[
+                $(format!("{}", $var_val)),+
+            ];
 
-            $(
-                // Get the variable name as a string, and remove quotes surrounding the variable name
-                let var_name = stringify!($var_name).trim_matches('"');
-                // Make a holder string to replace the variable name with: %{var_name}
-                let holder = format!("%{{{var_name}}}");
-
-                message = message.replace(&holder, &format!("{}", $var_val));
-            )+
-            message
+            rust_i18n::replace_patterns(message.as_ref(), patterns, values)
         }
     };
 
