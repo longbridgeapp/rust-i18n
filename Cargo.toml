@@ -16,6 +16,7 @@ version = "2.3.1"
 once_cell = "1.10.0"
 rust-i18n-support = {path = "./crates/support", version = "2.3.0"}
 rust-i18n-macro = {path = "./crates/macro", version = "2.3.0"}
+smallvec = "1.12.0"
 
 [dev-dependencies]
 foo = {path = "examples/foo"}
