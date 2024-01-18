@@ -374,8 +374,12 @@ $ RUST_I18N_DEBUG=1 cargo build
 Benchmark `t!` method, result on Apple M1:
 
 ```bash
-t                       time:   [100.91 ns 101.06 ns 101.24 ns]
-t_with_args             time:   [495.56 ns 497.88 ns 500.64 ns]
+t                       time:   [58.274 ns 60.222 ns 62.390 ns]
+t_with_locale           time:   [55.395 ns 57.106 ns 59.081 ns]
+t_with_args             time:   [167.46 ns 170.94 ns 175.64 ns]
+t_with_args (str)       time:   [164.85 ns 165.91 ns 167.41 ns]
+t_with_args (many)      time:   [444.04 ns 452.17 ns 463.44 ns]
+t_with_threads          time:   [414.26 ns 422.97 ns 433.53 ns]
 ```
 
 The result `101 ns (0.0001 ms)` means if there have 10K translate texts, it will cost 1ms.
