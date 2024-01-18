@@ -129,7 +129,8 @@ macro_rules! t {
                 $(format!("{}", $var_val)),+
             ];
 
-            rust_i18n::replace_patterns(message.as_ref(), patterns, values)
+            let output = rust_i18n::replace_patterns(message.as_ref(), patterns, values);
+            std::borrow::Cow::from(output)
         }
     };
 
