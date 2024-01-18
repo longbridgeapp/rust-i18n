@@ -216,10 +216,8 @@ mod tests {
 
         let key = "messages.hello";
 
-        assert_eq!(
-            t!(&format!("messages.{}", "hello"), name = name),
-            "Hello, Jason Lee!"
-        );
+        let dyn_key = format!("messages.{}", "hello");
+        assert_eq!(t!(&dyn_key, name = name), "Hello, Jason Lee!");
         assert_eq!(t!(key, name = name), "Hello, Jason Lee!");
 
         assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");

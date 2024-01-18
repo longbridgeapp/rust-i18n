@@ -198,6 +198,7 @@ fn generate_code(
     // result
     quote! {
         use rust_i18n::BackendExt;
+        use std::borrow::Cow;
 
         /// I18n backend instance
         ///
@@ -227,15 +228,15 @@ fn generate_code(
         /// Get I18n text by locale and key
         #[inline]
         #[allow(missing_docs)]
-        pub fn _rust_i18n_translate(locale: &str, key: &str) -> String {
+        pub fn _rust_i18n_translate<'r>(locale: &str, key: &'r str) -> Cow<'r, str> {
             if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                return value.to_string();
+                return value.into();
             }
 
             let mut current_locale = locale;
             while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
                 if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key) {
-                    return value.to_string();
+                    return value.into();
                 }
                 current_locale = fallback_locale;
             }
@@ -243,15 +244,15 @@ fn generate_code(
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
                 for locale in fallback {
                     if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                        return value.to_string();
+                        return value.into();
                     }
                 }
             }
 
             if locale.is_empty() {
-                return key.to_string();
+                return key.into();
             }
-            return format!("{}.{}", locale, key);
+            return format!("{}.{}", locale, key).into();
         }
 
         #[allow(missing_docs)]

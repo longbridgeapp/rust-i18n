@@ -2,7 +2,7 @@ use rust_i18n::t;
 
 #[allow(unused)]
 pub fn get_info() -> String {
-    t!("hello")
+    t!("hello").into()
 }
 
 #[cfg(test)]
