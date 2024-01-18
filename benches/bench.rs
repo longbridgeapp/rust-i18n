@@ -64,6 +64,21 @@ fn bench_t(c: &mut Criterion) {
     c.bench_function("t_with_args (str)", |b| {
         b.iter(|| t!("a.very.nested.message", "name" = "Jason", "msg" = "Bla bla"))
     });
+
+    c.bench_function("t_with_args (many)", |b| {
+        b.iter(|| {
+            t!(
+                "a.very.nested.response",
+                id = 123,
+                name = "Marion",
+                surname = "Christiansen",
+                email = "Marion_Christiansen83@hotmail.com",
+                city = "Litteltown",
+                zip = 8408,
+                website = "https://snoopy-napkin.name"
+            )
+        })
+    });
 }
 
 criterion_group!(benches, bench_t);

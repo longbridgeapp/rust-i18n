@@ -5,6 +5,9 @@ a:
   very:
     nested:
       message: "Hello, %{name}. Your message is: %{msg}"
+      response: Hello %{name} %{surname}, your account id is %{id}, email address is %{email}. 
+        You live in %{city} %{zip}. 
+        Your website is %{website}.
 messages:
   zero: You have no messages.
   one: You have one message.
