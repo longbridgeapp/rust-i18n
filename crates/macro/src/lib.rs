@@ -20,27 +20,27 @@ impl Args {
     fn consume_fallback(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
         if let Ok(val) = input.parse::<LitStr>() {
             self.fallback = Some(vec![val.value()]);
-        } else {
-            let val = input.parse::<syn::ExprArray>()?;
-            let fallback = val
-                .elems
-                .into_iter()
-                .map(|expr| {
-                    if let syn::Expr::Lit(syn::ExprLit {
-                        lit: syn::Lit::Str(lit_str),
-                        ..
-                    }) = expr
-                    {
-                        Ok(lit_str.value())
-                    } else {
-                        Err(input.error(
-                            "`fallback` must be a string literal or an array of string literals",
-                        ))
-                    }
-                })
-                .collect::<syn::parse::Result<Vec<String>>>()?;
-            self.fallback = Some(fallback);
+            return Ok(());
         }
+        let val = input.parse::<syn::ExprArray>()?;
+        let fallback = val
+            .elems
+            .into_iter()
+            .map(|expr| {
+                if let syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(lit_str),
+                    ..
+                }) = expr
+                {
+                    Ok(lit_str.value())
+                } else {
+                    Err(input.error(
+                        "`fallback` must be a string literal or an array of string literals",
+                    ))
+                }
+            })
+            .collect::<syn::parse::Result<Vec<String>>>()?;
+        self.fallback = Some(fallback);
         Ok(())
     }
 
