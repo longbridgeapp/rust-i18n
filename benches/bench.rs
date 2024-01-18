@@ -17,6 +17,26 @@ fn bench_t(c: &mut Criterion) {
 
     c.bench_function("t_with_locale", |b| b.iter(|| t!("hello", locale = "en")));
 
+    c.bench_function("t_with_threads", |b| {
+        let exit_loop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let mut handles = Vec::new();
+        for _ in 0..4 {
+            let exit_loop = exit_loop.clone();
+            handles.push(std::thread::spawn(move || {
+                while !exit_loop.load(std::sync::atomic::Ordering::SeqCst) {
+                    criterion::black_box(t!("hello"));
+                }
+            }));
+        }
+        b.iter(|| t!("hello"));
+        exit_loop.store(true, std::sync::atomic::Ordering::SeqCst);
+        for handle in handles {
+            handle.join().unwrap();
+        }
+    });
+
+    c.bench_function("t_lorem_ipsum", |b| b.iter(|| t!("lorem-ipsum")));
+
     // 73.239 ns
     c.bench_function("_rust_i18n_translate", |b| {
         b.iter(|| crate::_rust_i18n_translate("en", "hello"))
