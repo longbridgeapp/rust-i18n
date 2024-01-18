@@ -12,3 +12,6 @@ messages:
   hello: Hello, %{name}!
 missing:
   default: This is missing key fallbacked to en.
+lorem-ipsum: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sed nisi leo. Donec commodo in ex at aliquam. Nunc in aliquam arcu. Fusce mollis metus orci, ut sagittis erat lobortis sed. Morbi quis arcu ultrices turpis finibus tincidunt non in purus. Donec gravida condimentum sapien. Duis iaculis fermentum congue. Quisque blandit libero a lacus auctor vestibulum. Nunc efficitur sollicitudin nisi, sit amet tristique lectus mollis non. Praesent sit amet erat volutpat, pharetra orci eget, rutrum felis. Sed elit augue, imperdiet eu facilisis vel, finibus vel urna. Duis quis neque metus.
+
+  Mauris suscipit bibendum mattis. Vestibulum eu augue diam. Morbi dapibus tempus viverra. Sed aliquam turpis eget justo ornare maximus vitae et tortor. Donec semper neque sit amet sapien congue scelerisque. Maecenas bibendum imperdiet dolor interdum facilisis. Integer non diam tempus, pharetra ex at, euismod diam. Ut enim turpis, sagittis in iaculis ut, finibus et sem. Suspendisse a felis euismod neque euismod placerat. Praesent ipsum libero, porta vel egestas quis, aliquet vitae lorem. Nullam vel pharetra erat, sit amet sodales leo.
