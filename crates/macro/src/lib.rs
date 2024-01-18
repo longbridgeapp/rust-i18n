@@ -5,7 +5,7 @@ use syn::{parse_macro_input, Expr, Ident, LitStr, Token};
 
 struct Args {
     locales_path: String,
-    fallback: Option<String>,
+    fallback: Option<Vec<String>>,
     extend: Option<Expr>,
 }
 
@@ -17,14 +17,40 @@ impl Args {
         Ok(())
     }
 
+    fn consume_fallback(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
+        if let Ok(val) = input.parse::<LitStr>() {
+            self.fallback = Some(vec![val.value()]);
+        } else {
+            let val = input.parse::<syn::ExprArray>()?;
+            let fallback = val
+                .elems
+                .into_iter()
+                .map(|expr| {
+                    if let syn::Expr::Lit(syn::ExprLit {
+                        lit: syn::Lit::Str(lit_str),
+                        ..
+                    }) = expr
+                    {
+                        Ok(lit_str.value())
+                    } else {
+                        Err(input.error(
+                            "`fallback` must be a string literal or an array of string literals",
+                        ))
+                    }
+                })
+                .collect::<syn::parse::Result<Vec<String>>>()?;
+            self.fallback = Some(fallback);
+        }
+        Ok(())
+    }
+
     fn consume_options(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
         let ident = input.parse::<Ident>()?.to_string();
         input.parse::<Token![=]>()?;
 
         match ident.as_str() {
             "fallback" => {
-                let val = input.parse::<LitStr>()?.value();
-                self.fallback = Some(val);
+                self.consume_fallback(input)?;
             }
             "backend" => {
                 let val = input.parse::<Expr>()?;
@@ -55,6 +81,9 @@ impl syn::parse::Parse for Args {
     /// # }
     /// # fn v3() {
     /// i18n!("locales", fallback = "en");
+    /// # }
+    /// # fn v4() {
+    /// i18n!("locales", fallback = ["en", "es"]);
     /// # }
     /// ```
     ///
@@ -98,6 +127,9 @@ impl syn::parse::Parse for Args {
 /// # }
 /// # fn v3() {
 /// i18n!("locales", fallback = "en");
+/// #}
+/// # fn v4() {
+/// i18n!("locales", fallback = ["en", "es"]);
 /// # }
 /// ```
 #[proc_macro]
@@ -147,7 +179,7 @@ fn generate_code(
 
     let fallback = if let Some(fallback) = args.fallback {
         quote! {
-            Some(#fallback)
+            Some(&[#(#fallback),*])
         }
     } else {
         quote! {
@@ -179,7 +211,7 @@ fn generate_code(
             Box::new(backend)
         });
 
-        static _RUST_I18N_FALLBACK_LOCALE: Option<&'static str> = #fallback;
+        static _RUST_I18N_FALLBACK_LOCALE: Option<&[&'static str]> = #fallback;
 
         /// Lookup fallback locales
         ///
@@ -209,8 +241,10 @@ fn generate_code(
             }
 
             if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback, key) {
-                    return value.to_string();
+                for locale in fallback {
+                    if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
+                        return value.to_string();
+                    }
                 }
             }
 

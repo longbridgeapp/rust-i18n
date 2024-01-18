@@ -45,6 +45,10 @@ i18n!("locales");
 // Use `fallback` option to set fallback locale.
 //
 // i18n!("locales", fallback = "en");
+
+// Or more than one fallback with priority.
+//
+// i18n!("locales", fallback = ["en", "es]);
 ```
 
 Or you can import by use directly:
