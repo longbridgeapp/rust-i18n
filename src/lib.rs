@@ -1,24 +1,23 @@
 #![doc = include_str!("../README.md")]
 
 use once_cell::sync::Lazy;
-use std::sync::RwLock;
+use std::sync::Arc;
 
 #[doc(hidden)]
 pub use once_cell;
 pub use rust_i18n_macro::i18n;
-pub use rust_i18n_support::{Backend, BackendExt, SimpleBackend};
+pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, SimpleBackend};
 
-static CURRENT_LOCALE: Lazy<RwLock<String>> = Lazy::new(|| RwLock::new(String::from("en")));
+static CURRENT_LOCALE: Lazy<AtomicStr> = Lazy::new(|| AtomicStr::from("en"));
 
 /// Set current locale
 pub fn set_locale(locale: &str) {
-    let mut current_locale = CURRENT_LOCALE.write().unwrap();
-    *current_locale = locale.to_string();
+    CURRENT_LOCALE.replace(locale);
 }
 
 /// Get current locale
-pub fn locale() -> String {
-    CURRENT_LOCALE.read().unwrap().to_string()
+pub fn locale() -> Arc<String> {
+    CURRENT_LOCALE.clone_string()
 }
 
 /// Get I18n text

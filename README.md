@@ -192,7 +192,7 @@ You can use `rust_i18n::set_locale` to set the global locale at runtime, so that
 rust_i18n::set_locale("zh-CN");
 
 let locale = rust_i18n::locale();
-assert_eq!(locale, "zh-CN");
+assert_eq!(*locale, "zh-CN");
 ```
 
 ### Extend Backend
