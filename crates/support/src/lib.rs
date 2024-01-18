@@ -3,7 +3,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::{collections::HashMap, path::Path};
 
+mod atomic_str;
 mod backend;
+pub use atomic_str::AtomicStr;
 pub use backend::{Backend, BackendExt, SimpleBackend};
 
 type Locale = String;
