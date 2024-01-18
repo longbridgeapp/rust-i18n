@@ -127,7 +127,7 @@ impl syn::parse::Parse for Args {
 /// # }
 /// # fn v3() {
 /// i18n!("locales", fallback = "en");
-/// #}
+/// # }
 /// # fn v4() {
 /// i18n!("locales", fallback = ["en", "es"]);
 /// # }

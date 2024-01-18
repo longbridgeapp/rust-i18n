@@ -5,7 +5,7 @@ extern crate rust_i18n;
 i18n!("../locales");
 
 fn hello() -> String {
-    t!("hello")
+    t!("hello").into()
 }
 
 fn main() {
