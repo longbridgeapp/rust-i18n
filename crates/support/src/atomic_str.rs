@@ -1,41 +1,33 @@
 use std::fmt;
-use std::sync::Arc;
+use std::ops::Deref;
 
-use arc_swap::{ArcSwap, Guard};
+use arc_swap::{ArcSwapAny, Guard};
+use triomphe::Arc;
 
 /// A thread-safe atomically reference-counting string.
-pub struct AtomicStr(ArcSwap<String>);
+pub struct AtomicStr(ArcSwapAny<Arc<String>>);
 
 /// A thread-safe view the string that was stored when `AtomicStr::as_str()` was called.
 struct GuardedStr(Guard<Arc<String>>);
 
-impl AsRef<str> for GuardedStr {
-    fn as_ref(&self) -> &str {
-        self.0.as_str()
-    }
-}
+impl Deref for GuardedStr {
+    type Target = str;
 
-impl fmt::Display for GuardedStr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.0.as_ref())
+    fn deref(&self) -> &Self::Target {
+        self.0.as_str()
     }
 }
 
 impl AtomicStr {
     /// Create a new `AtomicStr` with the given value.
-    pub fn new(value: impl Into<String>) -> Self {
+    pub fn new(value: &str) -> Self {
         let arced = Arc::new(value.into());
-        Self(ArcSwap::new(arced))
+        Self(ArcSwapAny::new(arced))
     }
 
     /// Get the string slice.
-    pub fn as_str(&self) -> impl AsRef<str> + fmt::Display {
+    pub fn as_str(&self) -> impl Deref<Target = str> {
         GuardedStr(self.0.load())
-    }
-
-    /// Get the cloned inner `Arc<String>`.
-    pub fn clone_string(&self) -> Arc<String> {
-        Guard::into_inner(self.0.load())
     }
 
     /// Replaces the value at self with src.
@@ -45,23 +37,14 @@ impl AtomicStr {
     }
 }
 
-impl<T> From<T> for AtomicStr
-where
-    T: Into<String>,
-{
-    fn from(value: T) -> Self {
+impl From<&str> for AtomicStr {
+    fn from(value: &str) -> Self {
         Self::new(value)
-    }
-}
-
-impl From<&AtomicStr> for Arc<String> {
-    fn from(value: &AtomicStr) -> Self {
-        value.clone_string()
     }
 }
 
 impl fmt::Display for AtomicStr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
+        f.write_str(&self.as_str())
     }
 }

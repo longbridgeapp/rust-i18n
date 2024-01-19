@@ -1,7 +1,8 @@
 #![doc = include_str!("../README.md")]
 
+use std::ops::Deref;
+
 use once_cell::sync::Lazy;
-use std::sync::Arc;
 
 #[doc(hidden)]
 pub use once_cell;
@@ -16,8 +17,8 @@ pub fn set_locale(locale: &str) {
 }
 
 /// Get current locale
-pub fn locale() -> Arc<String> {
-    CURRENT_LOCALE.clone_string()
+pub fn locale() -> impl Deref<Target = str> {
+    CURRENT_LOCALE.as_str()
 }
 
 /// Replace patterns and return a new string.
@@ -110,7 +111,7 @@ pub fn replace_patterns(input: &str, patterns: &[&str], values: &[String]) -> St
 macro_rules! t {
     // t!("foo")
     ($key:expr) => {
-        crate::_rust_i18n_translate(rust_i18n::locale().as_str(), $key)
+        crate::_rust_i18n_translate(&rust_i18n::locale(), $key)
     };
 
     // t!("foo", locale = "en")
