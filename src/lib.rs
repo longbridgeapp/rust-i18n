@@ -1,24 +1,89 @@
 #![doc = include_str!("../README.md")]
 
 use once_cell::sync::Lazy;
-use std::sync::RwLock;
+use std::sync::Arc;
 
 #[doc(hidden)]
 pub use once_cell;
-pub use rust_i18n_macro::i18n;
-pub use rust_i18n_support::{Backend, BackendExt, SimpleBackend};
+pub use rust_i18n_macro::{i18n, key};
+pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, SimpleBackend};
 
-static CURRENT_LOCALE: Lazy<RwLock<String>> = Lazy::new(|| RwLock::new(String::from("en")));
+static CURRENT_LOCALE: Lazy<AtomicStr> = Lazy::new(|| AtomicStr::from("en"));
 
 /// Set current locale
 pub fn set_locale(locale: &str) {
-    let mut current_locale = CURRENT_LOCALE.write().unwrap();
-    *current_locale = locale.to_string();
+    CURRENT_LOCALE.replace(locale);
 }
 
 /// Get current locale
-pub fn locale() -> String {
-    CURRENT_LOCALE.read().unwrap().to_string()
+pub fn locale() -> Arc<String> {
+    CURRENT_LOCALE.clone_string()
+}
+
+/// Replace patterns and return a new string.
+///
+/// # Arguments
+///
+/// * `input` - The input string, containing patterns like `%{name}`.
+/// * `patterns` - The patterns to replace.
+/// * `values` - The values to replace.
+///
+/// # Example
+///
+/// ```
+/// # use rust_i18n::replace_patterns;
+/// let input = "Hello, %{name}!";
+/// let patterns = &["name"];
+/// let values = &["world".to_string()];
+/// let output = replace_patterns(input, patterns, values);
+/// assert_eq!(output, "Hello, world!");
+/// ```
+pub fn replace_patterns(input: &str, patterns: &[&str], values: &[String]) -> String {
+    let input_bytes = input.as_bytes();
+    let mut pattern_pos = smallvec::SmallVec::<[usize; 64]>::new();
+    let mut stage = 0;
+    for (i, &b) in input_bytes.iter().enumerate() {
+        match (stage, b) {
+            (1, b'{') => {
+                stage = 2;
+                pattern_pos.push(i);
+            }
+            (2, b'}') => {
+                stage = 0;
+                pattern_pos.push(i);
+            }
+            (_, b'%') => {
+                stage = 1;
+            }
+            _ => {}
+        }
+    }
+    let mut output: Vec<u8> = Vec::with_capacity(input_bytes.len() + 128);
+    let mut prev_end = 0;
+    let pattern_values = patterns.iter().zip(values.iter());
+    for pos in pattern_pos.chunks_exact(2) {
+        let start = pos[0];
+        let end = pos[1];
+        let key = &input_bytes[start + 1..end];
+        if prev_end < start {
+            let prev_chunk = &input_bytes[prev_end..start - 1];
+            output.extend_from_slice(prev_chunk);
+        }
+        if let Some((_, v)) = pattern_values
+            .clone()
+            .find(|(&pattern, _)| pattern.as_bytes() == key)
+        {
+            output.extend_from_slice(v.as_bytes());
+        } else {
+            output.extend_from_slice(&input_bytes[start - 1..end + 1]);
+        }
+        prev_end = end + 1;
+    }
+    if prev_end < input_bytes.len() {
+        let remaining = &input_bytes[prev_end..];
+        output.extend_from_slice(remaining);
+    }
+    unsafe { String::from_utf8_unchecked(output) }
 }
 
 /// Get I18n text
@@ -56,17 +121,16 @@ macro_rules! t {
     // t!("foo", locale = "en", a = 1, b = "Foo")
     ($key:expr, locale = $locale:expr, $($var_name:tt = $var_val:expr),+ $(,)?) => {
         {
-            let mut message = crate::_rust_i18n_translate($locale, $key);
+            let message = crate::_rust_i18n_translate($locale, $key);
+            let patterns: &[&str] = &[
+                $(rust_i18n::key!($var_name)),+
+            ];
+            let values = &[
+                $(format!("{}", $var_val)),+
+            ];
 
-            $(
-                // Get the variable name as a string, and remove quotes surrounding the variable name
-                let var_name = stringify!($var_name).trim_matches('"');
-                // Make a holder string to replace the variable name with: %{var_name}
-                let holder = format!("%{{{var_name}}}");
-
-                message = message.replace(&holder, &format!("{}", $var_val));
-            )+
-            message
+            let output = rust_i18n::replace_patterns(message.as_ref(), patterns, values);
+            std::borrow::Cow::from(output)
         }
     };
 

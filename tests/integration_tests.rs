@@ -68,6 +68,22 @@ mod tests {
         rust_i18n::i18n!(fallback = "foo");
     }
 
+    mod test4 {
+        rust_i18n::i18n!("./tests/locales", fallback = ["zh", "en"]);
+
+        #[test]
+        fn test_fallback() {
+            assert_eq!(
+                crate::tests::test4::_rust_i18n_translate("zh-CN", "messages.zero"),
+                "你没有消息。"
+            );
+            assert_eq!(
+                crate::tests::test4::_rust_i18n_translate("zh-CN", "messages.one"),
+                "You have one message."
+            );
+        }
+    }
+
     #[test]
     fn check_test_environment() {
         assert_eq!(
@@ -200,10 +216,8 @@ mod tests {
 
         let key = "messages.hello";
 
-        assert_eq!(
-            t!(&format!("messages.{}", "hello"), name = name),
-            "Hello, Jason Lee!"
-        );
+        let dyn_key = format!("messages.{}", "hello");
+        assert_eq!(t!(&dyn_key, name = name), "Hello, Jason Lee!");
         assert_eq!(t!(key, name = name), "Hello, Jason Lee!");
 
         assert_eq!(t!("messages.hello", name = name), "Hello, Jason Lee!");

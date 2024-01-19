@@ -5,5 +5,5 @@ extern crate rust_i18n;
 i18n!("locales");
 
 pub fn hello(name: &str) -> String {
-    t!("hello", name = name)
+    t!("hello", name = name).into()
 }
