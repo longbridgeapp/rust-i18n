@@ -24,7 +24,7 @@ Add crate dependencies in your Cargo.toml and setup I18n config:
 
 ```toml
 [dependencies]
-rust-i18n = "2"
+rust-i18n = "3"
 ```
 
 Load macro and init translations in `lib.rs` or `main.rs`:

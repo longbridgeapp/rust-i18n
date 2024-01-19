@@ -5,7 +5,7 @@ license = "MIT"
 name = "rust-i18n-extract"
 readme = "../../README.md"
 repository = "https://github.com/longbridgeapp/rust-i18n"
-version = "2.4.0"
+version = "3.0.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,7 +15,7 @@ ignore = "0.4"
 proc-macro2 = { version = "1", features = ["span-locations"] }
 quote = "1"
 regex = "1"
-rust-i18n-support = { path = "../support", version = "2.4.0" }
+rust-i18n-support = { path = "../support", version = "3.0.0" }
 serde = "1"
 serde_json = "1"
 serde_yaml = "0.8"
