@@ -229,30 +229,34 @@ fn generate_code(
         #[inline]
         #[allow(missing_docs)]
         pub fn _rust_i18n_translate<'r>(locale: &str, key: &'r str) -> Cow<'r, str> {
-            if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                return value.into();
-            }
-
-            let mut current_locale = locale;
-            while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
-                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key) {
-                    return value.into();
+            _rust_i18n_try_translate(locale, key).unwrap_or_else(|| {
+                if locale.is_empty() {
+                    key.into()
+                } else {
+                    format!("{}.{}", locale, key).into()
                 }
-                current_locale = fallback_locale;
-            }
+            })
+        }
 
-            if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                for locale in fallback {
-                    if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                        return value.into();
+        /// Try to get I18n text by locale and key
+        #[inline]
+        #[allow(missing_docs)]
+        pub fn _rust_i18n_try_translate<'r>(locale: &str, key: impl AsRef<str>) -> Option<Cow<'r, str>> {
+            _RUST_I18N_BACKEND.translate(locale, key.as_ref())
+                .map(Cow::from)
+                .or_else(|| {
+                    let mut current_locale = locale;
+                    while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
+                        if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key.as_ref()) {
+                            return Some(Cow::from(value));
+                        }
+                        current_locale = fallback_locale;
                     }
-                }
-            }
 
-            if locale.is_empty() {
-                return key.into();
-            }
-            return format!("{}.{}", locale, key).into();
+                    _RUST_I18N_FALLBACK_LOCALE.and_then(|fallback| {
+                        fallback.iter().find_map(|locale| _RUST_I18N_BACKEND.translate(locale, key.as_ref()).map(Cow::from))
+                    })
+                })
         }
 
         #[allow(missing_docs)]
