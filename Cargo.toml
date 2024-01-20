@@ -39,6 +39,7 @@ members = [
     "crates/support",
     "crates/macro",
     "examples/app-load-path",
+    "examples/app-tr",
     "examples/foo",
 ]
 
