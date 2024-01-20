@@ -264,8 +264,34 @@ fn generate_code(
     }
 }
 
+/// A procedural macro that generates a string representation of the input.
+///
+/// This macro accepts either a string literal or an identifier as input.
+/// If the input is a string literal, it returns the value of the string literal.
+/// If the input is an identifier, it returns the string representation of the identifier.
+///
+/// # Arguments
+///
+/// * `input` - The input token stream. It should be either a string literal or an identifier.
+///
+/// # Returns
+///
+/// Returns a token stream that contains a string representation of the input. If the input cannot be parsed as a string literal or an identifier,
+/// it returns a compile error.
+///
+/// # Example
+///
+/// ```no_run
+/// # use rust_i18n::vakey;
+/// # fn v1() {
+/// let key = vakey!(name);
+/// # }
+/// # fn v2() {
+/// let key = vakey!("name");
+/// # }
+/// ```
 #[proc_macro]
-pub fn key(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn vakey(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = syn::parse::<syn::LitStr>(input.clone())
         .map(|str| str.value())
         .or(syn::parse::<syn::Ident>(input.clone()).map(|ident| format!("{}", ident)));

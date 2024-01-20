@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 
 #[doc(hidden)]
 pub use once_cell;
-pub use rust_i18n_macro::{i18n, key};
+pub use rust_i18n_macro::{i18n, vakey};
 pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, SimpleBackend};
 
 static CURRENT_LOCALE: Lazy<AtomicStr> = Lazy::new(|| AtomicStr::from("en"));
@@ -124,7 +124,7 @@ macro_rules! t {
         {
             let message = crate::_rust_i18n_translate($locale, $key);
             let patterns: &[&str] = &[
-                $(rust_i18n::key!($var_name)),+
+                $(rust_i18n::vakey!($var_name)),+
             ];
             let values = &[
                 $(format!("{}", $var_val)),+
