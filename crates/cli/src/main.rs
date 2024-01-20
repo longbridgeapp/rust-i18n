@@ -1,8 +1,10 @@
 use anyhow::Error;
 use clap::{Args, Parser};
+use rust_i18n_support::TrKey;
 
 use std::{collections::HashMap, path::Path};
 
+use rust_i18n_extract::extractor::Message;
 use rust_i18n_extract::{extractor, generator, iter};
 mod config;
 
@@ -27,6 +29,22 @@ struct I18nArgs {
     /// Extract all untranslated I18n texts from source code
     #[arg(default_value = "./")]
     source: Option<String>,
+    /// Add a translation to the localize file for tr!
+    #[arg(long, default_value = None)]
+    tr: Option<Vec<String>>,
+}
+
+/// Add translations to the localize file for tr!
+fn add_translations(list: &[String], results: &mut HashMap<String, Message>) {
+    for item in list {
+        let index = results.len();
+        results.entry(item.tr_key()).or_insert(Message {
+            key: item.clone(),
+            index,
+            is_tr: true,
+            locations: vec![],
+        });
+    }
 }
 
 fn main() -> Result<(), Error> {
@@ -41,6 +59,10 @@ fn main() -> Result<(), Error> {
     iter::iter_crate(&source_path, |path, source| {
         extractor::extract(&mut results, path, source)
     })?;
+
+    if let Some(list) = args.tr {
+        add_translations(&list, &mut results);
+    }
 
     let mut messages: Vec<_> = results.iter().collect();
     messages.sort_by_key(|(_k, m)| m.index);
