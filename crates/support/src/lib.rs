@@ -5,8 +5,12 @@ use std::{collections::HashMap, path::Path};
 
 mod atomic_str;
 mod backend;
+mod cow_str;
+mod tr_key;
 pub use atomic_str::AtomicStr;
 pub use backend::{Backend, BackendExt, SimpleBackend};
+pub use cow_str::CowStr;
+pub use tr_key::{TrKey, TrKeyNumeric, TR_KEY_PREFIX};
 
 type Locale = String;
 type Value = serde_json::Value;
