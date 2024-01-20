@@ -144,6 +144,43 @@ fn bench_t(c: &mut Criterion) {
             )
         })
     });
+
+    c.bench_function("tr_with_args (many-dynamic)", |b| {
+        let msg =
+            r#"Hello %{name} %{surname}, your account id is %{id}, email address is %{email}. 
+        You live in %{city} %{zip}. 
+        Your website is %{website}."#
+                .to_string();
+        b.iter(|| {
+            tr!(
+                &msg,
+                id = 123,
+                name = "Marion",
+                surname = "Christiansen",
+                email = "Marion_Christiansen83@hotmail.com",
+                city = "Litteltown",
+                zip = 8408,
+                website = "https://snoopy-napkin.name"
+            )
+        })
+    });
+
+    c.bench_function("format! (many)", |b| {
+        b.iter(|| {
+            format!(
+                r#"Hello {name} %{surname}, your account id is {id}, email address is {email}. 
+        You live in {city} {zip}. 
+        Your website is {website}."#,
+                id = 123,
+                name = "Marion",
+                surname = "Christiansen",
+                email = "Marion_Christiansen83@hotmail.com",
+                city = "Litteltown",
+                zip = 8408,
+                website = "https://snoopy-napkin.name"
+            );
+        })
+    });
 }
 
 criterion_group!(benches, bench_t);
