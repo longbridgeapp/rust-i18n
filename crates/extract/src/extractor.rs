@@ -16,20 +16,22 @@ pub struct Location {
 pub struct Message {
     pub key: String,
     pub index: usize,
+    pub is_tr: bool,
     pub locations: Vec<Location>,
 }
 
 impl Message {
-    fn new(key: &str, index: usize) -> Self {
+    fn new(key: &str, index: usize, is_tr: bool) -> Self {
         Self {
             key: key.to_owned(),
             index,
+            is_tr,
             locations: vec![],
         }
     }
 }
 
-static METHOD_NAME: &str = "t";
+static METHOD_NAMES: &[&str] = &["t", "tr"];
 
 #[allow(clippy::ptr_arg)]
 pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<(), Error> {
@@ -63,9 +65,10 @@ impl<'a> Extractor<'a> {
                         }
                     }
 
-                    if ident == METHOD_NAME && is_macro {
+                    let ident_str = ident.to_string();
+                    if METHOD_NAMES.contains(&ident_str.as_str()) && is_macro {
                         if let Some(TokenTree::Group(group)) = token_iter.peek() {
-                            self.take_message(group.stream());
+                            self.take_message(group.stream(), ident_str == "tr");
                         }
                     }
                 }
@@ -76,7 +79,7 @@ impl<'a> Extractor<'a> {
         Ok(())
     }
 
-    fn take_message(&mut self, stream: TokenStream) {
+    fn take_message(&mut self, stream: TokenStream, is_tr: bool) {
         let mut token_iter = stream.into_iter().peekable();
 
         let literal = if let Some(TokenTree::Literal(literal)) = token_iter.next() {
@@ -89,13 +92,18 @@ impl<'a> Extractor<'a> {
 
         if let Some(lit) = key {
             if let Some(key) = literal_to_string(&lit) {
-                let message_key = format_message_key(&key);
-
+                let (message_key, message_content) = if is_tr {
+                    let hashed_key = rust_i18n_support::TrKey::tr_key(&key);
+                    (hashed_key, key.clone())
+                } else {
+                    let message_key = format_message_key(&key);
+                    (message_key.clone(), message_key)
+                };
                 let index = self.results.len();
                 let message = self
                     .results
-                    .entry(message_key.clone())
-                    .or_insert_with(|| Message::new(&message_key, index));
+                    .entry(message_key)
+                    .or_insert_with(|| Message::new(&message_content, index, is_tr));
 
                 let span = lit.span();
                 let line = span.start().line;
@@ -143,6 +151,7 @@ mod tests {
                         )+
                     ],
                     index: 0,
+                    is_tr: false,
                 };
                 results.push(message);
             )+

@@ -10,7 +10,7 @@ type Translations = HashMap<String, HashMap<String, String>>;
 pub fn generate<'a, P: AsRef<Path>>(
     output_path: P,
     all_locales: &Vec<String>,
-    messages: impl IntoIterator<Item = &'a Message> + Clone,
+    messages: impl IntoIterator<Item = (&'a String, &'a Message)> + Clone,
 ) -> Result<()> {
     let filename = "TODO.yml";
     let format = "yaml";
@@ -63,7 +63,7 @@ fn generate_result<'a, P: AsRef<Path>>(
     output_path: P,
     output_filename: &str,
     all_locales: &Vec<String>,
-    messages: impl IntoIterator<Item = &'a Message> + Clone,
+    messages: impl IntoIterator<Item = (&'a String, &'a Message)> + Clone,
 ) -> Translations {
     let mut trs = Translations::new();
 
@@ -76,7 +76,7 @@ fn generate_result<'a, P: AsRef<Path>>(
         let ignore_file = |fname: &str| fname.ends_with(&output_filename);
         let data = load_locales(&output_path, ignore_file);
 
-        for m in messages.clone() {
+        for (key, m) in messages.clone() {
             if !m.locations.is_empty() {
                 for _l in &m.locations {
                     // TODO: write file and line as YAML comment
@@ -85,15 +85,20 @@ fn generate_result<'a, P: AsRef<Path>>(
                 }
             }
 
+            let key = if m.is_tr { key } else { &m.key };
             if let Some(trs) = data.get(locale) {
-                if trs.get(&m.key).is_some() {
+                if trs.get(key).is_some() {
                     continue;
                 }
             }
 
-            let value = m.key.split('.').last().unwrap_or_default();
+            let value = if m.is_tr {
+                m.key.to_owned()
+            } else {
+                m.key.split('.').last().unwrap_or_default().to_string()
+            };
 
-            trs.entry(m.key.clone())
+            trs.entry(key.clone())
                 .or_insert_with(HashMap::new)
                 .insert(locale.to_string(), value.to_string());
         }

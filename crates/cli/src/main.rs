@@ -42,8 +42,8 @@ fn main() -> Result<(), Error> {
         extractor::extract(&mut results, path, source)
     })?;
 
-    let mut messages: Vec<_> = results.values().collect();
-    messages.sort_by_key(|m| m.index);
+    let mut messages: Vec<_> = results.iter().collect();
+    messages.sort_by_key(|(_k, m)| m.index);
 
     let mut has_error = false;
 
