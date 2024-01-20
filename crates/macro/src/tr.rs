@@ -179,7 +179,7 @@ impl Tr {
         let msg_val = self.msg.val;
         let msg_kind = self.msg.kind;
         let locale = self.locale.map_or_else(
-            || quote! { rust_i18n::locale().as_str() },
+            || quote! { &rust_i18n::locale() },
             |locale| quote! { #locale },
         );
         let keys: Vec<_> = self.args.keys().iter().map(|v| quote! { #v }).collect();
