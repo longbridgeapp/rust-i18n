@@ -33,7 +33,7 @@ rust_i18n::i18n!(
 
 #[cfg(test)]
 mod tests {
-    use rust_i18n::t;
+    use rust_i18n::{t, tr};
     use rust_i18n_support::load_locales;
 
     mod test0 {
@@ -114,7 +114,7 @@ mod tests {
     fn test_available_locales() {
         assert_eq!(
             rust_i18n::available_locales!(),
-            &["en", "ja", "pt", "zh", "zh-CN"]
+            &["de", "en", "fr", "ja", "ko", "pt", "ru", "vi", "zh", "zh-CN"]
         );
     }
 
@@ -197,6 +197,118 @@ mod tests {
         assert_eq!(t!("messages.hello", "name" => "Jason"), "Hello, Jason!");
         assert_eq!(
             t!("messages.hello", locale = "zh-CN", "name" => "Jason"),
+            "你好，Jason！"
+        );
+    }
+
+    #[test]
+    fn test_tr() {
+        rust_i18n::set_locale("en");
+        assert_eq!(tr!("Bar - Hello, World!"), "Bar - Hello, World!");
+
+        // Vars
+        assert_eq!(
+            tr!("Hello, %{name}. Your message is: %{msg}"),
+            "Hello, %{name}. Your message is: %{msg}"
+        );
+        assert_eq!(
+            tr!("Hello, %{name}. Your message is: %{msg}", name = "Jason"),
+            "Hello, Jason. Your message is: %{msg}"
+        );
+        assert_eq!(
+            tr!(
+                "Hello, %{name}. Your message is: %{msg}",
+                name = "Jason",
+                msg = "Bla bla"
+            ),
+            "Hello, Jason. Your message is: Bla bla"
+        );
+
+        rust_i18n::set_locale("zh-CN");
+        assert_eq!(tr!("Hello, %{name}!", name = "world"), "你好，world！");
+
+        rust_i18n::set_locale("en");
+        assert_eq!(tr!("Hello, %{name}!", name = "world"), "Hello, world!");
+
+        let fruits = vec!["Apple", "Banana", "Orange"];
+        let fruits_translated = vec!["苹果", "香蕉", "橘子"];
+        for (src, dst) in fruits.iter().zip(fruits_translated.iter()) {
+            assert_eq!(tr!(*src, locale = "zh-CN"), *dst);
+        }
+    }
+
+    #[test]
+    fn test_tr_with_tt_val() {
+        rust_i18n::set_locale("en");
+
+        assert_eq!(
+            tr!("You have %{count} messages.", count = 100),
+            "You have 100 messages."
+        );
+        assert_eq!(
+            tr!("You have %{count} messages.", count = 1.01),
+            "You have 1.01 messages."
+        );
+        assert_eq!(
+            tr!("You have %{count} messages.", count = 1 + 2),
+            "You have 3 messages."
+        );
+
+        // Test end with a comma
+        assert_eq!(
+            tr!(
+                "You have %{count} messages.",
+                locale = "zh-CN",
+                count = 1 + 2,
+            ),
+            "你收到了 3 条新消息。"
+        );
+
+        let a = 100;
+        assert_eq!(
+            tr!("You have %{count} messages.", count = a / 2),
+            "You have 50 messages."
+        );
+    }
+
+    #[test]
+    fn test_tr_with_locale_and_args() {
+        rust_i18n::set_locale("en");
+
+        assert_eq!(
+            tr!("Bar - Hello, World!", locale = "zh-CN"),
+            "Bar - 你好世界！"
+        );
+        assert_eq!(
+            tr!("Bar - Hello, World!", locale = "en"),
+            "Bar - Hello, World!"
+        );
+
+        assert_eq!(tr!("Hello, %{name}!", name = "Jason"), "Hello, Jason!");
+        assert_eq!(
+            tr!("Hello, %{name}!", locale = "en", name = "Jason"),
+            "Hello, Jason!"
+        );
+        // Invalid locale position, will ignore
+        assert_eq!(
+            tr!("Hello, %{name}!", name = "Jason", locale = "en"),
+            "Hello, Jason!"
+        );
+        assert_eq!(
+            tr!("Hello, %{name}!", locale = "zh-CN", name = "Jason"),
+            "你好，Jason！"
+        );
+    }
+
+    #[test]
+    fn test_tr_with_hash_args() {
+        rust_i18n::set_locale("en");
+
+        // Hash args
+        assert_eq!(tr!("Hello, %{name}!", name => "Jason"), "Hello, Jason!");
+        assert_eq!(tr!("Hello, %{name}!", "name" => "Jason"), "Hello, Jason!");
+        assert_eq!(
+            tr!("Hello, %{name}!", locale = "zh-CN", "name" => "Jason"),
             "你好，Jason！"
         );
     }
