@@ -23,8 +23,7 @@ fn main() {
     println!("String literals with patterns translation:");
     for locale in &locales {
         println!(
-            "{} => {} ({})",
-            "Hello, %{name}!",
+            "Hello, %{{name}}! => {} ({})",
             tr!("Hello, %{name}!", name = "World", locale = locale),
             locale
         );
@@ -61,7 +60,7 @@ fn main() {
     println!();
 
     println!("Runtime string translation:");
-    let src_list = vec!["Apple", "Banana", "Orange"];
+    let src_list = ["Apple", "Banana", "Orange"];
     for src in src_list.iter() {
         for locale in &locales {
             let translated = tr!(*src, locale = locale);
