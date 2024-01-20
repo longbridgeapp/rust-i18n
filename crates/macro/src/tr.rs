@@ -27,8 +27,15 @@ impl syn::parse::Parse for Argument {
             .map(|v| v.to_string())
             .or_else(|_| input.parse::<LitStr>().map(|v| v.value()))
             .map_err(|_| input.error("Expected a `string` literal or an identifier"))?;
-        let _ = input.parse::<Token![=]>()?;
-        let _ = input.parse::<Option<Token![>]>>()?;
+        if input.peek(Token![=>]) {
+            let _ = input.parse::<Token![=>]>()?;
+        } else if input.peek(Token![=]) {
+            let _ = input.parse::<Token![=]>()?;
+        } else if input.peek(Token![:]) {
+            let _ = input.parse::<Token![:]>()?;
+        } else {
+            return Err(input.error("Expected `=>`, `=` or `:`"));
+        }
         let value = input.parse::<Expr>()?;
         Ok(Self { name, value })
     }

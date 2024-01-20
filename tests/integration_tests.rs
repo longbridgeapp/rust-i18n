@@ -225,7 +225,11 @@ mod tests {
         );
 
         rust_i18n::set_locale("zh-CN");
+        assert_eq!(tr!("Hello, %{name}!", name => "world"), "你好，world！");
         assert_eq!(tr!("Hello, %{name}!", name = "world"), "你好，world！");
+        assert_eq!(tr!("Hello, %{name}!", name : "world"), "你好，world！");
+        assert_eq!(tr!("Hello, %{name}!", name: "world"), "你好，world！");
+        assert_eq!(tr!("Hello, %{name}!", name:"world"), "你好，world！");
 
         rust_i18n::set_locale("en");
         assert_eq!(tr!("Hello, %{name}!", name = "world"), "Hello, world!");
