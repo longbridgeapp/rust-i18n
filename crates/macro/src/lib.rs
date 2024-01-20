@@ -3,6 +3,8 @@ use rust_i18n_support::{is_debug, load_locales};
 use std::collections::HashMap;
 use syn::{parse_macro_input, Expr, Ident, LitStr, Token};
 
+mod tr;
+
 struct Args {
     locales_path: String,
     fallback: Option<Vec<String>>,
@@ -197,7 +199,7 @@ fn generate_code(
 
     // result
     quote! {
-        use rust_i18n::BackendExt;
+        use rust_i18n::{BackendExt, CowStr, TrKey};
         use std::borrow::Cow;
 
         /// I18n backend instance
@@ -304,4 +306,63 @@ pub fn vakey(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Ok(value) => quote! { #value }.into(),
         Err(err) => err.to_compile_error().into(),
     }
+}
+
+/// Get I18n text with literals supports.
+///
+/// This macro first checks if a translation exists for the input string.
+/// If it does, it returns the translated string.
+/// If it does not, it returns the input string literal.
+///
+/// # Variants
+///
+/// This macro has several variants that allow for different use cases:
+///
+/// * `tr!("foo")`:
+///   Translates the string "foo" using the current locale.
+///
+/// * `tr!("foo", locale = "en")`:
+///   Translates the string "foo" using the specified locale "en".
+///
+/// * `tr!("foo", locale = "en", a = 1, b = "Foo")`:
+///   Translates the string "foo" using the specified locale "en" and replaces the patterns "{a}" and "{b}" in the string with "1" and "Foo" respectively.
+///
+/// * `tr!("foo %{a} %{b}", a = "bar", b = "baz")`:
+///   Translates the string "foo %{a} %{b}" using the current locale and replaces the patterns "{a}" and "{b}" in the string with "bar" and "baz" respectively.
+///
+/// * `tr!("foo %{a} %{b}", locale = "en", "a" => "bar", "b" => "baz")`:
+///   Translates the string "foo %{a} %{b}" using the specified locale "en" and replaces the patterns "{a}" and "{b}" in the string with "bar" and "baz" respectively.
+///
+/// * `tr!("foo %{a} %{b}", "a" => "bar", "b" => "baz")`:
+///   Translates the string "foo %{a} %{b}" using the current locale and replaces the patterns "{a}" and "{b}" in the string with "bar" and "baz" respectively.
+///
+/// # Examples
+///
+/// ```no_run
+/// #[macro_use] extern crate rust_i18n;
+/// # use rust_i18n::{tr, CowStr};
+/// # fn _rust_i18n_try_translate<'r>(locale: &str, key: &'r str) -> Option<std::borrow::Cow<'r, str>> { todo!() }
+/// # fn main() {
+/// // Simple get text with current locale
+/// tr!("Hello world");
+/// // => "Hello world" (Key `tr_3RnEdpgZvZ2WscJuSlQJkJ` for "Hello world")
+///
+/// // Get a special locale's text
+/// tr!("Hello world", locale = "de");
+/// // => "Hallo Welt!" (Key `tr_3RnEdpgZvZ2WscJuSlQJkJ` for "Hello world")
+///
+/// // With variables
+/// tr!("Hello, %{name}", name = "world");
+/// // => "Hello, world" (Key `tr_4Cct6Q289b12SkvF47dXIx` for "Hello, %{name}")
+/// tr!("Hello, %{name} and %{other}", name = "Foo", other ="Bar");
+/// // => "Hello, Foo and Bar" (Key `tr_3eULVGYoyiBuaM27F93Mo7` for "Hello, %{name} and %{other}")
+///
+/// // With locale and variables
+/// tr!("Hallo, %{name}", locale = "de", name = "Jason");
+/// // => "Hallo, Jason" (Key `tr_4Cct6Q289b12SkvF47dXIx` for "Hallo, %{name}")
+/// # }
+/// ```
+#[proc_macro]
+pub fn tr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    parse_macro_input!(input as tr::Tr).into()
 }

@@ -25,3 +25,6 @@ rust-i18n = { path = "../.." }
 
 [lib]
 proc-macro = true
+
+[features]
+log_tr_dyn = []

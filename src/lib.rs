@@ -6,8 +6,8 @@ use once_cell::sync::Lazy;
 
 #[doc(hidden)]
 pub use once_cell;
-pub use rust_i18n_macro::{i18n, vakey};
-pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, SimpleBackend};
+pub use rust_i18n_macro::{i18n, tr, vakey};
+pub use rust_i18n_support::{AtomicStr, Backend, BackendExt, CowStr, SimpleBackend, TrKey};
 
 static CURRENT_LOCALE: Lazy<AtomicStr> = Lazy::new(|| AtomicStr::from("en"));
 

@@ -45,3 +45,6 @@ members = [
 [[bench]]
 harness = false
 name = "bench"
+
+[features]
+log_tr_dyn = ["rust-i18n-macro/log_tr_dyn"]
