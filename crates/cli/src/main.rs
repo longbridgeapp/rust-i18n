@@ -29,8 +29,8 @@ struct I18nArgs {
     /// Extract all untranslated I18n texts from source code
     #[arg(default_value = "./")]
     source: Option<String>,
-    /// Add a translation to the localize file for tr!
-    #[arg(long, default_value = None)]
+    /// Add a translation to the localize file for `tr!`
+    #[arg(long, default_value = None, name = "TEXT")]
     tr: Option<Vec<String>>,
 }
 
