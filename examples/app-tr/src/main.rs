@@ -2,7 +2,7 @@ use rust_i18n::tr;
 
 rust_i18n::i18n!("locales");
 
-#[cfg(feature = "log_tr_dyn")]
+#[cfg(feature = "log-tr-dyn")]
 fn set_logger() {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
@@ -10,7 +10,7 @@ fn set_logger() {
         .init();
 }
 
-#[cfg(not(feature = "log_tr_dyn"))]
+#[cfg(not(feature = "log-tr-dyn"))]
 fn set_logger() {}
 
 fn main() {

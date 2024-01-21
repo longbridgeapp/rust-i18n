@@ -11,7 +11,7 @@ log = { version = "0.4", optional = true }
 rust-i18n = { path = "../.." }
 
 [features]
-log_tr_dyn = ["env_logger", "log", "rust-i18n/log_tr_dyn"]
+log-tr-dyn = ["env_logger", "log", "rust-i18n/log-tr-dyn"]
 
 [package.metadata.i18n]
 available-locales = ["en", "zh-CN"]

@@ -221,7 +221,7 @@ impl Tr {
                 }
             }
             Messagekind::ExprCall | Messagekind::ExprClosure | Messagekind::ExprMacro => {
-                let logging = if cfg!(feature = "log_tr_dyn") {
+                let logging = if cfg!(feature = "log-tr-dyn") {
                     quote! {
                         log::debug!("tr: missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
                     }
@@ -264,7 +264,7 @@ impl Tr {
             | Messagekind::ExprReference
             | Messagekind::ExprUnary
             | Messagekind::Ident => {
-                let logging = if cfg!(feature = "log_tr_dyn") {
+                let logging = if cfg!(feature = "log-tr-dyn") {
                     quote! {
                         log::debug!("tr: missing: {} => {:?} @ {}:{}", msg_key, #msg_val, file!(), line!());
                     }
