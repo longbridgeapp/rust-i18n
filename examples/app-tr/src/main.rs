@@ -76,4 +76,13 @@ fn main() {
         }
     }
     println!();
+
+    if cfg!(feature = "log-tr-dyn") {
+        println!("Runtime string missing with logging:");
+        for locale in &locales {
+            let msg = "Foo Bar".to_string();
+            println!("{:>8} => {} ({locale})", &msg, tr!(&msg, locale = locale));
+        }
+        println!();
+    }
 }
