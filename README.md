@@ -211,11 +211,14 @@ tr!("Hello world", locale = "de");
 tr!("Hello, %{name}", name = "world");
 // => "Hello, world" (Key `tr_4Cct6Q289b12SkvF47dXIx` for "Hello, %{name}")
 
-tr!("Hello, %{name} and %{other}", name = "Foo", other ="Bar");
+tr!("Hello, %{name} and %{other}", name = "Foo", other = "Bar");
 // => "Hello, Foo and Bar" (Key `tr_3eULVGYoyiBuaM27F93Mo7` for "Hello, %{name} and %{other}")
 
-tr!("Hallo, %{name}", locale = "de", name = "Jason");
+tr!("Hello, %{name}", locale = "de", name = "Jason");
 // => "Hallo, Jason" (Key `tr_4Cct6Q289b12SkvF47dXIx` for "Hallo, %{name}")
+
+tr!("Hello, %{name}, you serial number is: %{sn}", name = "Jason", sn = 123 : {:08});
+// => "Hello, Jason, you serial number is: 000000123"
 # }
 ```
 

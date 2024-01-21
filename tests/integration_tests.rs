@@ -227,9 +227,6 @@ mod tests {
         rust_i18n::set_locale("zh-CN");
         assert_eq!(tr!("Hello, %{name}!", name => "world"), "你好，world！");
         assert_eq!(tr!("Hello, %{name}!", name = "world"), "你好，world！");
-        assert_eq!(tr!("Hello, %{name}!", name : "world"), "你好，world！");
-        assert_eq!(tr!("Hello, %{name}!", name: "world"), "你好，world！");
-        assert_eq!(tr!("Hello, %{name}!", name:"world"), "你好，world！");
 
         rust_i18n::set_locale("en");
         assert_eq!(tr!("Hello, %{name}!", name = "world"), "Hello, world!");
@@ -314,6 +311,45 @@ mod tests {
         assert_eq!(
             tr!("Hello, %{name}!", locale = "zh-CN", "name" => "Jason"),
             "你好，Jason！"
+        );
+    }
+
+    #[test]
+    fn test_tr_with_specified_args() {
+        #[derive(Debug)]
+        struct Foo {
+            #[allow(unused)]
+            bar: usize,
+        }
+        assert_eq!(
+            tr!("Any: %{value}", value = Foo { bar : 1 } : {:?}),
+            "Any: Foo { bar: 1 }"
+        );
+        let foo = Foo { bar: 2 };
+        assert_eq!(
+            tr!("Any: %{value}", value = foo : {:?}),
+            "Any: Foo { bar: 2 }"
+        );
+        assert_eq!(
+            tr!("Any: %{value}", value = &foo : {:?}),
+            "Any: Foo { bar: 2 }"
+        );
+        assert_eq!(tr!("Any: %{value}", value = foo.bar : {:?}), "Any: 2");
+        assert_eq!(
+            tr!("You have %{count} messages.", count => 123 : {:08}),
+            "You have 00000123 messages."
+        );
+        assert_eq!(
+            tr!("You have %{count} messages.", count => 100 + 23 : {:>8}),
+            "You have      123 messages."
+        );
+        assert_eq!(
+            tr!("You have %{count} messages.", count => 1 * 100 + 23 : {:08}, locale = "zh-CN"),
+            "你收到了 00000123 条新消息。"
+        );
+        assert_eq!(
+            tr!("You have %{count} messages.", count => 100 + 23 * 1 / 1 : {:>8}, locale = "zh-CN"),
+            "你收到了      123 条新消息。"
         );
     }
 

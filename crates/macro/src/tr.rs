@@ -1,17 +1,61 @@
 use quote::{quote, ToTokens};
 use rust_i18n_support::TrKey;
-use syn::{parse::discouraged::Speculative, Expr, ExprMacro, Ident, LitStr, Token};
+use syn::{parse::discouraged::Speculative, token::Brace, Expr, ExprMacro, Ident, LitStr, Token};
+
+#[derive(Clone)]
+pub enum Value {
+    Expr(Expr),
+    Ident(Ident),
+}
+
+impl From<Expr> for Value {
+    fn from(expr: Expr) -> Self {
+        Self::Expr(expr)
+    }
+}
+
+impl From<Ident> for Value {
+    fn from(ident: Ident) -> Self {
+        Self::Ident(ident)
+    }
+}
+
+impl quote::ToTokens for Value {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        match self {
+            Self::Expr(expr) => expr.to_tokens(tokens),
+            Self::Ident(ident) => ident.to_tokens(tokens),
+        }
+    }
+}
+
+impl syn::parse::Parse for Value {
+    fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
+        let fork = input.fork();
+        if let Ok(expr) = fork.parse::<Expr>() {
+            input.advance_to(&fork);
+            return Ok(expr.into());
+        }
+        let fork = input.fork();
+        if let Ok(expr) = fork.parse::<Ident>() {
+            input.advance_to(&fork);
+            return Ok(expr.into());
+        }
+        Err(input.error("Expected a expression or an identifier"))
+    }
+}
 
 pub struct Argument {
     pub name: String,
-    pub value: Expr,
+    pub value: Value,
+    pub specifiers: Option<String>,
 }
 
 impl Argument {
     #[allow(dead_code)]
     pub fn value_string(&self) -> String {
         match &self.value {
-            Expr::Lit(expr_lit) => match &expr_lit.lit {
+            Value::Expr(Expr::Lit(expr_lit)) => match &expr_lit.lit {
                 syn::Lit::Str(lit_str) => lit_str.value(),
                 _ => self.value.to_token_stream().to_string(),
             },
@@ -31,13 +75,31 @@ impl syn::parse::Parse for Argument {
             let _ = input.parse::<Token![=>]>()?;
         } else if input.peek(Token![=]) {
             let _ = input.parse::<Token![=]>()?;
-        } else if input.peek(Token![:]) {
-            let _ = input.parse::<Token![:]>()?;
         } else {
-            return Err(input.error("Expected `=>`, `=` or `:`"));
+            return Err(input.error("Expected `=>` or `=`"));
         }
-        let value = input.parse::<Expr>()?;
-        Ok(Self { name, value })
+        let value = input.parse()?;
+        let specifiers = if input.peek(Token![:]) {
+            let _ = input.parse::<Token![:]>()?;
+            if input.peek(Brace) {
+                let content;
+                let _ = syn::braced!(content in input);
+                let mut specifiers = String::new();
+                while let Ok(s) = content.parse::<proc_macro2::TokenTree>() {
+                    specifiers.push_str(&s.to_string());
+                }
+                Some(specifiers)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        Ok(Self {
+            name,
+            value,
+            specifiers,
+        })
     }
 }
 
@@ -55,7 +117,8 @@ impl Arguments {
         self.args.iter().map(|arg| arg.name.clone()).collect()
     }
 
-    pub fn values(&self) -> Vec<Expr> {
+    #[allow(dead_code)]
+    pub fn values(&self) -> Vec<Value> {
         self.args.iter().map(|arg| arg.value.clone()).collect()
     }
 }
@@ -177,7 +240,7 @@ impl syn::parse::Parse for Messsage {
 pub(crate) struct Tr {
     pub msg: Messsage,
     pub args: Arguments,
-    pub locale: Option<Expr>,
+    pub locale: Option<Value>,
 }
 
 impl Tr {
@@ -192,9 +255,16 @@ impl Tr {
         let keys: Vec<_> = self.args.keys().iter().map(|v| quote! { #v }).collect();
         let values: Vec<_> = self
             .args
-            .values()
+            .as_ref()
             .iter()
-            .map(|v| quote! { format!("{}", #v) })
+            .map(|v| {
+                let value = &v.value;
+                let sepecifiers = v
+                    .specifiers
+                    .as_ref()
+                    .map_or("{}".to_owned(), |s| format!("{{{}}}", s));
+                quote! { format!(#sepecifiers, #value) }
+            })
             .collect();
         let logging = if cfg!(feature = "log-tr-dyn") {
             quote! {

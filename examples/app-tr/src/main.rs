@@ -85,4 +85,13 @@ fn main() {
         }
         println!();
     }
+
+    println!("String literals with specified args translation:");
+    for i in (0..10000).step_by(50) {
+        println!(
+            "Zero padded number: %{{count}} => {}",
+            tr!("Zero padded number: %{count}", count = i : {:08}),
+        );
+    }
+    println!();
 }

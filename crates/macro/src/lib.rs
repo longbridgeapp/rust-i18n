@@ -357,10 +357,13 @@ pub fn vakey(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// tr!("Hello, %{name} and %{other}", name = "Foo", other ="Bar");
 /// // => "Hello, Foo and Bar" (Key `tr_3eULVGYoyiBuaM27F93Mo7` for "Hello, %{name} and %{other}")
 ///
+/// // With variables and specifiers
+/// tr!("Hello, %{name} and %{other}", name = "Foo", other = 123 : {:08});
+/// // => "Hello, Foo and 00000123" (
+///
 /// // With locale and variables
 /// tr!("Hallo, %{name}", locale = "de", name => "Jason"); // Arrow style
 /// tr!("Hallo, %{name}", locale = "de", name = "Jason"); // Asignment style
-/// tr!("Hallo, %{name}", locale = "de", name : "Jason"); // Colon style
 /// // => "Hallo, Jason" (Key `tr_4Cct6Q289b12SkvF47dXIx` for "Hallo, %{name}")
 /// # }
 /// ```
