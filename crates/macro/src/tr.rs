@@ -196,6 +196,13 @@ impl Tr {
             .iter()
             .map(|v| quote! { format!("{}", #v) })
             .collect();
+        let logging = if cfg!(feature = "log-tr-dyn") {
+            quote! {
+                log::warn!("tr: missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
+            }
+        } else {
+            quote! {}
+        };
         match msg_kind {
             Messagekind::Literal => {
                 if self.args.is_empty() {
@@ -221,13 +228,6 @@ impl Tr {
                 }
             }
             Messagekind::ExprCall | Messagekind::ExprClosure | Messagekind::ExprMacro => {
-                let logging = if cfg!(feature = "log-tr-dyn") {
-                    quote! {
-                        log::warn!("tr: missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
-                    }
-                } else {
-                    quote! {}
-                };
                 if self.args.is_empty() {
                     quote! {
                         {
@@ -264,21 +264,16 @@ impl Tr {
             | Messagekind::ExprReference
             | Messagekind::ExprUnary
             | Messagekind::Ident => {
-                let logging = if cfg!(feature = "log-tr-dyn") {
-                    quote! {
-                        log::warn!("tr: missing: {} => {:?} @ {}:{}", msg_key, #msg_val, file!(), line!());
-                    }
-                } else {
-                    quote! {}
-                };
                 if self.args.is_empty() {
                     quote! {
                         {
                             let msg_key = rust_i18n::TrKey::tr_key(&#msg_key);
+                            let msg_val = #msg_val;
                             if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
                                 translated
                             } else {
-                                rust_i18n::CowStr::from(#msg_val).into_inner()
+                                #logging
+                                rust_i18n::CowStr::from(msg_val).into_inner()
                             }
                         }
                     }
@@ -286,6 +281,7 @@ impl Tr {
                     quote! {
                         {
                             let msg_key = rust_i18n::TrKey::tr_key(&#msg_key);
+                            let msg_val = #msg_val;
                             let keys = &[#(#keys),*];
                             let values = &[#(#values),*];
                             if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
@@ -293,7 +289,7 @@ impl Tr {
                                 std::borrow::Cow::from(replaced)
                             } else {
                                 #logging
-                                let replaced = rust_i18n::replace_patterns(&rust_i18n::CowStr::from(#msg_val).into_inner(), keys, values);
+                                let replaced = rust_i18n::replace_patterns(&rust_i18n::CowStr::from(msg_val).into_inner(), keys, values);
                                 std::borrow::Cow::from(replaced)
                             }
                         }
