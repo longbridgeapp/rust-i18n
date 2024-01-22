@@ -174,3 +174,18 @@ macro_rules! available_locales {
         crate::_rust_i18n_available_locales()
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{locale, CURRENT_LOCALE};
+
+    fn assert_locale_type(s: &str, val: &str) {
+        assert_eq!(s, val);
+    }
+
+    #[test]
+    fn test_locale() {
+        assert_locale_type(&locale(), &CURRENT_LOCALE.as_str());
+        assert_eq!(&*locale(), "en");
+    }
+}
