@@ -48,3 +48,18 @@ impl fmt::Display for AtomicStr {
         f.write_str(&self.as_str())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_str(s: &str) {
+        assert_eq!(s, "hello");
+    }
+
+    #[test]
+    fn test_atomic_str() {
+        let s = AtomicStr::from("hello");
+        test_str(&s.as_str());
+    }
+}
