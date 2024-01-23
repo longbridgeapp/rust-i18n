@@ -186,6 +186,6 @@ mod tests {
     #[test]
     fn test_locale() {
         assert_locale_type(&locale(), &CURRENT_LOCALE.as_str());
-        assert_eq!(locale().deref(), "en");
+        assert_eq!(&*locale(), "en");
     }
 }
