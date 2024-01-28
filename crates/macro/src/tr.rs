@@ -1,11 +1,58 @@
 use quote::{quote, ToTokens};
-use rust_i18n_support::TrKey;
-use syn::{parse::discouraged::Speculative, token::Brace, Expr, ExprMacro, Ident, LitStr, Token};
+use rust_i18n_support::{
+    MinifyKey, DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX, DEFAULT_MINIFY_KEY_THRESH,
+};
+use syn::{parse::discouraged::Speculative, token::Brace, Expr, Ident, LitStr, Token};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Default)]
 pub enum Value {
+    #[default]
+    Empty,
     Expr(Expr),
     Ident(Ident),
+}
+
+impl Value {
+    fn is_expr_lit_str(&self) -> bool {
+        if let Self::Expr(Expr::Lit(expr_lit)) = self {
+            if let syn::Lit::Str(_) = &expr_lit.lit {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_expr_tuple(&self) -> bool {
+        if let Self::Expr(Expr::Tuple(_)) = self {
+            return true;
+        }
+        false
+    }
+
+    fn to_string(&self) -> Option<String> {
+        if let Self::Expr(Expr::Lit(expr_lit)) = self {
+            if let syn::Lit::Str(lit_str) = &expr_lit.lit {
+                return Some(lit_str.value());
+            }
+        }
+        None
+    }
+
+    fn to_tupled_token_streams(
+        &self,
+    ) -> syn::parse::Result<(proc_macro2::TokenStream, proc_macro2::TokenStream)> {
+        if let Self::Expr(Expr::Tuple(expr_tuple)) = self {
+            if expr_tuple.elems.len() == 2 {
+                let first = expr_tuple.elems.first().map(|v| quote! { #v }).unwrap();
+                let last = expr_tuple.elems.last().map(|v| quote! { #v }).unwrap();
+                return Ok((first, last));
+            }
+        }
+        Err(syn::Error::new_spanned(
+            self,
+            "Expected a tuple with two elements",
+        ))
+    }
 }
 
 impl From<Expr> for Value {
@@ -23,8 +70,12 @@ impl From<Ident> for Value {
 impl quote::ToTokens for Value {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
-            Self::Expr(expr) => expr.to_tokens(tokens),
-            Self::Ident(ident) => ident.to_tokens(tokens),
+            Self::Empty => {}
+            Self::Expr(expr) => match expr {
+                Expr::Path(path) => quote! { &#path }.to_tokens(tokens),
+                expr => expr.to_tokens(tokens),
+            },
+            Self::Ident(ident) => quote! { &#ident }.to_tokens(tokens),
         }
     }
 }
@@ -45,6 +96,7 @@ impl syn::parse::Parse for Value {
     }
 }
 
+#[derive(Clone, Default)]
 pub struct Argument {
     pub name: String,
     pub value: Value,
@@ -62,15 +114,33 @@ impl Argument {
             _ => self.value.to_token_stream().to_string(),
         }
     }
+
+    fn try_ident(input: syn::parse::ParseStream) -> syn::parse::Result<String> {
+        let fork = input.fork();
+        let ident = fork.parse::<Ident>()?;
+        input.advance_to(&fork);
+        Ok(ident.to_string())
+    }
+
+    fn try_literal(input: syn::parse::ParseStream) -> syn::parse::Result<String> {
+        let fork = input.fork();
+        let lit = fork.parse::<LitStr>()?;
+        input.advance_to(&fork);
+        Ok(lit.value())
+    }
 }
 
 impl syn::parse::Parse for Argument {
     fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
-        let name = input
-            .parse::<Ident>()
-            .map(|v| v.to_string())
-            .or_else(|_| input.parse::<LitStr>().map(|v| v.value()))
+        // Ignore leading commas.
+        while input.peek(Token![,]) {
+            let _ = input.parse::<Token![,]>()?;
+        }
+        // Parse the argument name.
+        let name = Self::try_ident(input)
+            .or_else(|_| Self::try_literal(input))
             .map_err(|_| input.error("Expected a `string` literal or an identifier"))?;
+        // Parse the separator between the name and the value.
         if input.peek(Token![=>]) {
             let _ = input.parse::<Token![=>]>()?;
         } else if input.peek(Token![=]) {
@@ -78,7 +148,9 @@ impl syn::parse::Parse for Argument {
         } else {
             return Err(input.error("Expected `=>` or `=`"));
         }
+        // Parse the argument value.
         let value = input.parse()?;
+        // Parse the specifiers [optinal].
         let specifiers = if input.peek(Token![:]) {
             let _ = input.parse::<Token![:]>()?;
             if input.peek(Brace) {
@@ -111,6 +183,10 @@ pub struct Arguments {
 impl Arguments {
     pub fn is_empty(&self) -> bool {
         self.args.is_empty()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Argument> {
+        self.args.iter()
     }
 
     pub fn keys(&self) -> Vec<String> {
@@ -146,108 +222,182 @@ impl syn::parse::Parse for Arguments {
 }
 
 #[derive(Default)]
-pub enum Messagekind {
-    #[default]
-    Literal,
-    Expr,
-    ExprCall,
-    ExprClosure,
-    ExprMacro,
-    ExprReference,
-    ExprUnary,
-    Ident,
-}
-
-#[derive(Default)]
 pub struct Messsage {
     pub key: proc_macro2::TokenStream,
-    pub val: proc_macro2::TokenStream,
-    pub kind: Messagekind,
+    pub val: Value,
 }
 
 impl Messsage {
     fn try_exp(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
         let fork = input.fork();
         let expr = fork.parse::<Expr>()?;
-        let key = quote! { #expr };
-        let val = quote! { #expr };
         input.advance_to(&fork);
-        let kind = match expr {
-            Expr::Call(_) => Messagekind::ExprCall,
-            Expr::Closure(_) => Messagekind::ExprClosure,
-            Expr::Macro(_) => Messagekind::ExprMacro,
-            Expr::Reference(_) => Messagekind::ExprReference,
-            Expr::Unary(_) => Messagekind::ExprUnary,
-            _ => Messagekind::Expr,
-        };
-        Ok(Self { key, val, kind })
-    }
 
-    #[allow(dead_code)]
-    fn try_exp_macro(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
-        let fork = input.fork();
-        let expr = fork.parse::<ExprMacro>()?;
-        let key = quote! { #expr };
-        let val = quote! { #expr };
-        input.advance_to(&fork);
         Ok(Self {
-            key,
-            val,
-            kind: Messagekind::ExprMacro,
+            key: Default::default(),
+            val: Value::Expr(expr),
         })
     }
 
     fn try_ident(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
         let fork = input.fork();
         let ident = fork.parse::<Ident>()?;
-        let key = quote! { #ident };
-        let val = quote! { #ident };
         input.advance_to(&fork);
         Ok(Self {
-            key,
-            val,
-            kind: Messagekind::Ident,
-        })
-    }
-
-    fn try_litreal(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
-        let fork = input.fork();
-        let lit_str = fork.parse::<LitStr>()?;
-        let key = lit_str.value().tr_key();
-        let key = quote! { #key };
-        let val = quote! { #lit_str };
-        input.advance_to(&fork);
-        Ok(Self {
-            key,
-            val,
-            kind: Messagekind::Literal,
+            key: Default::default(),
+            val: Value::Ident(ident),
         })
     }
 }
 
 impl syn::parse::Parse for Messsage {
     fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
-        let result = Self::try_litreal(input)
-            // .or_else(|_| Self::try_exp_macro(input))
-            .or_else(|_| Self::try_exp(input))
-            .or_else(|_| Self::try_ident(input))?;
+        let result = Self::try_exp(input).or_else(|_| Self::try_ident(input))?;
         Ok(result)
     }
 }
 
-/// A type representing the `tr!` macro.
-#[derive(Default)]
+/// A type representing the `tr!` proc macro.
 pub(crate) struct Tr {
     pub msg: Messsage,
     pub args: Arguments,
     pub locale: Option<Value>,
+    pub minify_key: bool,
+    pub minify_key_len: usize,
+    pub minify_key_prefix: String,
+    pub minify_key_thresh: usize,
 }
 
 impl Tr {
+    fn new() -> Self {
+        Self {
+            msg: Messsage::default(),
+            args: Arguments::default(),
+            locale: None,
+            minify_key: false,
+            minify_key_len: DEFAULT_MINIFY_KEY_LEN,
+            minify_key_prefix: DEFAULT_MINIFY_KEY_PREFIX.into(),
+            minify_key_thresh: DEFAULT_MINIFY_KEY_THRESH,
+        }
+    }
+
+    fn parse_minify_key(value: &Value) -> syn::parse::Result<bool> {
+        if let Value::Expr(Expr::Lit(expr_lit)) = value {
+            match &expr_lit.lit {
+                syn::Lit::Bool(lit_bool) => {
+                    return Ok(lit_bool.value);
+                }
+                syn::Lit::Str(lit_str) => {
+                    let value = lit_str.value();
+                    if ["true", "false", "yes", "no"].contains(&value.as_str()) {
+                        return Ok(["true", "yes"].contains(&value.as_str()));
+                    }
+                }
+                _ => {}
+            }
+        }
+        Err(syn::Error::new_spanned(
+            value,
+            "`_minify_key` Expected a string literal in `true`, `false`, `yes`, `no`",
+        ))
+    }
+
+    fn parse_minify_key_len(value: &Value) -> syn::parse::Result<usize> {
+        if let Value::Expr(Expr::Lit(expr_lit)) = value {
+            if let syn::Lit::Int(lit_int) = &expr_lit.lit {
+                return Ok(lit_int.base10_parse().unwrap());
+            }
+        }
+        Err(syn::Error::new_spanned(
+            value,
+            "`_minify_key_len` Expected a integer literal",
+        ))
+    }
+
+    fn parse_minify_key_prefix(value: &Value) -> syn::parse::Result<String> {
+        if let Value::Expr(Expr::Lit(expr_lit)) = value {
+            if let syn::Lit::Str(lit_str) = &expr_lit.lit {
+                return Ok(lit_str.value());
+            }
+        }
+        Err(syn::Error::new_spanned(
+            value,
+            "`_minify_key_prefix` Expected a string literal",
+        ))
+    }
+
+    fn parse_minify_key_thresh(value: &Value) -> syn::parse::Result<usize> {
+        if let Value::Expr(Expr::Lit(expr_lit)) = value {
+            if let syn::Lit::Int(lit_int) = &expr_lit.lit {
+                return Ok(lit_int.base10_parse().unwrap());
+            }
+        }
+        Err(syn::Error::new_spanned(
+            value,
+            "`_minify_key_threshold` Expected a integer literal",
+        ))
+    }
+
+    fn filter_arguments(&mut self) -> syn::parse::Result<()> {
+        for arg in self.args.iter() {
+            match arg.name.as_str() {
+                "locale" => {
+                    self.locale = Some(arg.value.clone());
+                }
+                "_minify_key" => {
+                    self.minify_key = Self::parse_minify_key(&arg.value)?;
+                }
+                "_minify_key_len" => {
+                    self.minify_key_len = Self::parse_minify_key_len(&arg.value)?;
+                }
+                "_minify_key_prefix" => {
+                    self.minify_key_prefix = Self::parse_minify_key_prefix(&arg.value)?;
+                }
+                "_minify_key_thresh" => {
+                    self.minify_key_thresh = Self::parse_minify_key_thresh(&arg.value)?;
+                }
+                _ => {}
+            }
+        }
+
+        self.args.as_mut().retain(|v| {
+            ![
+                "locale",
+                "_minify_key",
+                "_minify_key_len",
+                "_minify_key_prefix",
+                "_minify_key_thresh",
+            ]
+            .contains(&v.name.as_str())
+        });
+
+        Ok(())
+    }
+
     fn into_token_stream(self) -> proc_macro2::TokenStream {
-        let msg_key = self.msg.key;
-        let msg_val = self.msg.val;
-        let msg_kind = self.msg.kind;
+        let (msg_key, msg_val) = if self.minify_key && self.msg.val.is_expr_lit_str() {
+            let msg_val = self.msg.val.to_string().unwrap();
+            let msg_key = MinifyKey::minify_key(
+                &msg_val,
+                self.minify_key_len,
+                self.minify_key_prefix.as_str(),
+                self.minify_key_thresh,
+            );
+            (quote! { #msg_key }, quote! { #msg_val })
+        } else if self.minify_key && self.msg.val.is_expr_tuple() {
+            self.msg.val.to_tupled_token_streams().unwrap()
+        } else if self.minify_key {
+            let minify_key_len = self.minify_key_len;
+            let minify_key_prefix = self.minify_key_prefix;
+            let minify_key_thresh = self.minify_key_thresh;
+            let msg_val = self.msg.val.to_token_stream();
+            let msg_key = quote! { rust_i18n::MinifyKey::minify_key(&msg_val, #minify_key_len, #minify_key_prefix, #minify_key_thresh) };
+            (msg_key, msg_val)
+        } else {
+            let msg_val = self.msg.val.to_token_stream();
+            let msg_key = quote! { &msg_val };
+            (msg_key, msg_val)
+        };
         let locale = self.locale.map_or_else(
             || quote! { &rust_i18n::locale() },
             |locale| quote! { #locale },
@@ -266,107 +416,52 @@ impl Tr {
                 quote! { format!(#sepecifiers, #value) }
             })
             .collect();
-        let logging = if cfg!(feature = "log-tr-dyn") {
+        let logging = if cfg!(feature = "log-missing") {
             quote! {
-                log::warn!("tr: missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
+                log::log!(target: "rust-i18n", log::Level::Warn, "missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
             }
         } else {
             quote! {}
         };
-        match msg_kind {
-            Messagekind::Literal => {
-                if self.args.is_empty() {
-                    quote! {
-                        crate::_rust_i18n_try_translate(#locale, #msg_key).unwrap_or_else(|| std::borrow::Cow::from(#msg_val))
-                    }
-                } else {
-                    quote! {
-                        {
-                            let msg_key = #msg_key;
-                            let msg_val = #msg_val;
-                            let keys = &[#(#keys),*];
-                            let values = &[#(#values),*];
-                            if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
-                                let replaced = rust_i18n::replace_patterns(&translated, keys, values);
-                                std::borrow::Cow::from(replaced)
-                            } else {
-                                let replaced = rust_i18n::replace_patterns(&rust_i18n::CowStr::from(msg_val).into_inner(), keys, values);
-                                std::borrow::Cow::from(replaced)
-                            }
-                        }
+        if self.args.is_empty() {
+            quote! {
+                {
+                    let msg_val = #msg_val;
+                    let msg_key = #msg_key;
+                    if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
+                        translated.into()
+                    } else {
+                        #logging
+                        rust_i18n::CowStr::from(msg_val).into_inner()
                     }
                 }
             }
-            Messagekind::ExprCall | Messagekind::ExprClosure | Messagekind::ExprMacro => {
-                if self.args.is_empty() {
-                    quote! {
-                        {
-                            let msg_val = #msg_val;
-                            let msg_key = rust_i18n::TrKey::tr_key(&msg_val);
-                            if let Some(translated) = crate::_rust_i18n_try_translate(#locale, msg_key) {
-                                translated
-                            } else {
-                                #logging
-                                std::borrow::Cow::from(msg_val)
-                            }
-                        }
-                    }
-                } else {
-                    quote! {
-                        {
-                            let msg_val = #msg_val;
-                            let msg_key = rust_i18n::TrKey::tr_key(&msg_val);
-                            let keys = &[#(#keys),*];
-                            let values = &[#(#values),*];
-                            if let Some(translated) = crate::_rust_i18n_try_translate(#locale, msg_key) {
-                                let replaced = rust_i18n::replace_patterns(&translated, keys, values);
-                                std::borrow::Cow::from(replaced)
-                            } else {
-                                #logging
-                                let replaced = rust_i18n::replace_patterns(&rust_i18n::CowStr::from(msg_val).into_inner(), keys, values);
-                                std::borrow::Cow::from(replaced)
-                            }
-                        }
+        } else {
+            quote! {
+                {
+                    let msg_val = #msg_val;
+                    let msg_key = #msg_key;
+                    let keys = &[#(#keys),*];
+                    let values = &[#(#values),*];
+                    {
+                    if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
+                        let replaced = rust_i18n::replace_patterns(&translated, keys, values);
+                        std::borrow::Cow::from(replaced)
+                    } else {
+                        #logging
+                        let replaced = rust_i18n::replace_patterns(rust_i18n::CowStr::from(msg_val).as_str(), keys, values);
+                        std::borrow::Cow::from(replaced)
                     }
                 }
-            }
-            Messagekind::Expr
-            | Messagekind::ExprReference
-            | Messagekind::ExprUnary
-            | Messagekind::Ident => {
-                if self.args.is_empty() {
-                    quote! {
-                        {
-                            let msg_key = rust_i18n::TrKey::tr_key(&#msg_key);
-                            let msg_val = #msg_val;
-                            if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
-                                translated
-                            } else {
-                                #logging
-                                rust_i18n::CowStr::from(msg_val).into_inner()
-                            }
-                        }
-                    }
-                } else {
-                    quote! {
-                        {
-                            let msg_key = rust_i18n::TrKey::tr_key(&#msg_key);
-                            let msg_val = #msg_val;
-                            let keys = &[#(#keys),*];
-                            let values = &[#(#values),*];
-                            if let Some(translated) = crate::_rust_i18n_try_translate(#locale, &msg_key) {
-                                let replaced = rust_i18n::replace_patterns(&translated, keys, values);
-                                std::borrow::Cow::from(replaced)
-                            } else {
-                                #logging
-                                let replaced = rust_i18n::replace_patterns(&rust_i18n::CowStr::from(msg_val).into_inner(), keys, values);
-                                std::borrow::Cow::from(replaced)
-                            }
-                        }
-                    }
                 }
             }
         }
+    }
+}
+
+impl Default for Tr {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -374,20 +469,21 @@ impl syn::parse::Parse for Tr {
     fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
         let msg = input.parse::<Messsage>()?;
         let comma = input.parse::<Option<Token![,]>>()?;
-        let (args, locale) = if comma.is_some() {
-            let mut args = input.parse::<Arguments>()?;
-            let locale = args
-                .as_ref()
-                .iter()
-                .find(|v| v.name == "locale")
-                .map(|v| v.value.clone());
-            args.as_mut().retain(|v| v.name != "locale");
-            (args, locale)
+        let args = if comma.is_some() {
+            input.parse::<Arguments>()?
         } else {
-            (Arguments::default(), None)
+            Arguments::default()
         };
 
-        Ok(Self { msg, args, locale })
+        let mut result = Self {
+            msg,
+            args,
+            ..Self::new()
+        };
+
+        result.filter_arguments()?;
+
+        Ok(result)
     }
 }
 
