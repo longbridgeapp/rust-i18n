@@ -84,6 +84,10 @@ mod tests {
         }
     }
 
+    mod test5 {
+        rust_i18n::i18n!(metadata = true);
+    }
+
     #[test]
     fn check_test_environment() {
         assert_eq!(

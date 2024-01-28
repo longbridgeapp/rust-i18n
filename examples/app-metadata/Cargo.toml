@@ -1,0 +1,18 @@
+[package]
+edition = "2021"
+name = "app-metadata"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rust-i18n = { path = "../.." }
+
+[package.metadata.i18n]
+available-locales = ["en", "zh"]
+default-locale = "zh"
+load-path = "locales"
+minify-key = true
+minify-key-len = 12
+minify-key-prefix = "T."
+minify-key-thresh = 4

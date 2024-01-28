@@ -70,6 +70,10 @@ i18n!("locales",
 );
 // Now, if the message length exceeds 64, the `t!` macro will automatically generate
 // a 12-byte short hashed key with a "T." prefix for it, if not, it will use the original.
+
+// Configuration using the `[package.metadata.i18n]` section in `Cargo.toml`,
+// Useful for the `cargo i18n` command line tool.
+i18n!(metadata = true);
 ```
 
 Or you can import by use directly:

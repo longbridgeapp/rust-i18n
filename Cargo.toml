@@ -53,6 +53,7 @@ members = [
     "crates/macro",
     "examples/app-egui",
     "examples/app-load-path",
+    "examples/app-metadata",
     "examples/app-minify-key",
     "examples/foo",
 ]

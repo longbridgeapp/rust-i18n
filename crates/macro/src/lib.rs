@@ -1,7 +1,7 @@
 use quote::quote;
 use rust_i18n_support::{
-    is_debug, load_locales, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX,
-    DEFAULT_MINIFY_KEY_THRESH,
+    is_debug, load_locales, I18nConfig, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN,
+    DEFAULT_MINIFY_KEY_PREFIX, DEFAULT_MINIFY_KEY_THRESH,
 };
 use std::collections::HashMap;
 use syn::{parse_macro_input, Expr, Ident, LitBool, LitStr, Token};
@@ -11,8 +11,10 @@ mod tr;
 
 struct Args {
     locales_path: String,
+    default_locale: Option<String>,
     fallback: Option<Vec<String>>,
     extend: Option<Expr>,
+    metadata: bool,
     minify_key: bool,
     minify_key_len: usize,
     minify_key_prefix: String,
@@ -51,6 +53,30 @@ impl Args {
             })
             .collect::<syn::parse::Result<Vec<String>>>()?;
         self.fallback = Some(fallback);
+        Ok(())
+    }
+
+    fn consume_metadata(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
+        let lit_bool = input.parse::<LitBool>()?;
+        self.metadata = lit_bool.value;
+        // Load the config from Cargo.toml. This can be overridden by subsequent options.
+        if self.metadata {
+            // CARGO_MANIFEST_DIR is current build directory
+            let cargo_dir = std::env::var("CARGO_MANIFEST_DIR")
+                .map_err(|_| input.error("The CARGO_MANIFEST_DIR is required fo `metadata`"))?;
+            let current_dir = std::path::PathBuf::from(cargo_dir);
+            let cfg = I18nConfig::load(&current_dir)
+                .map_err(|_| input.error("Failed to load config from Cargo.toml for `metadata`"))?;
+            self.locales_path = cfg.load_path;
+            self.default_locale = Some(cfg.default_locale.clone());
+            if !cfg.fallback.is_empty() {
+                self.fallback = Some(cfg.fallback);
+            }
+            self.minify_key = cfg.minify_key;
+            self.minify_key_len = cfg.minify_key_len;
+            self.minify_key_prefix = cfg.minify_key_prefix;
+            self.minify_key_thresh = cfg.minify_key_thresh;
+        }
         Ok(())
     }
 
@@ -96,6 +122,9 @@ impl Args {
                 let val = input.parse::<Expr>()?;
                 self.extend = Some(val);
             }
+            "metadata" => {
+                self.consume_metadata(input)?;
+            }
             "minify_key" => {
                 self.consume_minify_key(input)?;
             }
@@ -137,6 +166,16 @@ impl syn::parse::Parse for Args {
     /// # fn v4() {
     /// i18n!("locales", fallback = ["en", "es"]);
     /// # }
+    /// # fn v5() {
+    /// i18n!("locales", fallback = ["en", "es"],
+    ///       minify_key = true,
+    ///       minify_key_len = 12,
+    ///       minify_key_prefix = "T.",
+    ///       minify_key_thresh = 64);
+    /// # }
+    /// # fn v6() {
+    /// i18n!(metadata = true);
+    /// # }
     /// ```
     ///
     /// Ref: https://docs.rs/syn/latest/syn/parse/index.html
@@ -145,8 +184,10 @@ impl syn::parse::Parse for Args {
 
         let mut result = Self {
             locales_path: String::from("locales"),
+            default_locale: None,
             fallback: None,
             extend: None,
+            metadata: false,
             minify_key: DEFAULT_MINIFY_KEY,
             minify_key_len: DEFAULT_MINIFY_KEY_LEN,
             minify_key_prefix: DEFAULT_MINIFY_KEY_PREFIX.to_owned(),
@@ -175,6 +216,7 @@ impl syn::parse::Parse for Args {
 ///
 /// - `fallback` for set the fallback locale, if present [`t!`](macro.t.html) macro will use it as the fallback locale.
 /// - `backend` for set the backend, if present [`t!`](macro.t.html) macro will use it as the backend.
+/// - `metadata` to enable/disable loading of the [package.metadata.i18n] config from Cargo.toml, default: `false`.
 /// - `minify_key` for enable/disable minify key, default: [`DEFAULT_MINIFY_KEY`](constant.DEFAULT_MINIFY_KEY.html).
 /// - `minify_key_len` for set the minify key length, default: [`DEFAULT_MINIFY_KEY_LEN`](constant.DEFAULT_MINIFY_KEY_LEN.html),
 ///   * The range of available values is from `0` to `24`.
@@ -202,6 +244,9 @@ impl syn::parse::Parse for Args {
 ///       minify_key_len = 12,
 ///       minify_key_prefix = "T.",
 ///       minify_key_thresh = 64);
+/// # }
+/// # fn v6() {
+/// i18n!(metadata = true);
 /// # }
 /// ```
 #[proc_macro]
@@ -249,6 +294,14 @@ fn generate_code(
         });
     });
 
+    let default_locale = if let Some(default_locale) = args.default_locale {
+        quote! {
+            rust_i18n::set_locale(#default_locale);
+        }
+    } else {
+        quote! {}
+    };
+
     let fallback = if let Some(fallback) = args.fallback {
         quote! {
             Some(&[#(#fallback),*])
@@ -284,6 +337,8 @@ fn generate_code(
             let mut backend = rust_i18n::SimpleBackend::new();
             #(#all_translations)*
             #extend_code
+
+            #default_locale
 
             Box::new(backend)
         });
