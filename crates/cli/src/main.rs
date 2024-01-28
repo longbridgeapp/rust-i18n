@@ -27,9 +27,6 @@ enum CargoCli {
 ///
 /// https://github.com/longbridgeapp/rust-i18n
 struct I18nArgs {
-    /// Extract all untranslated I18n texts from source code
-    #[arg(default_value = "./")]
-    source: Option<String>,
     /// Manually add a translation to the localization file.
     ///
     /// This is useful for non-literal values in the `t!` macro.
@@ -41,6 +38,9 @@ struct I18nArgs {
     /// NOTE: The whitespace before and after the key and value will be trimmed.
     #[arg(short, long, default_value = None, name = "TEXT", num_args(1..), value_parser = translate_value_parser, verbatim_doc_comment)]
     translate: Option<Vec<(String, String)>>,
+    /// Extract all untranslated I18n texts from source code
+    #[arg(default_value = "./", last = true)]
+    source: Option<String>,
 }
 
 /// Remove quotes from a string at the start and end.
