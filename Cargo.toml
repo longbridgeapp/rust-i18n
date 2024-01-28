@@ -38,6 +38,7 @@ members = [
     "crates/extract",
     "crates/support",
     "crates/macro",
+    "examples/app-egui",
     "examples/app-load-path",
     "examples/app-minify-key",
     "examples/foo",
