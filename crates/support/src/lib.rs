@@ -5,10 +5,12 @@ use std::{collections::HashMap, path::Path};
 
 mod atomic_str;
 mod backend;
+mod config;
 mod cow_str;
 mod minify_key;
 pub use atomic_str::AtomicStr;
 pub use backend::{Backend, BackendExt, SimpleBackend};
+pub use config::I18nConfig;
 pub use cow_str::CowStr;
 pub use minify_key::{
     minify_key, MinifyKey, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX,

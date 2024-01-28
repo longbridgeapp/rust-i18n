@@ -1,7 +1,7 @@
-use crate::attrs::I18nAttrs;
 use anyhow::Error;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
+use rust_i18n_support::I18nConfig;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -39,13 +39,9 @@ pub fn extract(
     results: &mut Results,
     path: &PathBuf,
     source: &str,
-    attrs: I18nAttrs,
+    cfg: I18nConfig,
 ) -> Result<(), Error> {
-    let mut ex = Extractor {
-        results,
-        path,
-        attrs,
-    };
+    let mut ex = Extractor { results, path, cfg };
 
     let file = syn::parse_file(source)
         .unwrap_or_else(|_| panic!("Failed to parse file, file: {}", path.display()));
@@ -57,7 +53,7 @@ pub fn extract(
 struct Extractor<'a> {
     results: &'a mut Results,
     path: &'a PathBuf,
-    attrs: I18nAttrs,
+    cfg: I18nConfig,
 }
 
 impl<'a> Extractor<'a> {
@@ -99,12 +95,15 @@ impl<'a> Extractor<'a> {
             return;
         };
 
-        let I18nAttrs {
+        let I18nConfig {
+            default_locale: _,
+            available_locales: _,
+            load_path: _,
             minify_key,
             minify_key_len,
             minify_key_prefix,
             minify_key_thresh,
-        } = &self.attrs;
+        } = &self.cfg;
         let key: Option<proc_macro2::Literal> = Some(literal);
 
         if let Some(lit) = key {
@@ -242,7 +241,7 @@ mod tests {
         let mut ex = Extractor {
             results: &mut results,
             path: &"hello.rs".to_owned().into(),
-            attrs: I18nAttrs::default(),
+            cfg: I18nConfig::default(),
         };
 
         ex.invoke(stream).unwrap();

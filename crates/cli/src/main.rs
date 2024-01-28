@@ -1,13 +1,9 @@
 use anyhow::Error;
 use clap::{Args, Parser};
-use rust_i18n_extract::attrs::I18nAttrs;
-use rust_i18n_support::MinifyKey;
-
-use std::{collections::HashMap, path::Path};
-
 use rust_i18n_extract::extractor::Message;
 use rust_i18n_extract::{extractor, generator, iter};
-mod config;
+use rust_i18n_support::{I18nConfig, MinifyKey};
+use std::{collections::HashMap, path::Path};
 
 #[derive(Parser)]
 #[command(name = "cargo")]
@@ -71,14 +67,18 @@ fn translate_value_parser(s: &str) -> Result<(String, String), std::io::Error> {
 fn add_translations(
     list: &[(String, String)],
     results: &mut HashMap<String, Message>,
-    attrs: &I18nAttrs,
+    cfg: &I18nConfig,
 ) {
-    let I18nAttrs {
+    let I18nConfig {
+        default_locale: _,
+        available_locales: _,
+        load_path: _,
         minify_key,
         minify_key_len,
         minify_key_prefix,
         minify_key_thresh,
-    } = attrs;
+    } = cfg;
+
     for item in list {
         let index = results.len();
         let key = if *minify_key {
@@ -105,14 +105,14 @@ fn main() -> Result<(), Error> {
 
     let source_path = args.source.expect("Missing source path");
 
-    let cfg = config::load(std::path::Path::new(&source_path))?;
+    let cfg = I18nConfig::load(std::path::Path::new(&source_path))?;
 
     iter::iter_crate(&source_path, |path, source| {
-        extractor::extract(&mut results, path, source, cfg.attrs.clone())
+        extractor::extract(&mut results, path, source, cfg.clone())
     })?;
 
     if let Some(list) = args.translate {
-        add_translations(&list, &mut results, &cfg.attrs);
+        add_translations(&list, &mut results, &cfg);
     }
 
     let mut messages: Vec<_> = results.iter().collect();
