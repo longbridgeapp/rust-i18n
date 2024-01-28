@@ -19,6 +19,8 @@ pub struct I18nConfig {
     pub available_locales: Vec<String>,
     #[serde(default = "load_path")]
     pub load_path: String,
+    #[serde(default = "fallback")]
+    pub fallback: Vec<String>,
     #[serde(default = "minify_key")]
     pub minify_key: bool,
     #[serde(default = "minify_key_len")]
@@ -35,6 +37,7 @@ impl I18nConfig {
             default_locale: "en".to_string(),
             available_locales: vec!["en".to_string()],
             load_path: "./locales".to_string(),
+            fallback: vec![],
             minify_key: crate::DEFAULT_MINIFY_KEY,
             minify_key_len: crate::DEFAULT_MINIFY_KEY_LEN,
             minify_key_prefix: crate::DEFAULT_MINIFY_KEY_PREFIX.to_string(),
@@ -93,6 +96,10 @@ fn load_path() -> String {
     I18nConfig::default().load_path
 }
 
+fn fallback() -> Vec<String> {
+    I18nConfig::default().fallback
+}
+
 fn minify_key() -> bool {
     I18nConfig::default().minify_key
 }
@@ -122,6 +129,7 @@ fn test_parse() {
         default-locale = "en"
         available-locales = ["zh-CN"]
         load-path = "./my-locales"
+        fallback = ["zh"]
         minify-key = true
         minify-key-len = 12
         minify-key-prefix = "T."
@@ -132,6 +140,7 @@ fn test_parse() {
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
+    assert_eq!(cfg.fallback, vec!["zh"]);
     assert_eq!(cfg.minify_key, true);
     assert_eq!(cfg.minify_key_len, 12);
     assert_eq!(cfg.minify_key_prefix, "T.");
@@ -161,6 +170,7 @@ fn test_parse_with_metadata() {
         default-locale = "en"
         available-locales = ["zh-CN"]
         load-path = "./my-locales"
+        fallback = ["zh"]
         minify-key = true
         minify-key-len = 12
         minify-key-prefix = "T."
@@ -171,6 +181,7 @@ fn test_parse_with_metadata() {
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
+    assert_eq!(cfg.fallback, vec!["zh"]);
     assert_eq!(cfg.minify_key, true);
     assert_eq!(cfg.minify_key_len, 12);
     assert_eq!(cfg.minify_key_prefix, "T.");

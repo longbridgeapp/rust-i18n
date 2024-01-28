@@ -96,13 +96,11 @@ impl<'a> Extractor<'a> {
         };
 
         let I18nConfig {
-            default_locale: _,
-            available_locales: _,
-            load_path: _,
             minify_key,
             minify_key_len,
             minify_key_prefix,
             minify_key_thresh,
+            ..
         } = &self.cfg;
         let key: Option<proc_macro2::Literal> = Some(literal);
 

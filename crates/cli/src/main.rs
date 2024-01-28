@@ -70,13 +70,11 @@ fn add_translations(
     cfg: &I18nConfig,
 ) {
     let I18nConfig {
-        default_locale: _,
-        available_locales: _,
-        load_path: _,
         minify_key,
         minify_key_len,
         minify_key_prefix,
         minify_key_thresh,
+        ..
     } = cfg;
 
     for item in list {
