@@ -7,6 +7,10 @@ use std::sync::Arc;
 pub struct CowStr<'a>(Cow<'a, str>);
 
 impl<'a> CowStr<'a> {
+    pub fn as_str(&self) -> &str {
+        self.0.as_ref()
+    }
+
     pub fn into_inner(self) -> Cow<'a, str> {
         self.0
     }
@@ -53,6 +57,13 @@ impl<'a> From<Box<str>> for CowStr<'a> {
 impl<'a> From<&'a str> for CowStr<'a> {
     #[inline]
     fn from(s: &'a str) -> Self {
+        Self(Cow::Borrowed(s))
+    }
+}
+
+impl<'a> From<&&'a str> for CowStr<'a> {
+    #[inline]
+    fn from(s: &&'a str) -> Self {
         Self(Cow::Borrowed(s))
     }
 }
