@@ -1,8 +1,7 @@
+use rust_i18n::{set_locale, t};
 use std::ops::Add;
 use std::thread::spawn;
 use std::time::{Duration, Instant};
-
-use rust_i18n::{set_locale, t, tr};
 
 rust_i18n::i18n!("locales", fallback = "en");
 
@@ -34,7 +33,7 @@ fn test_load_and_store() {
 }
 
 #[test]
-fn test_tr_concurrent() {
+fn test_t_concurrent() {
     let end = Instant::now().add(Duration::from_secs(3));
     let store = spawn(move || {
         let mut i = 0u32;
@@ -58,9 +57,9 @@ fn test_tr_concurrent() {
                     for i in 0..100usize {
                         let m = i.checked_rem(num_locales).unwrap_or_default();
                         if m == 0 {
-                            tr!("hello");
+                            t!("hello");
                         } else {
-                            tr!("hello", locale = locales[m]);
+                            t!("hello", locale = locales[m]);
                         }
                     }
                 }

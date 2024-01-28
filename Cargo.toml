@@ -47,5 +47,9 @@ members = [
 harness = false
 name = "bench"
 
+[[bench]]
+harness = false
+name = "minify_key"
+
 [features]
 log-missing = ["rust-i18n-macro/log-missing"]
