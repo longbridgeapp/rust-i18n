@@ -105,6 +105,12 @@ impl Backend for SimpleBackend {
 
 impl BackendExt for SimpleBackend {}
 
+impl Default for SimpleBackend {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
