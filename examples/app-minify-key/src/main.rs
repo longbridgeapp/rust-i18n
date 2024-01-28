@@ -8,7 +8,7 @@ rust_i18n::i18n!(
     minify_key_thresh = 4
 );
 
-#[cfg(feature = "log-missing")]
+#[cfg(feature = "log-miss-tr")]
 fn set_logger() {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
@@ -16,7 +16,7 @@ fn set_logger() {
         .init();
 }
 
-#[cfg(not(feature = "log-missing"))]
+#[cfg(not(feature = "log-miss-tr"))]
 fn set_logger() {}
 
 fn main() {
@@ -76,7 +76,7 @@ fn main() {
     }
     println!();
 
-    if cfg!(feature = "log-missing") {
+    if cfg!(feature = "log-miss-tr") {
         println!("Translates runtime strings and logs when a lookup is missing:");
         for locale in &locales {
             let msg = "Foo Bar".to_string();

@@ -21,6 +21,7 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 - Supports automatic lookup of language territory for fallback locale. For instance, if `zh-CN` is not available, it will fallback to `zh`. (Since v2.4.0)
 - Support short hashed keys for optimize memory usage and lookup speed. (Since v3.1.0)
 - Support format variables in [`t!`], and support format variables with [`std::fmt`](https://doc.rust-lang.org/std/fmt/) syntax. (Since v3.1.0)
+- Support for log missing translations at the warning level with `log-miss-tr` feature, the feature requires the `log` crate. (Since v3.1.0)
 
 ## Usage
 

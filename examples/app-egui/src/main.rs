@@ -12,6 +12,7 @@ rust_i18n::i18n!(
 );
 
 fn main() -> Result<(), eframe::Error> {
+    #[cfg(feature = "log-miss-tr")]
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
@@ -23,7 +24,7 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             // This gives us image support:
             // egui_extras::install_image_loaders(&cc.egui_ctx);
-            setup_custom_fonts(&cc.egui_ctx);
+            let _ = setup_custom_fonts(&cc.egui_ctx);
             Box::<MyApp>::default()
         }),
     )
@@ -80,17 +81,38 @@ impl eframe::App for MyApp {
     }
 }
 
-fn setup_custom_fonts(ctx: &egui::Context) {
+#[cfg(windows)]
+fn try_load_system_font() -> Result<Vec<u8>, std::io::Error> {
+    let font_files = &[
+        "C:/Windows/Fonts/msyh.ttc",
+        "C:/Windows/Fonts/msjh.ttf",
+        "C:/Windows/Fonts/yugothr.ttc",
+        "C:/Windows/Fonts/malgun.ttf",
+    ];
+
+    for font in font_files {
+        if let Ok(font) = std::fs::read(font) {
+            return Ok(font);
+        }
+    }
+
+    Err(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "No system font found",
+    ))
+}
+
+#[cfg(windows)]
+fn setup_custom_fonts(ctx: &egui::Context) -> Result<(), std::io::Error> {
     // Start with the default fonts (we will be adding to them rather than replacing them).
     let mut fonts = egui::FontDefinitions::default();
 
     // Install my own font (maybe supporting non-latin characters).
     // .ttf and .otf files supported.
-    // NOTE: only support Windows and Simplified Chinese for now.
-    fonts.font_data.insert(
-        "my_font".to_owned(),
-        egui::FontData::from_static(include_bytes!("C:/Windows/Fonts/msyh.ttc")),
-    );
+    let font_bytes = try_load_system_font()?;
+    fonts
+        .font_data
+        .insert("my_font".to_owned(), egui::FontData::from_owned(font_bytes));
 
     // Put my font first (highest priority) for proportional text:
     fonts
@@ -108,4 +130,14 @@ fn setup_custom_fonts(ctx: &egui::Context) {
 
     // Tell egui to use these fonts:
     ctx.set_fonts(fonts);
+
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn setup_custom_fonts(ctx: &egui::Context) -> Result<(), std::io::Error> {
+    Err(std::io::Error::new(
+        std::io::ErrorKind::Unsupported,
+        "Custom fonts not supported on this platform",
+    ))
 }

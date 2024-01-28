@@ -9,7 +9,6 @@ rust_i18n::i18n!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rust_i18n::{t, tkv};
 
     #[test]

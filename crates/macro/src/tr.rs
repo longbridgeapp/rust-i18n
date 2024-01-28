@@ -374,6 +374,18 @@ impl Tr {
         Ok(())
     }
 
+    #[cfg(feature = "log-miss-tr")]
+    fn log_missing() -> proc_macro2::TokenStream {
+        quote! {
+            log::log!(target: "rust-i18n", log::Level::Warn, "missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
+        }
+    }
+
+    #[cfg(not(feature = "log-miss-tr"))]
+    fn log_missing() -> proc_macro2::TokenStream {
+        quote! {}
+    }
+
     fn into_token_stream(self) -> proc_macro2::TokenStream {
         let (msg_key, msg_val) = if self.minify_key && self.msg.val.is_expr_lit_str() {
             let msg_val = self.msg.val.to_string().unwrap();
@@ -416,13 +428,7 @@ impl Tr {
                 quote! { format!(#sepecifiers, #value) }
             })
             .collect();
-        let logging = if cfg!(feature = "log-missing") {
-            quote! {
-                log::log!(target: "rust-i18n", log::Level::Warn, "missing: {} => {:?} @ {}:{}", msg_key, msg_val, file!(), line!());
-            }
-        } else {
-            quote! {}
-        };
+        let logging = Self::log_missing();
         if self.args.is_empty() {
             quote! {
                 {

@@ -28,6 +28,9 @@ serde_yaml = "0.8"
 globwalk = "0.8.1"
 regex = "1"
 
+[features]
+log-miss-tr = ["rust-i18n-macro/log-miss-tr"]
+
 [[example]]
 name = "app"
 test = true
@@ -51,6 +54,3 @@ name = "bench"
 [[bench]]
 harness = false
 name = "minify_key"
-
-[features]
-log-missing = ["rust-i18n-macro/log-missing"]

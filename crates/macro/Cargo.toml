@@ -27,4 +27,4 @@ rust-i18n = { path = "../.." }
 proc-macro = true
 
 [features]
-log-missing = []
+log-miss-tr = []
