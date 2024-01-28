@@ -48,4 +48,4 @@ harness = false
 name = "bench"
 
 [features]
-log-tr-dyn = ["rust-i18n-macro/log-tr-dyn"]
+log-missing = ["rust-i18n-macro/log-missing"]
