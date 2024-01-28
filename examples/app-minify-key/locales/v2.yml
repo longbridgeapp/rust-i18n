@@ -1,5 +1,5 @@
 _version: 2
-tr_29xGXAUPAkgvVzCf9ES3q8:
+T.29xGXAUPAkgvVzCf9ES3q8:
   en: Apple
   de: Apfel
   fr: Pomme
@@ -10,7 +10,7 @@ tr_29xGXAUPAkgvVzCf9ES3q8:
   vi: Táo
   zh: 苹果
   zh-TW: 蘋果
-tr_7MQVq9vgi0h6pLE47CdWXH:
+T.7MQVq9vgi0h6pLE47CdWXH:
   en: Banana
   de: Banane
   fr: Banane
@@ -21,7 +21,7 @@ tr_7MQVq9vgi0h6pLE47CdWXH:
   vi: Chuối
   zh: 香蕉
   zh-TW: 香蕉
-tr_2RohljPx99sA18L8E5oTD4:
+T.2RohljPx99sA18L8E5oTD4:
   en: Orange
   de: Orange
   fr: Orange
@@ -32,7 +32,7 @@ tr_2RohljPx99sA18L8E5oTD4:
   vi: Cam
   zh: 橘子
   zh-TW: 橘子
-tr_KtVLkBzuyfHoJZtCWEIOU:
+T.KtVLkBzuyfHoJZtCWEIOU:
   en: Hello
   de: Hallo
   fr: Bonjour
@@ -42,9 +42,8 @@ tr_KtVLkBzuyfHoJZtCWEIOU:
   ru: Привет
   vi: Xin chào
   zh: 你好
-  zh: 你好
   zh-TW: 妳好
-tr_tvpNzQjFwc0trHvgzSBxX:
+T.tvpNzQjFwc0trHvgzSBxX:
   en: Hello, %{name}!
   de: Hallo, %{name}!
   fr: Bonjour, %{name}!
@@ -55,7 +54,7 @@ tr_tvpNzQjFwc0trHvgzSBxX:
   vi: Xin chào, %{name}!
   zh: 你好，%{name}！
   zh-TW: 妳好，%{name}！
-tr_kmFrQ2nnJsvUh3Ckxmki0:
+T.kmFrQ2nnJsvUh3Ckxmki0:
   en: "Hello, %{name}. Your message is: %{msg}"
   de: "Hallo, %{name}. Deine Nachricht ist: %{msg}"
   fr: "Bonjour, %{name}. Votre message est: %{msg}"
@@ -66,7 +65,7 @@ tr_kmFrQ2nnJsvUh3Ckxmki0:
   vi: "Xin chào, %{name}. Tin nhắn của bạn là: %{msg}"
   zh: "你好，%{name}。这是你的消息：%{msg}"
   zh-TW: "妳好，%{name}。這是妳的消息：%{msg}"
-tr_7hWbTwvMpr0H0oDLIQlfrm:
+T.7hWbTwvMpr0H0oDLIQlfrm:
   en: You have %{count} messages.
   de: Du hast %{count} Nachrichten.
   fr: Vous avez %{count} messages.
@@ -77,113 +76,3 @@ tr_7hWbTwvMpr0H0oDLIQlfrm:
   vi: Bạn có %{count} tin nhắn.
   zh: 你收到了 %{count} 条新消息。
   zh-TW: 妳收到了 %{count} 條新消息。
-tr_N_0:
-  en: Zero
-  de: Null
-  fr: Zéro
-  it: Zero
-  ja: ゼロ
-  ko: 영
-  ru: Ноль
-  vi: Không
-  zh: 零
-  zh-TW: 零
-tr_N_1:
-  en: One
-  de: Eins
-  fr: Un
-  it: Uno
-  ja: 一
-  ko: 일
-  ru: Один
-  vi: Một
-  zh: 一
-  zh-TW: 一
-tr_N_2:
-  en: Two
-  de: Zwei
-  fr: Deux
-  it: Due
-  ja: 二
-  ko: 이
-  ru: Два
-  vi: Hai
-  zh: 二
-  zh-TW: 二
-tr_N_3:
-  en: Three
-  de: Drei
-  fr: Trois
-  it: Tre
-  ja: 三
-  ko: 삼
-  ru: Три
-  vi: Ba
-  zh: 三
-  zh-TW: 三
-tr_N_4:
-  en: Four
-  de: Vier
-  fr: Quatre
-  it: Quattro
-  ja: 四
-  ko: 사
-  ru: Четыре
-  vi: Bốn
-  zh: 四
-  zh-TW: 四
-tr_N_5:
-  en: Five
-  de: Fünf
-  fr: Cinq
-  it: Cinque
-  ja: 五
-  ko: 오
-  ru: Пять
-  vi: Năm
-  zh: 五
-  zh-TW: 五
-tr_N_6:
-  en: Six
-  de: Sechs
-  fr: Six
-  it: Sei
-  ja: 六
-  ko: 육
-  ru: Шесть
-  vi: Sáu
-  zh: 六
-  zh-TW: 六
-tr_N_7:
-  en: Seven
-  de: Sieben
-  fr: Sept
-  it: Sette
-  ja: 七
-  ko: 칠
-  ru: Семь
-  vi: Bảy
-  zh: 七
-  zh-TW: 七
-tr_N_8:
-  en: Eight
-  de: Acht
-  fr: Huit
-  it: Otto
-  ja: 八
-  ko: 팔
-  ru: Восемь
-  vi: Tám
-  zh: 八
-  zh-TW: 八
-tr_N_9:
-  en: Nine
-  de: Neun
-  fr: Neuf
-  it: Nove
-  ja: 九
-  ko: 구
-  ru: Девять
-  vi: Chín
-  zh: 九
-  zh-TW: 九

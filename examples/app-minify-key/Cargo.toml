@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "app-tr"
+name = "app-minify-key"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,7 +11,7 @@ log = { version = "0.4", optional = true }
 rust-i18n = { path = "../.." }
 
 [features]
-log-tr-dyn = ["env_logger", "log", "rust-i18n/log-tr-dyn"]
+log-missing = ["env_logger", "log", "rust-i18n/log-missing"]
 
 [package.metadata.i18n]
 available-locales = ["en", "zh-CN"]
