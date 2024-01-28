@@ -6,11 +6,14 @@ use std::{collections::HashMap, path::Path};
 mod atomic_str;
 mod backend;
 mod cow_str;
-mod tr_key;
+mod minify_key;
 pub use atomic_str::AtomicStr;
 pub use backend::{Backend, BackendExt, SimpleBackend};
 pub use cow_str::CowStr;
-pub use tr_key::{TrKey, TrKeyNumeric, TR_KEY_PREFIX};
+pub use minify_key::{
+    minify_key, MinifyKey, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX,
+    DEFAULT_MINIFY_KEY_THRESH,
+};
 
 type Locale = String;
 type Value = serde_json::Value;
