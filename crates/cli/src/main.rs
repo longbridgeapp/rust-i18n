@@ -1,6 +1,7 @@
 use anyhow::Error;
 use clap::{Args, Parser};
-use rust_i18n_support::TrKey;
+use rust_i18n_extract::attrs::I18nAttrs;
+use rust_i18n_support::MinifyKey;
 
 use std::{collections::HashMap, path::Path};
 
@@ -29,19 +30,69 @@ struct I18nArgs {
     /// Extract all untranslated I18n texts from source code
     #[arg(default_value = "./")]
     source: Option<String>,
-    /// Add a translation to the localize file for `tr!`
-    #[arg(long, default_value = None, name = "TEXT")]
-    tr: Option<Vec<String>>,
+    /// Manually add a translation to the localization file.
+    ///
+    /// This is useful for non-literal values in the `t!` macro.
+    ///
+    /// For example, if you have `t!(format!("Hello, {}!", "world"))` in your code,
+    /// you can add a translation for it using `-t "Hello, world!"`,
+    /// or provide a translated message using `-t "Hello, world! => Hola, world!"`.
+    ///
+    /// NOTE: The whitespace before and after the key and value will be trimmed.
+    #[arg(short, long, default_value = None, name = "TEXT", num_args(1..), value_parser = translate_value_parser, verbatim_doc_comment)]
+    translate: Option<Vec<(String, String)>>,
+}
+
+/// Remove quotes from a string at the start and end.
+fn remove_quotes(s: &str) -> &str {
+    let mut start = 0;
+    let mut end = s.len();
+    if s.starts_with('"') {
+        start += 1;
+    }
+    if s.ends_with('"') {
+        end -= 1;
+    }
+    &s[start..end]
+}
+
+/// Parse a string of the form "key => value" into a tuple.
+fn translate_value_parser(s: &str) -> Result<(String, String), std::io::Error> {
+    if let Some((key, msg)) = s.split_once("=>") {
+        let key = remove_quotes(key.trim());
+        let msg = remove_quotes(msg.trim());
+        Ok((key.to_owned(), msg.to_owned()))
+    } else {
+        Ok((s.to_owned(), s.to_owned()))
+    }
 }
 
 /// Add translations to the localize file for tr!
-fn add_translations(list: &[String], results: &mut HashMap<String, Message>) {
+fn add_translations(
+    list: &[(String, String)],
+    results: &mut HashMap<String, Message>,
+    attrs: &I18nAttrs,
+) {
+    let I18nAttrs {
+        minify_key,
+        minify_key_len,
+        minify_key_prefix,
+        minify_key_thresh,
+    } = attrs;
     for item in list {
         let index = results.len();
-        results.entry(item.tr_key()).or_insert(Message {
-            key: item.clone(),
+        let key = if *minify_key {
+            let hashed_key =
+                item.0
+                    .minify_key(*minify_key_len, minify_key_prefix, *minify_key_thresh);
+            hashed_key.to_string()
+        } else {
+            item.0.clone()
+        };
+        results.entry(key).or_insert(Message {
+            key: item.1.clone(),
             index,
-            is_tr: true,
+            minify_key: *minify_key,
             locations: vec![],
         });
     }
@@ -57,11 +108,11 @@ fn main() -> Result<(), Error> {
     let cfg = config::load(std::path::Path::new(&source_path))?;
 
     iter::iter_crate(&source_path, |path, source| {
-        extractor::extract(&mut results, path, source)
+        extractor::extract(&mut results, path, source, cfg.attrs.clone())
     })?;
 
-    if let Some(list) = args.tr {
-        add_translations(&list, &mut results);
+    if let Some(list) = args.translate {
+        add_translations(&list, &mut results, &cfg.attrs);
     }
 
     let mut messages: Vec<_> = results.iter().collect();

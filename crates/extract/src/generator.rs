@@ -85,14 +85,13 @@ fn generate_result<'a, P: AsRef<Path>>(
                 }
             }
 
-            let key = if m.is_tr { key } else { &m.key };
             if let Some(trs) = data.get(locale) {
                 if trs.get(key).is_some() {
                     continue;
                 }
             }
 
-            let value = if m.is_tr {
+            let value = if m.minify_key {
                 m.key.to_owned()
             } else {
                 m.key.split('.').last().unwrap_or_default().to_string()

@@ -4,6 +4,7 @@
 //! See `Manifest::from_slice`.
 
 use itertools::Itertools;
+use rust_i18n_extract::attrs::I18nAttrs;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
@@ -19,6 +20,8 @@ pub struct I18nConfig {
     pub available_locales: Vec<String>,
     #[serde(default = "load_path")]
     pub load_path: String,
+    #[serde(flatten)]
+    pub attrs: I18nAttrs,
 }
 
 fn default_locale() -> String {
@@ -45,6 +48,7 @@ impl Default for I18nConfig {
             default_locale: "en".to_string(),
             available_locales: vec!["en".to_string()],
             load_path: "./locales".to_string(),
+            attrs: I18nAttrs::default(),
         }
     }
 }
@@ -87,12 +91,20 @@ fn test_parse() {
         default-locale = "en"
         available-locales = ["zh-CN"]
         load-path = "./my-locales"
+        minify-key = true
+        minify-key-len = 12
+        minify-key-prefix = "T."
+        minify-key-thresh = 16
     "#;
 
     let cfg = parse(contents).unwrap();
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
+    assert_eq!(cfg.attrs.minify_key, true);
+    assert_eq!(cfg.attrs.minify_key_len, 12);
+    assert_eq!(cfg.attrs.minify_key_prefix, "T.");
+    assert_eq!(cfg.attrs.minify_key_thresh, 16);
 
     let contents = r#"
         [i18n]
@@ -103,12 +115,14 @@ fn test_parse() {
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN", "de"]);
     assert_eq!(cfg.load_path, "./my-locales");
+    assert_eq!(cfg.attrs, I18nAttrs::default());
 
     let contents = "";
     let cfg = parse(contents).unwrap();
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en"]);
     assert_eq!(cfg.load_path, "./locales");
+    assert_eq!(cfg.attrs, I18nAttrs::default());
 }
 
 #[test]
@@ -118,12 +132,20 @@ fn test_parse_with_metadata() {
         default-locale = "en"
         available-locales = ["zh-CN"]
         load-path = "./my-locales"
+        minify-key = true
+        minify-key-len = 12
+        minify-key-prefix = "T."
+        minify-key-thresh = 16
     "#;
 
     let cfg = parse(contents).unwrap();
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
+    assert_eq!(cfg.attrs.minify_key, true);
+    assert_eq!(cfg.attrs.minify_key_len, 12);
+    assert_eq!(cfg.attrs.minify_key_prefix, "T.");
+    assert_eq!(cfg.attrs.minify_key_thresh, 16);
 }
 
 #[test]
@@ -134,6 +156,7 @@ fn test_load_default() {
     assert_eq!(cfg.default_locale, "en");
     assert_eq!(cfg.available_locales, vec!["en"]);
     assert_eq!(cfg.load_path, "./locales");
+    assert_eq!(cfg.attrs, I18nAttrs::default());
 }
 
 #[test]

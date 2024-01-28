@@ -1,3 +1,4 @@
+use crate::attrs::I18nAttrs;
 use anyhow::Error;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
@@ -16,16 +17,16 @@ pub struct Location {
 pub struct Message {
     pub key: String,
     pub index: usize,
-    pub is_tr: bool,
+    pub minify_key: bool,
     pub locations: Vec<Location>,
 }
 
 impl Message {
-    fn new(key: &str, index: usize, is_tr: bool) -> Self {
+    fn new(key: &str, index: usize, minify_key: bool) -> Self {
         Self {
             key: key.to_owned(),
             index,
-            is_tr,
+            minify_key,
             locations: vec![],
         }
     }
@@ -34,8 +35,17 @@ impl Message {
 static METHOD_NAMES: &[&str] = &["t", "tr"];
 
 #[allow(clippy::ptr_arg)]
-pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<(), Error> {
-    let mut ex = Extractor { results, path };
+pub fn extract(
+    results: &mut Results,
+    path: &PathBuf,
+    source: &str,
+    attrs: I18nAttrs,
+) -> Result<(), Error> {
+    let mut ex = Extractor {
+        results,
+        path,
+        attrs,
+    };
 
     let file = syn::parse_file(source)
         .unwrap_or_else(|_| panic!("Failed to parse file, file: {}", path.display()));
@@ -47,6 +57,7 @@ pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<()
 struct Extractor<'a> {
     results: &'a mut Results,
     path: &'a PathBuf,
+    attrs: I18nAttrs,
 }
 
 impl<'a> Extractor<'a> {
@@ -68,7 +79,7 @@ impl<'a> Extractor<'a> {
                     let ident_str = ident.to_string();
                     if METHOD_NAMES.contains(&ident_str.as_str()) && is_macro {
                         if let Some(TokenTree::Group(group)) = token_iter.peek() {
-                            self.take_message(group.stream(), ident_str == "tr");
+                            self.take_message(group.stream());
                         }
                     }
                 }
@@ -79,7 +90,7 @@ impl<'a> Extractor<'a> {
         Ok(())
     }
 
-    fn take_message(&mut self, stream: TokenStream, is_tr: bool) {
+    fn take_message(&mut self, stream: TokenStream) {
         let mut token_iter = stream.into_iter().peekable();
 
         let literal = if let Some(TokenTree::Literal(literal)) = token_iter.next() {
@@ -88,13 +99,24 @@ impl<'a> Extractor<'a> {
             return;
         };
 
+        let I18nAttrs {
+            minify_key,
+            minify_key_len,
+            minify_key_prefix,
+            minify_key_thresh,
+        } = &self.attrs;
         let key: Option<proc_macro2::Literal> = Some(literal);
 
         if let Some(lit) = key {
             if let Some(key) = literal_to_string(&lit) {
-                let (message_key, message_content) = if is_tr {
-                    let hashed_key = rust_i18n_support::TrKey::tr_key(&key);
-                    (hashed_key, key.clone())
+                let (message_key, message_content) = if *minify_key {
+                    let hashed_key = rust_i18n_support::MinifyKey::minify_key(
+                        &key,
+                        *minify_key_len,
+                        minify_key_prefix,
+                        *minify_key_thresh,
+                    );
+                    (hashed_key.to_string(), key.clone())
                 } else {
                     let message_key = format_message_key(&key);
                     (message_key.clone(), message_key)
@@ -103,7 +125,7 @@ impl<'a> Extractor<'a> {
                 let message = self
                     .results
                     .entry(message_key)
-                    .or_insert_with(|| Message::new(&message_content, index, is_tr));
+                    .or_insert_with(|| Message::new(&message_content, index, *minify_key));
 
                 let span = lit.span();
                 let line = span.start().line;
@@ -151,7 +173,7 @@ mod tests {
                         )+
                     ],
                     index: 0,
-                    is_tr: false,
+                    minify_key: false,
                 };
                 results.push(message);
             )+
@@ -220,6 +242,7 @@ mod tests {
         let mut ex = Extractor {
             results: &mut results,
             path: &"hello.rs".to_owned().into(),
+            attrs: I18nAttrs::default(),
         };
 
         ex.invoke(stream).unwrap();
