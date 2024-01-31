@@ -40,11 +40,9 @@ Load macro and init translations in `lib.rs` or `main.rs`:
 extern crate rust_i18n;
 
 // Init translations for current crate.
+// This will load Configuration using the `[package.metadata.i18n]` section in `Cargo.toml` if exists.
+// Or you can pass arguments by `i18n!` to override it.
 i18n!("locales");
-
-// Or just use `i18n!`, default locales path is: "locales" in current crate.
-//
-i18n!();
 
 // Config fallback missing translations to "en" locale.
 // Use `fallback` option to set fallback locale.
@@ -71,8 +69,7 @@ i18n!("locales",
 // Now, if the message length exceeds 64, the `t!` macro will automatically generate
 // a 12-byte short hashed key with a "t_" prefix for it, if not, it will use the original.
 
-// Configuration using the `[package.metadata.i18n]` section in `Cargo.toml`,
-// Useful for the `cargo i18n` command line tool.
+// If no any argument, use config from Cargo.toml or default.
 i18n!();
 ```
 
@@ -118,9 +115,7 @@ You can also split the each language into difference files, and you can choise (
 _version: 1
 hello: 'Hello world'
 messages.hello: 'Hello, %{name}'
-
-# Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
-4Cct6Q289b12SkvF47dXIx: 'Hello, %{name}'
+t_4Cct6Q289b12SkvF47dXIx: 'Hello, %{name}'
 ```
 
 Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:
@@ -130,17 +125,13 @@ Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and 
   "_version": 1,
   "hello": "Hello world",
   "messages.hello": "Hello, %{name}",
-
-  // Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
-  "4Cct6Q289b12SkvF47dXIx": "Hello, %{name}"
+  "t_4Cct6Q289b12SkvF47dXIx": "Hello, %{name}"
 }
 ```
 
 ```toml
 hello = "Hello world"
-
-# Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
-4Cct6Q289b12SkvF47dXIx = "Hello, %{name}"
+t_4Cct6Q289b12SkvF47dXIx = "Hello, %{name}"
 
 [messages]
 hello = "Hello, %{name}"
@@ -179,9 +170,8 @@ hello:
 messages.hello:
   en: Hello, %{name}
   zh-CN: 你好，%{name}
-
 # Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
-4Cct6Q289b12SkvF47dXIx:
+t_4Cct6Q289b12SkvF47dXIx:
   en: Hello, %{name}
   zh-CN: 你好，%{name}
 ```
