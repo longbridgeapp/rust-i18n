@@ -27,7 +27,7 @@ pub fn hash128<T: AsRef<[u8]> + ?Sized>(value: &T) -> u128 {
 /// # Arguments
 ///
 /// * `value` - The value to be generated.
-/// * `key_len` - The length of the translation key.
+/// * `len` - The length of the translation key.
 /// * `prefix` - The prefix of the translation key.
 /// * `threshold` - The minimum length of the value to be generated.
 ///
@@ -36,77 +36,72 @@ pub fn hash128<T: AsRef<[u8]> + ?Sized>(value: &T) -> u128 {
 /// * If `value.len() <= threshold` then returns the origin value.
 /// * Otherwise, returns a base62 encoded 128 bits hashed translation key.
 ///
-pub fn minify_key<'r>(
-    value: &'r str,
-    key_len: usize,
-    prefix: &str,
-    threshold: usize,
-) -> Cow<'r, str> {
+pub fn minify_key<'r>(value: &'r str, len: usize, prefix: &str, threshold: usize) -> Cow<'r, str> {
     if value.len() <= threshold {
         return Cow::Borrowed(value);
     }
     let encoded = base62::encode(hash128(value));
-    let key_len = key_len.min(encoded.len());
-    format!("{}{}", prefix, &encoded[..key_len]).into()
+    let len = len.min(encoded.len());
+    format!("{}{}", prefix, &encoded[..len]).into()
 }
 
 /// A trait for generating translation key from a value.
 pub trait MinifyKey<'a> {
     /// Generate translation key from a value.
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str>;
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str>;
 }
 
 impl<'a> MinifyKey<'a> for str {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
-        minify_key(self, key_len, prefix, threshold)
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+        minify_key(self, len, prefix, threshold)
     }
 }
 
 impl<'a> MinifyKey<'a> for &str {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
-        minify_key(self, key_len, prefix, threshold)
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+        minify_key(self, len, prefix, threshold)
     }
 }
 
 impl<'a> MinifyKey<'a> for String {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
         if self.len() <= threshold {
             return Cow::Borrowed(self);
         }
-        minify_key(self, key_len, prefix, threshold)
+        minify_key(self, len, prefix, threshold)
     }
 }
 
 impl<'a> MinifyKey<'a> for &String {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
         if self.len() <= threshold {
             return Cow::from(*self);
         }
-        minify_key(self, key_len, prefix, threshold)
+        minify_key(self, len, prefix, threshold)
     }
 }
 
 impl<'a> MinifyKey<'a> for Cow<'a, str> {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
         if self.len() <= threshold {
             return Cow::Borrowed(self);
         }
-        minify_key(self, key_len, prefix, threshold)
+        minify_key(self, len, prefix, threshold)
     }
 }
 
 impl<'a> MinifyKey<'a> for &Cow<'a, str> {
     #[inline]
-    fn minify_key(&'a self, key_len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
+    fn minify_key(&'a self, len: usize, prefix: &str, threshold: usize) -> Cow<'a, str> {
         if self.len() <= threshold {
             return Cow::Borrowed(*self);
         }
-        minify_key(self, key_len, prefix, threshold)
+        minify_key(self, len, prefix, threshold)
     }
 }
 
@@ -125,7 +120,7 @@ mod tests {
             msg.minify_key(24, DEFAULT_MINIFY_KEY_PREFIX, 0),
             "1LokVzuiIrh1xByyZG4wjZ"
         );
-        let msg = format!("Hello, world!");
+        let msg = "Hello, world!".to_string();
         assert_eq!(
             minify_key(&msg, 24, DEFAULT_MINIFY_KEY_PREFIX, 0),
             "1LokVzuiIrh1xByyZG4wjZ"

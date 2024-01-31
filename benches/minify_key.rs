@@ -14,7 +14,7 @@ pub fn bench_t(c: &mut Criterion) {
 
     c.bench_function("t_with_locale", |b| b.iter(|| t!("hello", locale = "en")));
 
-    c.bench_function("tr_with_threads", |b| {
+    c.bench_function("t_with_threads", |b| {
         let exit_loop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         let mut handles = Vec::new();
         for _ in 0..4 {
@@ -32,7 +32,7 @@ pub fn bench_t(c: &mut Criterion) {
         }
     });
 
-    c.bench_function("tr_with_args", |b| {
+    c.bench_function("t_with_args", |b| {
         b.iter(|| {
             t!(
                 "Hello, %{name}. Your message is: %{msg}",
@@ -42,7 +42,7 @@ pub fn bench_t(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("tr_with_args (str)", |b| {
+    c.bench_function("t_with_args (str)", |b| {
         b.iter(|| {
             t!(
                 "Hello, %{name}. Your message is: %{msg}",
@@ -52,7 +52,7 @@ pub fn bench_t(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("tr_with_args (many)", |b| {
+    c.bench_function("t_with_args (many)", |b| {
         b.iter(|| {
             t!(
                 r#"Hello %{name} %{surname}, your account id is %{id}, email address is %{email}.

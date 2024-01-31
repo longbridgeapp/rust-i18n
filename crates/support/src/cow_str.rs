@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 use std::sync::Arc;
 
-/// A wrapper for `Cow<'a, str>` that is specifically designed for use with the `tr!` macro.
+/// A wrapper for `Cow<'a, str>` that is specifically designed for use with the `t!` macro.
 ///
-/// This wrapper provides additional functionality or optimizations when handling strings in the `tr!` macro.
+/// This wrapper provides additional functionality or optimizations when handling strings in the `t!` macro.
 pub struct CowStr<'a>(Cow<'a, str>);
 
 impl<'a> CowStr<'a> {

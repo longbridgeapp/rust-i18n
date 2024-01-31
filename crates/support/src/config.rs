@@ -31,8 +31,8 @@ pub struct I18nConfig {
     pub minify_key_thresh: usize,
 }
 
-impl I18nConfig {
-    pub fn new() -> Self {
+impl Default for I18nConfig {
+    fn default() -> Self {
         Self {
             default_locale: "en".to_string(),
             available_locales: vec!["en".to_string()],
@@ -43,6 +43,12 @@ impl I18nConfig {
             minify_key_prefix: crate::DEFAULT_MINIFY_KEY_PREFIX.to_string(),
             minify_key_thresh: crate::DEFAULT_MINIFY_KEY_THRESH,
         }
+    }
+}
+
+impl I18nConfig {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn load(cargo_root: &Path) -> io::Result<Self> {
@@ -75,12 +81,6 @@ impl I18nConfig {
             config.i18n.available_locales.into_iter().unique().collect();
 
         Ok(config.i18n)
-    }
-}
-
-impl Default for I18nConfig {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -132,7 +132,7 @@ fn test_parse() {
         fallback = ["zh"]
         minify-key = true
         minify-key-len = 12
-        minify-key-prefix = "T."
+        minify-key-prefix = "T_"
         minify-key-thresh = 16
     "#;
 
@@ -141,9 +141,9 @@ fn test_parse() {
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
     assert_eq!(cfg.fallback, vec!["zh"]);
-    assert_eq!(cfg.minify_key, true);
+    assert!(cfg.minify_key);
     assert_eq!(cfg.minify_key_len, 12);
-    assert_eq!(cfg.minify_key_prefix, "T.");
+    assert_eq!(cfg.minify_key_prefix, "T_");
     assert_eq!(cfg.minify_key_thresh, 16);
 
     let contents = r#"
@@ -173,7 +173,7 @@ fn test_parse_with_metadata() {
         fallback = ["zh"]
         minify-key = true
         minify-key-len = 12
-        minify-key-prefix = "T."
+        minify-key-prefix = "T_"
         minify-key-thresh = 16
     "#;
 
@@ -182,9 +182,9 @@ fn test_parse_with_metadata() {
     assert_eq!(cfg.available_locales, vec!["en", "zh-CN"]);
     assert_eq!(cfg.load_path, "./my-locales");
     assert_eq!(cfg.fallback, vec!["zh"]);
-    assert_eq!(cfg.minify_key, true);
+    assert!(cfg.minify_key);
     assert_eq!(cfg.minify_key_len, 12);
-    assert_eq!(cfg.minify_key_prefix, "T.");
+    assert_eq!(cfg.minify_key_prefix, "T_");
     assert_eq!(cfg.minify_key_thresh, 16);
 }
 

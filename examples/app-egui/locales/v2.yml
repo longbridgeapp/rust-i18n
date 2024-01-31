@@ -7,35 +7,35 @@ Arthur:
   ko: 아서
   zh: 亚瑟
   zh-TW: 亞瑟
-T.3UjfzBSnm1Qc:
+t_3UjfzBSnm1Qc:
   en: My egui App
   fr: Mon application egui
   ja: 私の EGUI アプリ
   ko: 내 egui 앱
   zh: 我的 EGUI 应用
   zh-TW: 我的 EGUI 應用
-T.4E2YxmZoydHX:
+t_4E2YxmZoydHX:
   en: Click each year
   fr: Cliquez sur chaque année
   ja: 各年をクリック
   ko: 각 연도를 클릭
   zh: 点击大一岁
   zh-TW: 點擊大一歲
-T.5o7tEO3Df7z8:
+t_5o7tEO3Df7z8:
   en: "Hello '%{name}', age %{age}"
   fr: "Bonjour '%{name}', âge %{age}"
   ja: "こんにちは '%{name}', 年齢 %{age}"
   ko: "안녕하세요 '%{name}', 나이 %{age}"
-  zh: "你好 “%{name}”, 年龄 %{age}"
-  zh-TW: "妳好 “%{name}”, 年齡 %{age}"
-T.6JOKobVbFAxv:
+  zh: "你好“%{name}”, 年龄 %{age}"
+  zh-TW: "妳好“%{name}”, 年齡 %{age}"
+t_6JOKobVbFAxv:
   en: My egui Application
   fr: Mon application egui
   ja: 私の EGUI アプリケーション
   ko: 내 egui 애플리케이션
   zh: 我的 EGUI 应用程序
   zh-TW: 我的 EGUI 應用程式
-T.gOXpNwPJI1fQ:
+t_gOXpNwPJI1fQ:
   en: "Your name: "
   fr: "Votre nom : "
   ja: "あなたの名前："
@@ -49,4 +49,3 @@ age:
   ko: 나이
   zh: 岁
   zh-TW: 歲
-

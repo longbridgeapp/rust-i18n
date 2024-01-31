@@ -63,7 +63,7 @@ fn translate_value_parser(s: &str) -> Result<(String, String), std::io::Error> {
     }
 }
 
-/// Add translations to the localize file for tr!
+/// Add translations to the localize file for t!
 fn add_translations(
     list: &[(String, String)],
     results: &mut HashMap<String, Message>,

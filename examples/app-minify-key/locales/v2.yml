@@ -1,5 +1,5 @@
 _version: 2
-T.29xGXAUPAkgvVzCf9ES3q8:
+T_29xGXAUPAkgvVzCf9ES3q8:
   en: Apple
   de: Apfel
   fr: Pomme
@@ -10,7 +10,7 @@ T.29xGXAUPAkgvVzCf9ES3q8:
   vi: Táo
   zh: 苹果
   zh-TW: 蘋果
-T.7MQVq9vgi0h6pLE47CdWXH:
+T_7MQVq9vgi0h6pLE47CdWXH:
   en: Banana
   de: Banane
   fr: Banane
@@ -21,7 +21,7 @@ T.7MQVq9vgi0h6pLE47CdWXH:
   vi: Chuối
   zh: 香蕉
   zh-TW: 香蕉
-T.2RohljPx99sA18L8E5oTD4:
+T_2RohljPx99sA18L8E5oTD4:
   en: Orange
   de: Orange
   fr: Orange
@@ -32,7 +32,7 @@ T.2RohljPx99sA18L8E5oTD4:
   vi: Cam
   zh: 橘子
   zh-TW: 橘子
-T.KtVLkBzuyfHoJZtCWEIOU:
+T_KtVLkBzuyfHoJZtCWEIOU:
   en: Hello
   de: Hallo
   fr: Bonjour
@@ -43,7 +43,7 @@ T.KtVLkBzuyfHoJZtCWEIOU:
   vi: Xin chào
   zh: 你好
   zh-TW: 妳好
-T.tvpNzQjFwc0trHvgzSBxX:
+T_tvpNzQjFwc0trHvgzSBxX:
   en: Hello, %{name}!
   de: Hallo, %{name}!
   fr: Bonjour, %{name}!
@@ -54,18 +54,18 @@ T.tvpNzQjFwc0trHvgzSBxX:
   vi: Xin chào, %{name}!
   zh: 你好，%{name}！
   zh-TW: 妳好，%{name}！
-T.kmFrQ2nnJsvUh3Ckxmki0:
+T_kmFrQ2nnJsvUh3Ckxmki0:
   en: "Hello, %{name}. Your message is: %{msg}"
   de: "Hallo, %{name}. Deine Nachricht ist: %{msg}"
   fr: "Bonjour, %{name}. Votre message est: %{msg}"
   it: "Ciao, %{name}. Il tuo messaggio è: %{msg}"
-  ja: "こんにちは、%{name}。あなたのメッセージは: %{msg}"
+  ja: "こんにちは、%{name}。あなたのメッセージは：%{msg}"
   ko: "안녕하세요, %{name}. 당신의 메시지는: %{msg}"
   ru: "Привет, %{name}. Ваше сообщение: %{msg}"
   vi: "Xin chào, %{name}. Tin nhắn của bạn là: %{msg}"
   zh: "你好，%{name}。这是你的消息：%{msg}"
   zh-TW: "妳好，%{name}。這是妳的消息：%{msg}"
-T.7hWbTwvMpr0H0oDLIQlfrm:
+T_7hWbTwvMpr0H0oDLIQlfrm:
   en: You have %{count} messages.
   de: Du hast %{count} Nachrichten.
   fr: Vous avez %{count} messages.

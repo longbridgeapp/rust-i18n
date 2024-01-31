@@ -11,16 +11,16 @@ nested_locale_test:
       en: "Hello test3"
       ja: "こんにちは test3"
       zh-CN: "你好 test3"
-tr_1bHAL18drdyculzJ6OdjT0:
+t_1bHAL18drdyculzJ6OdjT0:
   en: "Hello, you id is: 123"
   de: "Hallo, deine ID ist: 123"
   fr: "Bonjour, votre ID est : 123"
-  ja: "こんにちは、あなたのIDは 123 です"
-  ko: "안녕하세요, 당신의 ID는 123입니다"
+  ja: "こんにちは、あなたの ID は 123 です"
+  ko: "안녕하세요, 당신의 ID 는 123 입니다"
   ru: "Привет, ваш ID: 123"
   vi: "Xin chào, ID của bạn là: 123"
   zh-CN: "你好，你的 ID 是：123"
-tr_29xGXAUPAkgvVzCf9ES3q8:
+t_29xGXAUPAkgvVzCf9ES3q8:
   en: Apple
   de: Apfel
   fr: Pomme
@@ -29,7 +29,7 @@ tr_29xGXAUPAkgvVzCf9ES3q8:
   ru: Яблоко
   vi: Táo
   zh-CN: 苹果
-tr_2xBwKSjL3poKDdxU7Mej0e:
+t_2xBwKSjL3poKDdxU7Mej0e:
   en: Bar - Hello, World!
   de: Bar - Hallo, Welt!
   fr: Bar - Bonjour, monde!
@@ -38,7 +38,7 @@ tr_2xBwKSjL3poKDdxU7Mej0e:
   ru: Bar - Привет, мир!
   vi: Bar - Xin chào, thế giới!
   zh-CN: Bar - 你好世界！
-tr_2RohljPx99sA18L8E5oTD4:
+t_2RohljPx99sA18L8E5oTD4:
   en: Orange
   de: Orange
   fr: Orange
@@ -47,7 +47,7 @@ tr_2RohljPx99sA18L8E5oTD4:
   ru: Апельсин
   vi: Cam
   zh-CN: 橘子
-tr_7hWbTwvMpr0H0oDLIQlfrm:
+t_7hWbTwvMpr0H0oDLIQlfrm:
   en: You have %{count} messages.
   de: Du hast %{count} Nachrichten.
   fr: Vous avez %{count} messages.
@@ -56,7 +56,7 @@ tr_7hWbTwvMpr0H0oDLIQlfrm:
   ru: У вас %{count} сообщений.
   vi: Bạn có %{count} tin nhắn.
   zh-CN: 你收到了 %{count} 条新消息。
-tr_7MQVq9vgi0h6pLE47CdWXH:
+t_7MQVq9vgi0h6pLE47CdWXH:
   en: Banana
   de: Banane
   fr: Banane
@@ -65,16 +65,16 @@ tr_7MQVq9vgi0h6pLE47CdWXH:
   ru: Банан
   vi: Chuối
   zh-CN: 香蕉
-tr_kmFrQ2nnJsvUh3Ckxmki0:
+t_kmFrQ2nnJsvUh3Ckxmki0:
   en: "Hello, %{name}. Your message is: %{msg}"
   de: "Hallo, %{name}. Deine Nachricht ist: %{msg}"
   fr: "Bonjour, %{name}. Votre message est: %{msg}"
-  ja: "こんにちは、%{name}。あなたのメッセージは: %{msg}"
+  ja: "こんにちは、%{name}。あなたのメッセージは：%{msg}"
   ko: "안녕하세요, %{name}. 당신의 메시지는: %{msg}"
   ru: "Привет, %{name}. Ваше сообщение: %{msg}"
   vi: "Xin chào, %{name}. Tin nhắn của bạn là: %{msg}"
   zh-CN: "你好，%{name}。这是你的消息：%{msg}"
-tr_tvpNzQjFwc0trHvgzSBxX:
+t_tvpNzQjFwc0trHvgzSBxX:
   en: Hello, %{name}!
   de: Hallo, %{name}!
   fr: Bonjour, %{name}!
@@ -83,12 +83,12 @@ tr_tvpNzQjFwc0trHvgzSBxX:
   ru: Привет, %{name}!
   vi: Xin chào, %{name}!
   zh-CN: 你好，%{name}！
-tr_3w1UK0UDyZZMkgsPduhmOv:
+t_3w1UK0UDyZZMkgsPduhmOv:
   en: "Hello %{name} %{surname}, your account id is %{id}, email address is %{email}. \r\n        You live in %{city} %{zip}. \r\n        Your website is %{website}."
   de: "Hallo %{name} %{surname}, deine Kontonummer ist %{id}, E-Mail-Adresse ist %{email}. \r\n        Du lebst in %{city} %{zip}. \r\n        Deine Website ist %{website}."
   fr: "Bonjour %{name} %{surname}, votre identifiant de compte est %{id}, votre adresse e-mail est %{email}. \r\n        Vous vivez à %{city} %{zip}. \r\n        Votre site Web est %{website}."
-  ja: "こんにちは %{name} %{surname}、あなたのアカウントIDは %{id}、メールアドレスは %{email} です。 \r\n        あなたは %{city} %{zip} に住んでいます。 \r\n        あなたのウェブサイトは %{website} です。"
-  ko: "안녕하세요 %{name} %{surname}, 당신의 계정 ID는 %{id}, 이메일 주소는 %{email} 입니다. \r\n        당신은 %{city} %{zip} 에 살고 있습니다. \r\n        당신의 웹사이트는 %{website} 입니다."
+  ja: "こんにちは %{name} %{surname}、あなたのアカウント ID は %{id}、メールアドレスは %{email} です。 \r\n        あなたは %{city} %{zip} に住んでいます。 \r\n        あなたのウェブサイトは %{website} です。"
+  ko: "안녕하세요 %{name} %{surname}, 당신의 계정 ID 는 %{id}, 이메일 주소는 %{email} 입니다. \r\n        당신은 %{city} %{zip} 에 살고 있습니다. \r\n        당신의 웹사이트는 %{website} 입니다."
   ru: "Привет %{name} %{surname}, ваш ID аккаунта %{id}, адрес электронной почты %{email}. \r\n        Вы живете в %{city} %{zip}. \r\n        Ваш сайт %{website}."
   vi: "Xin chào %{name} %{surname}, ID tài khoản của bạn là %{id}, địa chỉ email là %{email}. \r\n        Bạn sống ở %{city} %{zip}. \r\n        Trang web của bạn là %{website}."
   zh-CN: "你好 %{name} %{surname}，你的帐户 ID 是 %{id}，电子邮件地址是 %{email}。 \r\n        你住在 %{city} %{zip}。 \r\n        你的网站是 %{website}。"

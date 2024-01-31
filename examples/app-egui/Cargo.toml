@@ -19,5 +19,4 @@ available-locales = ["en", "fr", "ja", "ko", "zh", "zh-CN"]
 default-locale = "en"
 minify-key = true
 minify-key-len = 12
-minify-key-prefix = "T."
 minify-key-thresh = 8

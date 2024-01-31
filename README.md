@@ -65,15 +65,15 @@ i18n!("locales", minify_key = true);
 i18n!("locales",
       minify_key = true,
       minify_key_len = 12,
-      minify_key_prefix = "T.",
+      minify_key_prefix = "t_",
       minify_key_thresh = 64
 );
 // Now, if the message length exceeds 64, the `t!` macro will automatically generate
-// a 12-byte short hashed key with a "T." prefix for it, if not, it will use the original.
+// a 12-byte short hashed key with a "t_" prefix for it, if not, it will use the original.
 
 // Configuration using the `[package.metadata.i18n]` section in `Cargo.toml`,
 // Useful for the `cargo i18n` command line tool.
-i18n!(metadata = true);
+i18n!();
 ```
 
 Or you can import by use directly:
@@ -116,11 +116,11 @@ You can also split the each language into difference files, and you can choise (
 
 ```yml
 _version: 1
-hello: "Hello world"
-messages.hello: "Hello, %{name}"
+hello: 'Hello world'
+messages.hello: 'Hello, %{name}'
 
 # Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
-4Cct6Q289b12SkvF47dXIx: "Hello, %{name}"
+4Cct6Q289b12SkvF47dXIx: 'Hello, %{name}'
 ```
 
 Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:

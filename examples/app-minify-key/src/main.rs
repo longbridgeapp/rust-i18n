@@ -4,7 +4,7 @@ rust_i18n::i18n!(
     "locales",
     minify_key = true,
     minify_key_len = 24,
-    minify_key_prefix = "T.",
+    minify_key_prefix = "mytr_",
     minify_key_thresh = 4
 );
 

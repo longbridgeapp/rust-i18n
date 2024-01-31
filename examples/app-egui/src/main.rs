@@ -7,7 +7,7 @@ rust_i18n::i18n!(
     "locales",
     minify_key = true,
     minify_key_len = 12,
-    minify_key_prefix = "T.",
+    minify_key_prefix = "tr_",
     minify_key_thresh = 8
 );
 
@@ -135,7 +135,7 @@ fn setup_custom_fonts(ctx: &egui::Context) -> Result<(), std::io::Error> {
 }
 
 #[cfg(not(windows))]
-fn setup_custom_fonts(ctx: &egui::Context) -> Result<(), std::io::Error> {
+fn setup_custom_fonts(_ctx: &egui::Context) -> Result<(), std::io::Error> {
     Err(std::io::Error::new(
         std::io::ErrorKind::Unsupported,
         "Custom fonts not supported on this platform",

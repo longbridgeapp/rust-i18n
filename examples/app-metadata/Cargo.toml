@@ -14,5 +14,4 @@ default-locale = "zh"
 load-path = "locales"
 minify-key = true
 minify-key-len = 12
-minify-key-prefix = "T."
 minify-key-thresh = 4

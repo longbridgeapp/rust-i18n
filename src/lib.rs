@@ -6,7 +6,8 @@ use once_cell::sync::Lazy;
 
 #[doc(hidden)]
 pub use once_cell;
-pub use rust_i18n_macro::{i18n, mikey, tr, vakey};
+#[doc(hidden)]
+pub use rust_i18n_macro::{_minify_key, _tr, i18n};
 pub use rust_i18n_support::{
     AtomicStr, Backend, BackendExt, CowStr, MinifyKey, SimpleBackend, DEFAULT_MINIFY_KEY,
     DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX, DEFAULT_MINIFY_KEY_THRESH,
@@ -166,16 +167,9 @@ macro_rules! t {
 /// # macro_rules! t { ($($all:tt)*) => { } }
 /// # macro_rules! tkv { ($($all:tt)*) => { (1,2) } }
 ///
-/// let (key, msg) = tkv!(
-///     r#"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sed nisi leo. Donec commodo in ex at aliquam. Nunc in aliquam arcu. Fusce mollis metus orci, ut sagittis erat lobortis sed. Morbi quis arcu ultrices turpis finibus tincidunt non in purus. Donec gravida condimentum sapien. Duis iaculis fermentum congue. Quisque blandit libero a lacus auctor vestibulum. Nunc efficitur sollicitudin nisi, sit amet tristique lectus mollis non. Praesent sit amet erat volutpat, pharetra orci eget, rutrum felis. Sed elit augue, imperdiet eu facilisis vel, finibus vel urna. Duis quis neque metus.
-///
-///     Mauris suscipit bibendum mattis. Vestibulum eu augue diam. Morbi dapibus tempus viverra. Sed aliquam turpis eget justo ornare maximus vitae et tortor. Donec semper neque sit amet sapien congue scelerisque. Maecenas bibendum imperdiet dolor interdum facilisis. Integer non diam tempus, pharetra ex at, euismod diam. Ut enim turpis, sagittis in iaculis ut, finibus et sem. Suspendisse a felis euismod neque euismod placerat. Praesent ipsum libero, porta vel egestas quis, aliquet vitae lorem. Nullam vel pharetra erat, sit amet sodales leo."#
-/// );
-/// // Use the `key` and `msg` in `t!` macro
-/// t!((key, msg), bar = "foo");
-/// // ...
-/// // In other parts of the code, you can reuse the same `key` and `msg`
-/// t!((key, msg), bar = "baz");
+/// let (key, msg) = tkv!("Hello world");
+/// // => key is `"Hello world"` and msg is the translated message.
+/// // => If there is hints the minify_key logic, the key will returns a minify key.
 /// ```
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]

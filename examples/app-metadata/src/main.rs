@@ -1,6 +1,6 @@
 use rust_i18n::t;
 
-rust_i18n::i18n!(metadata = true);
+rust_i18n::i18n!();
 
 fn main() {
     let locales = rust_i18n::available_locales!();

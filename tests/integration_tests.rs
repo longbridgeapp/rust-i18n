@@ -85,7 +85,7 @@ mod tests {
     }
 
     mod test5 {
-        rust_i18n::i18n!(metadata = true);
+        rust_i18n::i18n!();
     }
 
     #[test]
