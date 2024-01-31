@@ -84,6 +84,10 @@ mod tests {
         }
     }
 
+    mod test5 {
+        rust_i18n::i18n!(metadata = true);
+    }
+
     #[test]
     fn check_test_environment() {
         assert_eq!(
@@ -114,7 +118,7 @@ mod tests {
     fn test_available_locales() {
         assert_eq!(
             rust_i18n::available_locales!(),
-            &["en", "ja", "pt", "zh", "zh-CN"]
+            &["de", "en", "fr", "ja", "ko", "pt", "ru", "vi", "zh", "zh-CN"]
         );
     }
 

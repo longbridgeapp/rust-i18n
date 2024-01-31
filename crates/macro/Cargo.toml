@@ -18,10 +18,13 @@ rust-i18n-support = { path = "../support", version = "3.0.0" }
 serde = "1"
 serde_json = "1"
 serde_yaml = "0.8"
-syn = { version = "2.0.18", features = ["full"] }
+syn = { version = "2.0.18", features = ["full", "extra-traits"] }
 
 [dev-dependencies]
 rust-i18n = { path = "../.." }
 
 [lib]
 proc-macro = true
+
+[features]
+log-miss-tr = []

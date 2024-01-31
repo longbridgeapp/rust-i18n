@@ -1,12 +1,24 @@
 use quote::quote;
-use rust_i18n_support::{is_debug, load_locales};
+use rust_i18n_support::{
+    is_debug, load_locales, I18nConfig, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN,
+    DEFAULT_MINIFY_KEY_PREFIX, DEFAULT_MINIFY_KEY_THRESH,
+};
 use std::collections::HashMap;
-use syn::{parse_macro_input, Expr, Ident, LitStr, Token};
+use syn::{parse_macro_input, Expr, Ident, LitBool, LitStr, Token};
+
+mod mikey;
+mod tr;
 
 struct Args {
     locales_path: String,
+    default_locale: Option<String>,
     fallback: Option<Vec<String>>,
     extend: Option<Expr>,
+    metadata: bool,
+    minify_key: bool,
+    minify_key_len: usize,
+    minify_key_prefix: String,
+    minify_key_thresh: usize,
 }
 
 impl Args {
@@ -44,6 +56,60 @@ impl Args {
         Ok(())
     }
 
+    fn consume_metadata(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
+        let lit_bool = input.parse::<LitBool>()?;
+        self.metadata = lit_bool.value;
+        // Load the config from Cargo.toml. This can be overridden by subsequent options.
+        if self.metadata {
+            // CARGO_MANIFEST_DIR is current build directory
+            let cargo_dir = std::env::var("CARGO_MANIFEST_DIR")
+                .map_err(|_| input.error("The CARGO_MANIFEST_DIR is required fo `metadata`"))?;
+            let current_dir = std::path::PathBuf::from(cargo_dir);
+            let cfg = I18nConfig::load(&current_dir)
+                .map_err(|_| input.error("Failed to load config from Cargo.toml for `metadata`"))?;
+            self.locales_path = cfg.load_path;
+            self.default_locale = Some(cfg.default_locale.clone());
+            if !cfg.fallback.is_empty() {
+                self.fallback = Some(cfg.fallback);
+            }
+            self.minify_key = cfg.minify_key;
+            self.minify_key_len = cfg.minify_key_len;
+            self.minify_key_prefix = cfg.minify_key_prefix;
+            self.minify_key_thresh = cfg.minify_key_thresh;
+        }
+        Ok(())
+    }
+
+    fn consume_minify_key(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
+        let lit_bool = input.parse::<LitBool>()?;
+        self.minify_key = lit_bool.value;
+        Ok(())
+    }
+
+    fn consume_minify_key_len(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
+        let lit_int = input.parse::<syn::LitInt>()?;
+        self.minify_key_len = lit_int.base10_parse()?;
+        Ok(())
+    }
+
+    fn consume_minify_key_prefix(
+        &mut self,
+        input: syn::parse::ParseStream,
+    ) -> syn::parse::Result<()> {
+        let lit_str = input.parse::<syn::LitStr>()?;
+        self.minify_key_prefix = lit_str.value();
+        Ok(())
+    }
+
+    fn consume_minify_key_thresh(
+        &mut self,
+        input: syn::parse::ParseStream,
+    ) -> syn::parse::Result<()> {
+        let lit_int = input.parse::<syn::LitInt>()?;
+        self.minify_key_thresh = lit_int.base10_parse()?;
+        Ok(())
+    }
+
     fn consume_options(&mut self, input: syn::parse::ParseStream) -> syn::parse::Result<()> {
         let ident = input.parse::<Ident>()?.to_string();
         input.parse::<Token![=]>()?;
@@ -55,6 +121,21 @@ impl Args {
             "backend" => {
                 let val = input.parse::<Expr>()?;
                 self.extend = Some(val);
+            }
+            "metadata" => {
+                self.consume_metadata(input)?;
+            }
+            "minify_key" => {
+                self.consume_minify_key(input)?;
+            }
+            "minify_key_len" => {
+                self.consume_minify_key_len(input)?;
+            }
+            "minify_key_prefix" => {
+                self.consume_minify_key_prefix(input)?;
+            }
+            "minify_key_thresh" => {
+                self.consume_minify_key_thresh(input)?;
             }
             _ => {}
         }
@@ -85,6 +166,16 @@ impl syn::parse::Parse for Args {
     /// # fn v4() {
     /// i18n!("locales", fallback = ["en", "es"]);
     /// # }
+    /// # fn v5() {
+    /// i18n!("locales", fallback = ["en", "es"],
+    ///       minify_key = true,
+    ///       minify_key_len = 12,
+    ///       minify_key_prefix = "T.",
+    ///       minify_key_thresh = 64);
+    /// # }
+    /// # fn v6() {
+    /// i18n!(metadata = true);
+    /// # }
     /// ```
     ///
     /// Ref: https://docs.rs/syn/latest/syn/parse/index.html
@@ -93,8 +184,14 @@ impl syn::parse::Parse for Args {
 
         let mut result = Self {
             locales_path: String::from("locales"),
+            default_locale: None,
             fallback: None,
             extend: None,
+            metadata: false,
+            minify_key: DEFAULT_MINIFY_KEY,
+            minify_key_len: DEFAULT_MINIFY_KEY_LEN,
+            minify_key_prefix: DEFAULT_MINIFY_KEY_PREFIX.to_owned(),
+            minify_key_thresh: DEFAULT_MINIFY_KEY_THRESH,
         };
 
         if lookahead.peek(LitStr) {
@@ -115,7 +212,17 @@ impl syn::parse::Parse for Args {
 ///
 /// This will load all translations by glob `**/*.yml` from the given path, default: `${CARGO_MANIFEST_DIR}/locales`.
 ///
-/// Attribute `fallback` for set the fallback locale, if present `t` macro will use it as the fallback locale.
+/// # Attributes
+///
+/// - `fallback` for set the fallback locale, if present [`t!`](macro.t.html) macro will use it as the fallback locale.
+/// - `backend` for set the backend, if present [`t!`](macro.t.html) macro will use it as the backend.
+/// - `metadata` to enable/disable loading of the [package.metadata.i18n] config from Cargo.toml, default: `false`.
+/// - `minify_key` for enable/disable minify key, default: [`DEFAULT_MINIFY_KEY`](constant.DEFAULT_MINIFY_KEY.html).
+/// - `minify_key_len` for set the minify key length, default: [`DEFAULT_MINIFY_KEY_LEN`](constant.DEFAULT_MINIFY_KEY_LEN.html),
+///   * The range of available values is from `0` to `24`.
+/// - `minify_key_prefix` for set the minify key prefix, default: [`DEFAULT_MINIFY_KEY_PREFIX`](constant.DEFAULT_MINIFY_KEY_PREFIX.html).
+/// - `minify_key_thresh` for set the minify key threshold, default: [`DEFAULT_MINIFY_KEY_THRESH`](constant.DEFAULT_MINIFY_KEY_THRESH.html).
+///   * If the length of the value is less than or equal to this value, the value will not be minified.
 ///
 /// ```no_run
 /// # use rust_i18n::i18n;
@@ -130,6 +237,16 @@ impl syn::parse::Parse for Args {
 /// # }
 /// # fn v4() {
 /// i18n!("locales", fallback = ["en", "es"]);
+/// # }
+/// # fn v5() {
+/// i18n!("locales", fallback = ["en", "es"],
+///       minify_key = true,
+///       minify_key_len = 12,
+///       minify_key_prefix = "T.",
+///       minify_key_thresh = 64);
+/// # }
+/// # fn v6() {
+/// i18n!(metadata = true);
 /// # }
 /// ```
 #[proc_macro]
@@ -177,6 +294,14 @@ fn generate_code(
         });
     });
 
+    let default_locale = if let Some(default_locale) = args.default_locale {
+        quote! {
+            rust_i18n::set_locale(#default_locale);
+        }
+    } else {
+        quote! {}
+    };
+
     let fallback = if let Some(fallback) = args.fallback {
         quote! {
             Some(&[#(#fallback),*])
@@ -195,9 +320,13 @@ fn generate_code(
         quote! {}
     };
 
-    // result
+    let minify_key = args.minify_key;
+    let minify_key_len = args.minify_key_len;
+    let minify_key_prefix = args.minify_key_prefix;
+    let minify_key_thresh = args.minify_key_thresh;
+
     quote! {
-        use rust_i18n::BackendExt;
+        use rust_i18n::{BackendExt, CowStr, MinifyKey};
         use std::borrow::Cow;
 
         /// I18n backend instance
@@ -209,10 +338,16 @@ fn generate_code(
             #(#all_translations)*
             #extend_code
 
+            #default_locale
+
             Box::new(backend)
         });
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&[&'static str]> = #fallback;
+        static _RUST_I18N_MINIFY_KEY: bool = #minify_key;
+        static _RUST_I18N_MINIFY_KEY_LEN: usize = #minify_key_len;
+        static _RUST_I18N_MINIFY_KEY_PREFIX: &str = #minify_key_prefix;
+        static _RUST_I18N_MINIFY_KEY_THRESH: usize = #minify_key_thresh;
 
         /// Lookup fallback locales
         ///
@@ -229,30 +364,34 @@ fn generate_code(
         #[inline]
         #[allow(missing_docs)]
         pub fn _rust_i18n_translate<'r>(locale: &str, key: &'r str) -> Cow<'r, str> {
-            if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                return value.into();
-            }
-
-            let mut current_locale = locale;
-            while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
-                if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key) {
-                    return value.into();
+            _rust_i18n_try_translate(locale, key).unwrap_or_else(|| {
+                if locale.is_empty() {
+                    key.into()
+                } else {
+                    format!("{}.{}", locale, key).into()
                 }
-                current_locale = fallback_locale;
-            }
+            })
+        }
 
-            if let Some(fallback) = _RUST_I18N_FALLBACK_LOCALE {
-                for locale in fallback {
-                    if let Some(value) = _RUST_I18N_BACKEND.translate(locale, key) {
-                        return value.into();
+        /// Try to get I18n text by locale and key
+        #[inline]
+        #[allow(missing_docs)]
+        pub fn _rust_i18n_try_translate<'r>(locale: &str, key: impl AsRef<str>) -> Option<Cow<'r, str>> {
+            _RUST_I18N_BACKEND.translate(locale, key.as_ref())
+                .map(Cow::from)
+                .or_else(|| {
+                    let mut current_locale = locale;
+                    while let Some(fallback_locale) = _rust_i18n_lookup_fallback(current_locale) {
+                        if let Some(value) = _RUST_I18N_BACKEND.translate(fallback_locale, key.as_ref()) {
+                            return Some(Cow::from(value));
+                        }
+                        current_locale = fallback_locale;
                     }
-                }
-            }
 
-            if locale.is_empty() {
-                return key.into();
-            }
-            return format!("{}.{}", locale, key).into();
+                    _RUST_I18N_FALLBACK_LOCALE.and_then(|fallback| {
+                        fallback.iter().find_map(|locale| _RUST_I18N_BACKEND.translate(locale, key.as_ref()).map(Cow::from))
+                    })
+                })
         }
 
         #[allow(missing_docs)]
@@ -261,11 +400,58 @@ fn generate_code(
             locales.sort();
             locales
         }
+
+        #[allow(unused_macros)]
+        macro_rules! __rust_i18n_t {
+            ($($all_tokens:tt)*) => {
+                rust_i18n::tr!($($all_tokens)*, _minify_key = #minify_key, _minify_key_len = #minify_key_len, _minify_key_prefix = #minify_key_prefix, _minify_key_thresh = #minify_key_thresh)
+            }
+        }
+
+        #[allow(unused_macros)]
+        macro_rules! __rust_i18n_tkv {
+            ($msg:literal) => {
+                {
+                    let val = $msg;
+                    let key = rust_i18n::mikey!($msg, #minify_key_len, #minify_key_prefix, #minify_key_thresh);
+                    (key, val)
+                }
+            }
+        }
+
+        pub(crate) use __rust_i18n_t as _rust_i18n_t;
+        pub(crate) use __rust_i18n_tkv as _rust_i18n_tkv;
     }
 }
 
+/// A procedural macro that generates a string representation of the input.
+///
+/// This macro accepts either a string literal or an identifier as input.
+/// If the input is a string literal, it returns the value of the string literal.
+/// If the input is an identifier, it returns the string representation of the identifier.
+///
+/// # Arguments
+///
+/// * `input` - The input token stream. It should be either a string literal or an identifier.
+///
+/// # Returns
+///
+/// Returns a token stream that contains a string representation of the input. If the input cannot be parsed as a string literal or an identifier,
+/// it returns a compile error.
+///
+/// # Example
+///
+/// ```no_run
+/// # use rust_i18n::vakey;
+/// # fn v1() {
+/// let key = vakey!(name);
+/// # }
+/// # fn v2() {
+/// let key = vakey!("name");
+/// # }
+/// ```
 #[proc_macro]
-pub fn key(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn vakey(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let output = syn::parse::<syn::LitStr>(input.clone())
         .map(|str| str.value())
         .or(syn::parse::<syn::Ident>(input.clone()).map(|ident| format!("{}", ident)));
@@ -274,4 +460,77 @@ pub fn key(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Ok(value) => quote! { #value }.into(),
         Err(err) => err.to_compile_error().into(),
     }
+}
+
+/// A procedural macro that generates a translation key from a value.
+///
+/// # Arguments
+///
+/// * `value` - The value to be generated.
+/// * `key_len` - The length of the translation key.
+/// * `prefix` - The prefix of the translation key.
+/// * `threshold` - The minimum length of the value to be generated.
+///
+/// # Returns
+///
+/// * If `value.len() <= threshold` then returns the origin value.
+/// * Otherwise, returns a base62 encoded 128 bits hashed translation key.
+///
+/// # Example
+///
+/// ```no_run
+/// # use rust_i18n::mikey;
+/// # fn v1() {
+/// mikey!("Hello world", 12, "T.", 64);
+/// // => "Hello world"
+///
+/// mikey!("Hello world", 12, "T.", 5);
+/// // => "T.1b9d6bcd"
+/// # }
+/// ```
+#[proc_macro]
+pub fn mikey(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    parse_macro_input!(input as mikey::MiKey).into()
+}
+
+/// A procedural macro that retrieves the i18n text for the `t!` macro.
+///
+/// This macro first checks if a translation exists for the input string.
+/// If it does, it returns the translated string.
+/// If it does not, it returns the input value.
+///
+/// # Examples
+///
+/// ```no_run
+/// #[macro_use] extern crate rust_i18n;
+/// # use rust_i18n::{tr, CowStr};
+/// # fn _rust_i18n_try_translate<'r>(locale: &str, key: &'r str) -> Option<std::borrow::Cow<'r, str>> { todo!() }
+/// # fn main() {
+/// // Simple get text with current locale
+/// tr!("Hello world");
+/// // => "Hello world"
+///
+/// // Get a special locale's text
+/// tr!("Hello world", locale = "de");
+/// // => "Hallo Welt!"
+///
+/// // With variables
+/// tr!("Hello, %{name}", name = "world"); // Asignment style
+/// tr!("Hello, %{name}", name => "world"); // Arrow style
+/// // => "Hello, world"
+/// tr!("Hello, %{name} and %{other}", name = "Foo", other = "Bar");
+/// // => "Hello, Foo and Bar"
+///
+/// // With variables and specifiers
+/// tr!("Hello, %{name} and %{other}", name = "Foo", other = 123 : {:08});
+/// // => "Hello, Foo and 00000123"
+///
+/// // With locale and variables
+/// tr!("Hallo, %{name}", locale = "de", name => "Jason");
+/// // => "Hallo, Jason"
+/// # }
+/// ```
+#[proc_macro]
+pub fn tr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    parse_macro_input!(input as tr::Tr).into()
 }

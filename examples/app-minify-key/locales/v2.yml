@@ -1,0 +1,78 @@
+_version: 2
+T.29xGXAUPAkgvVzCf9ES3q8:
+  en: Apple
+  de: Apfel
+  fr: Pomme
+  it: Mela
+  ja: りんご
+  ko: 사과
+  ru: Яблоко
+  vi: Táo
+  zh: 苹果
+  zh-TW: 蘋果
+T.7MQVq9vgi0h6pLE47CdWXH:
+  en: Banana
+  de: Banane
+  fr: Banane
+  it: Banana
+  ja: バナナ
+  ko: 바나나
+  ru: Банан
+  vi: Chuối
+  zh: 香蕉
+  zh-TW: 香蕉
+T.2RohljPx99sA18L8E5oTD4:
+  en: Orange
+  de: Orange
+  fr: Orange
+  it: Arancia
+  ja: オレンジ
+  ko: 오렌지
+  ru: Апельсин
+  vi: Cam
+  zh: 橘子
+  zh-TW: 橘子
+T.KtVLkBzuyfHoJZtCWEIOU:
+  en: Hello
+  de: Hallo
+  fr: Bonjour
+  it: Ciao
+  ja: こんにちは
+  ko: 안녕하세요
+  ru: Привет
+  vi: Xin chào
+  zh: 你好
+  zh-TW: 妳好
+T.tvpNzQjFwc0trHvgzSBxX:
+  en: Hello, %{name}!
+  de: Hallo, %{name}!
+  fr: Bonjour, %{name}!
+  it: Ciao, %{name}!
+  ja: こんにちは、%{name}！
+  ko: 안녕하세요, %{name}!
+  ru: Привет, %{name}!
+  vi: Xin chào, %{name}!
+  zh: 你好，%{name}！
+  zh-TW: 妳好，%{name}！
+T.kmFrQ2nnJsvUh3Ckxmki0:
+  en: "Hello, %{name}. Your message is: %{msg}"
+  de: "Hallo, %{name}. Deine Nachricht ist: %{msg}"
+  fr: "Bonjour, %{name}. Votre message est: %{msg}"
+  it: "Ciao, %{name}. Il tuo messaggio è: %{msg}"
+  ja: "こんにちは、%{name}。あなたのメッセージは: %{msg}"
+  ko: "안녕하세요, %{name}. 당신의 메시지는: %{msg}"
+  ru: "Привет, %{name}. Ваше сообщение: %{msg}"
+  vi: "Xin chào, %{name}. Tin nhắn của bạn là: %{msg}"
+  zh: "你好，%{name}。这是你的消息：%{msg}"
+  zh-TW: "妳好，%{name}。這是妳的消息：%{msg}"
+T.7hWbTwvMpr0H0oDLIQlfrm:
+  en: You have %{count} messages.
+  de: Du hast %{count} Nachrichten.
+  fr: Vous avez %{count} messages.
+  it: Hai %{count} messaggi.
+  ja: あなたは %{count} 件のメッセージを持っています。
+  ko: 당신은 %{count} 개의 메시지를 가지고 있습니다.
+  ru: У вас %{count} сообщений.
+  vi: Bạn có %{count} tin nhắn.
+  zh: 你收到了 %{count} 条新消息。
+  zh-TW: 妳收到了 %{count} 條新消息。

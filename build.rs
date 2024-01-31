@@ -25,7 +25,7 @@ fn main() {
     let workdir = workdir().unwrap_or("./".to_string());
 
     let locale_path = format!("{workdir}/**/locales/**/*");
-    if let Ok(globs) = globwalk::glob(&locale_path) {
+    if let Ok(globs) = globwalk::glob(locale_path) {
         for entry in globs {
             if let Err(e) = entry {
                 println!("cargo:i18n-error={}", e);

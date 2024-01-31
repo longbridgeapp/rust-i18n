@@ -4,7 +4,7 @@
 
 > 🎯 Let's make I18n things to easy!
 
-Rust I18n is a crate for loading localized text from a set of (YAML, JSON or TOML) mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided `t!` macro.
+Rust I18n is a crate for loading localized text from a set of (YAML, JSON or TOML) mapping files. The mappings are converted into data readable by Rust programs at compile time, and then localized text can be loaded by simply calling the provided [`t!`] macro.
 
 Unlike other I18n libraries, Rust I18n's goal is to provide a simple and easy-to-use API.
 
@@ -13,10 +13,15 @@ The API of this crate is inspired by [ruby-i18n](https://github.com/ruby-i18n/i1
 ## Features
 
 - Codegen on compile time for includes translations into binary.
-- Global `t!` macro for loading localized text in everywhere.
+- Global [`t!`] macro for loading localized text in everywhere.
 - Use YAML (default), JSON or TOML format for mapping localized text, and support mutiple files merging.
 - `cargo i18n` Command line tool for checking and extract untranslated texts into YAML files.
 - Support all localized texts in one file, or split into difference files by locale.
+- Supports specifying a chain of fallback locales for missing translations.
+- Supports automatic lookup of language territory for fallback locale. For instance, if `zh-CN` is not available, it will fallback to `zh`. (Since v2.4.0)
+- Support short hashed keys for optimize memory usage and lookup speed. (Since v3.1.0)
+- Support format variables in [`t!`], and support format variables with [`std::fmt`](https://doc.rust-lang.org/std/fmt/) syntax. (Since v3.1.0)
+- Support for log missing translations at the warning level with `log-miss-tr` feature, the feature requires the `log` crate. (Since v3.1.0)
 
 ## Usage
 
@@ -39,16 +44,36 @@ i18n!("locales");
 
 // Or just use `i18n!`, default locales path is: "locales" in current crate.
 //
-// i18n!();
+i18n!();
 
 // Config fallback missing translations to "en" locale.
 // Use `fallback` option to set fallback locale.
 //
-// i18n!("locales", fallback = "en");
+i18n!("locales", fallback = "en");
 
 // Or more than one fallback with priority.
 //
-// i18n!("locales", fallback = ["en", "es]);
+i18n!("locales", fallback = ["en", "es"]);
+
+// Use a short hashed key as an identifier for long string literals
+// to optimize memory usage and lookup speed.
+// The key generation algorithm is `${Prefix}${Base62(SipHash13("msg"))}`.
+i18n!("locales", minify_key = true);
+//
+// Alternatively, you can customize the key length, prefix,
+// and threshold for the short hashed key.
+i18n!("locales",
+      minify_key = true,
+      minify_key_len = 12,
+      minify_key_prefix = "T.",
+      minify_key_thresh = 64
+);
+// Now, if the message length exceeds 64, the `t!` macro will automatically generate
+// a 12-byte short hashed key with a "T." prefix for it, if not, it will use the original.
+
+// Configuration using the `[package.metadata.i18n]` section in `Cargo.toml`,
+// Useful for the `cargo i18n` command line tool.
+i18n!(metadata = true);
 ```
 
 Or you can import by use directly:
@@ -60,6 +85,7 @@ use rust_i18n::t;
 rust_i18n::i18n!("locales");
 
 fn main() {
+    // Find the translation for the string literal `Hello` using the manually provided key `hello`.
     println!("{}", t!("hello"));
 
     // Use `available_locales!` method to get all available locales.
@@ -90,8 +116,11 @@ You can also split the each language into difference files, and you can choise (
 
 ```yml
 _version: 1
-hello: 'Hello world'
-messages.hello: 'Hello, %{name}'
+hello: "Hello world"
+messages.hello: "Hello, %{name}"
+
+# Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
+4Cct6Q289b12SkvF47dXIx: "Hello, %{name}"
 ```
 
 Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:
@@ -100,12 +129,18 @@ Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and 
 {
   "_version": 1,
   "hello": "Hello world",
-  "messages.hello": "Hello, %{name}"
+  "messages.hello": "Hello, %{name}",
+
+  // Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
+  "4Cct6Q289b12SkvF47dXIx": "Hello, %{name}"
 }
 ```
 
 ```toml
 hello = "Hello world"
+
+# Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
+4Cct6Q289b12SkvF47dXIx = "Hello, %{name}"
 
 [messages]
 hello = "Hello, %{name}"
@@ -144,6 +179,11 @@ hello:
 messages.hello:
   en: Hello, %{name}
   zh-CN: 你好，%{name}
+
+# Generate short hashed keys using `minify_key=true, minify_key_thresh=10`
+4Cct6Q289b12SkvF47dXIx:
+  en: Hello, %{name}
+  zh-CN: 你好，%{name}
 ```
 
 This is useful when you use [GitHub Copilot](https://github.com/features/copilot), after you write a first translated text, then Copilot will auto generate other locale's translations for you.
@@ -152,7 +192,7 @@ This is useful when you use [GitHub Copilot](https://github.com/features/copilot
 
 ### Get Localized Strings in Rust
 
-Import the `t!` macro from this crate into your current scope:
+Import the [`t!`] macro from this crate into your current scope:
 
 ```rust,no_run
 use rust_i18n::t;
@@ -161,9 +201,11 @@ use rust_i18n::t;
 Then, simply use it wherever a localized string is needed:
 
 ```rust,no_run
-# fn _rust_i18n_translate(locale: &str, key: &str) -> String { todo!() }
+# macro_rules! t {
+#    ($($all_tokens:tt)*) => {}
+# }
 # fn main() {
-use rust_i18n::t;
+// use rust_i18n::t;
 t!("hello");
 // => "Hello world"
 
@@ -181,12 +223,15 @@ t!("messages.hello", locale = "zh-CN", name = "Jason", count = 2);
 
 t!("messages.hello", locale = "zh-CN", "name" => "Jason", "count" => 3 + 2);
 // => "你好，Jason (5)"
+
+t!("Hello, %{name}, you serial number is: %{sn}", name = "Jason", sn = 123 : {:08});
+// => "Hello, Jason, you serial number is: 000000123"
 # }
 ```
 
 ### Current Locale
 
-You can use `rust_i18n::set_locale` to set the global locale at runtime, so that you don't have to specify the locale on each `t!` invocation.
+You can use [`rust_i18n::set_locale()`](<set_locale()>) to set the global locale at runtime, so that you don't have to specify the locale on each [`t!`] invocation.
 
 ```rust
 rust_i18n::set_locale("zh-CN");
@@ -259,7 +304,7 @@ rust_i18n::i18n!("locales", backend = RemoteI18n::new());
 
 This also will load local translates from ./locales path, but your own `RemoteI18n` will priority than it.
 
-Now you call `t!` will lookup translates from your own backend first, if not found, will lookup from local files.
+Now you call [`t!`] will lookup translates from your own backend first, if not found, will lookup from local files.
 
 ## Example
 
@@ -341,24 +386,39 @@ Run `cargo i18n -h` to see details.
 
 ```bash
 $ cargo i18n -h
-cargo-i18n 0.5.0
+cargo-i18n 3.1.0
 ---------------------------------------
-Rust I18n command for help you simply to extract all untranslated texts from soruce code.
+Rust I18n command to help you extract all untranslated texts from source code.
 
-It will iter all Rust files in and extract all untranslated texts that used `t!` macro.
-And then generate a YAML file and merge for existing texts.
+It will iterate all Rust files in the source directory and extract all untranslated texts that used `t!` macro. Then it will generate a YAML file and merge with the existing translations.
 
 https://github.com/longbridgeapp/rust-i18n
 
-USAGE:
-    cargo i18n [OPTIONS] [--] [source]
+Usage: cargo i18n [OPTIONS] [-- <SOURCE>]
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+Arguments:
+  [SOURCE]
+          Extract all untranslated I18n texts from source code
 
-ARGS:
-    <source>    Path of your Rust crate root [default: ./]
+          [default: ./]
+
+Options:
+  -t, --translate <TEXT>...
+          Manually add a translation to the localization file.
+
+          This is useful for non-literal values in the `t!` macro.
+
+          For example, if you have `t!(format!("Hello, {}!", "world"))` in your code,
+          you can add a translation for it using `-t "Hello, world!"`,
+          or provide a translated message using `-t "Hello, world! => Hola, world!"`.
+
+          NOTE: The whitespace before and after the key and value will be trimmed.
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```
 
 ## Debugging the Codegen Process
@@ -371,7 +431,7 @@ $ RUST_I18N_DEBUG=1 cargo build
 
 ## Benchmark
 
-Benchmark `t!` method, result on Apple M1:
+Benchmark [`t!`] method, result on Apple M1:
 
 ```bash
 t                       time:   [58.274 ns 60.222 ns 62.390 ns]

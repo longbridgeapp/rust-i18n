@@ -10,11 +10,8 @@ version = "3.0.0"
 [dependencies]
 anyhow = "1"
 clap = { version = "4.1.14", features = ["derive"] }
-itertools = "0.11.0"
 rust-i18n-support = { path = "../support", version = "3.0.0" }
 rust-i18n-extract = { path = "../extract", version = "3.0.0" }
-serde = { version = "1", features = ["derive"] }
-toml = "0.7.4"
 
 [[bin]]
 name = "cargo-i18n"

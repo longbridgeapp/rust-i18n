@@ -5,8 +5,17 @@ use std::{collections::HashMap, path::Path};
 
 mod atomic_str;
 mod backend;
+mod config;
+mod cow_str;
+mod minify_key;
 pub use atomic_str::AtomicStr;
 pub use backend::{Backend, BackendExt, SimpleBackend};
+pub use config::I18nConfig;
+pub use cow_str::CowStr;
+pub use minify_key::{
+    minify_key, MinifyKey, DEFAULT_MINIFY_KEY, DEFAULT_MINIFY_KEY_LEN, DEFAULT_MINIFY_KEY_PREFIX,
+    DEFAULT_MINIFY_KEY_THRESH,
+};
 
 type Locale = String;
 type Value = serde_json::Value;
@@ -96,7 +105,8 @@ pub fn load_locales<F: Fn(&str) -> bool>(
             .read_to_string(&mut content)
             .expect("Read file failed.");
 
-        let trs = parse_file(&content, ext, locale).expect("Parse file failed.");
+        let trs = parse_file(&content, ext, locale)
+            .expect(&format!("Parse file `{}` failed", entry.display()));
 
         trs.into_iter().for_each(|(k, new_value)| {
             translations
@@ -132,11 +142,9 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
                     return Ok(trs);
                 }
 
-                return Err("Invalid locale file format, please check the version field".into());
+                Err("Invalid locale file format, please check the version field".into())
             }
-            _ => {
-                return Ok(parse_file_v1(locale, &v));
-            }
+            _ => Ok(parse_file_v1(locale, &v)),
         },
         Err(e) => Err(e),
     }
@@ -150,7 +158,7 @@ fn parse_file(content: &str, ext: &str, locale: &str) -> Result<Translations, St
 /// foo: Foo bar
 /// ```
 fn parse_file_v1(locale: &str, data: &serde_json::Value) -> Translations {
-    return Translations::from([(locale.to_string(), data.clone())]);
+    Translations::from([(locale.to_string(), data.clone())])
 }
 
 /// Locale file format v2
@@ -205,7 +213,7 @@ fn parse_file_v2(key_prefix: &str, data: &serde_json::Value) -> Option<Translati
                         // Parse the nested keys
                         // If the value is object (Map<locale, string>), iter them and convert them and insert into trs
                         let key = format_keys(&[&key_prefix, &key]);
-                        if let Some(sub_trs) = parse_file_v2(&key, &value) {
+                        if let Some(sub_trs) = parse_file_v2(&key, value) {
                             // println!("--------------- sub_trs:\n{:?}", sub_trs);
                             // Merge the sub_trs into trs
                             for (locale, sub_value) in sub_trs {
@@ -234,7 +242,7 @@ fn get_version(data: &serde_json::Value) -> usize {
         return version.as_u64().unwrap_or(1) as usize;
     }
 
-    return 1;
+    1
 }
 
 /// Join the keys with dot, if any key is empty, omit it.

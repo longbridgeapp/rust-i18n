@@ -5,7 +5,17 @@ categories = ["localization", "internationalization"]
 description = "Rust I18n is use Rust codegen for load YAML file storage translations on compile time, and give you a t! macro for simply get translation texts."
 edition = "2021"
 exclude = ["crates", "tests"]
-keywords = ["i18n", "yml", "localization", "internationalization"]
+keywords = [
+    "gettext",
+    "i18n",
+    "l10n",
+    "intl",
+    "internationalization",
+    "localization",
+    "tr",
+    "translation",
+    "yml",
+]
 license = "MIT"
 name = "rust-i18n"
 readme = "README.md"
@@ -28,6 +38,9 @@ serde_yaml = "0.8"
 globwalk = "0.8.1"
 regex = "1"
 
+[features]
+log-miss-tr = ["rust-i18n-macro/log-miss-tr"]
+
 [[example]]
 name = "app"
 test = true
@@ -38,10 +51,17 @@ members = [
     "crates/extract",
     "crates/support",
     "crates/macro",
+    "examples/app-egui",
     "examples/app-load-path",
+    "examples/app-metadata",
+    "examples/app-minify-key",
     "examples/foo",
 ]
 
 [[bench]]
 harness = false
 name = "bench"
+
+[[bench]]
+harness = false
+name = "minify_key"

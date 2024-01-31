@@ -1,0 +1,23 @@
+_version: 2
+
+T.1LokVzuiIrh1:
+  en: "Hello, world!"
+  zh: "你好，世界！"
+T.53pFZEJAcwid:
+  en: ABCDEF
+  zh: 甲乙丙丁戊己
+T.6zJ2nRuJ42Z5:
+  en: ABCDE
+  zh: 甲乙丙丁戊
+a:
+  en: A
+  zh: 甲
+ab:
+  en: AB
+  zh: 甲乙
+abc:
+  en: ABC
+  zh: 甲乙丙
+abcd:
+  en: ABCD
+  zh: 甲乙丙丁

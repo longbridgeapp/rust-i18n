@@ -1,6 +1,7 @@
 use anyhow::Error;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
+use rust_i18n_support::I18nConfig;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -16,24 +17,31 @@ pub struct Location {
 pub struct Message {
     pub key: String,
     pub index: usize,
+    pub minify_key: bool,
     pub locations: Vec<Location>,
 }
 
 impl Message {
-    fn new(key: &str, index: usize) -> Self {
+    fn new(key: &str, index: usize, minify_key: bool) -> Self {
         Self {
             key: key.to_owned(),
             index,
+            minify_key,
             locations: vec![],
         }
     }
 }
 
-static METHOD_NAME: &str = "t";
+static METHOD_NAMES: &[&str] = &["t", "tr"];
 
 #[allow(clippy::ptr_arg)]
-pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<(), Error> {
-    let mut ex = Extractor { results, path };
+pub fn extract(
+    results: &mut Results,
+    path: &PathBuf,
+    source: &str,
+    cfg: I18nConfig,
+) -> Result<(), Error> {
+    let mut ex = Extractor { results, path, cfg };
 
     let file = syn::parse_file(source)
         .unwrap_or_else(|_| panic!("Failed to parse file, file: {}", path.display()));
@@ -45,6 +53,7 @@ pub fn extract(results: &mut Results, path: &PathBuf, source: &str) -> Result<()
 struct Extractor<'a> {
     results: &'a mut Results,
     path: &'a PathBuf,
+    cfg: I18nConfig,
 }
 
 impl<'a> Extractor<'a> {
@@ -63,7 +72,8 @@ impl<'a> Extractor<'a> {
                         }
                     }
 
-                    if ident == METHOD_NAME && is_macro {
+                    let ident_str = ident.to_string();
+                    if METHOD_NAMES.contains(&ident_str.as_str()) && is_macro {
                         if let Some(TokenTree::Group(group)) = token_iter.peek() {
                             self.take_message(group.stream());
                         }
@@ -85,17 +95,34 @@ impl<'a> Extractor<'a> {
             return;
         };
 
+        let I18nConfig {
+            minify_key,
+            minify_key_len,
+            minify_key_prefix,
+            minify_key_thresh,
+            ..
+        } = &self.cfg;
         let key: Option<proc_macro2::Literal> = Some(literal);
 
         if let Some(lit) = key {
             if let Some(key) = literal_to_string(&lit) {
-                let message_key = format_message_key(&key);
-
+                let (message_key, message_content) = if *minify_key {
+                    let hashed_key = rust_i18n_support::MinifyKey::minify_key(
+                        &key,
+                        *minify_key_len,
+                        minify_key_prefix,
+                        *minify_key_thresh,
+                    );
+                    (hashed_key.to_string(), key.clone())
+                } else {
+                    let message_key = format_message_key(&key);
+                    (message_key.clone(), message_key)
+                };
                 let index = self.results.len();
                 let message = self
                     .results
-                    .entry(message_key.clone())
-                    .or_insert_with(|| Message::new(&message_key, index));
+                    .entry(message_key)
+                    .or_insert_with(|| Message::new(&message_content, index, *minify_key));
 
                 let span = lit.span();
                 let line = span.start().line;
@@ -143,6 +170,7 @@ mod tests {
                         )+
                     ],
                     index: 0,
+                    minify_key: false,
                 };
                 results.push(message);
             )+
@@ -211,6 +239,7 @@ mod tests {
         let mut ex = Extractor {
             results: &mut results,
             path: &"hello.rs".to_owned().into(),
+            cfg: I18nConfig::default(),
         };
 
         ex.invoke(stream).unwrap();
