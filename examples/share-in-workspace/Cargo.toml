@@ -1,0 +1,12 @@
+name = "sare-locales-in-workspace"
+
+[workspace]
+members = [
+  "crates/my-app1",
+  "crates/my-app2",
+  "crates/i18n"
+]
+
+[workspace.dependencies]
+rust-i18n = { path = "../../" }
+i18n = { path = "crates/i18n" }
