@@ -113,9 +113,9 @@ You can also split the each language into difference files, and you can choise (
 
 ```yml
 _version: 1
-hello: 'Hello world'
-messages.hello: 'Hello, %{name}'
-t_4Cct6Q289b12SkvF47dXIx: 'Hello, %{name}'
+hello: "Hello world"
+messages.hello: "Hello, %{name}"
+t_4Cct6Q289b12SkvF47dXIx: "Hello, %{name}"
 ```
 
 Or use JSON or TOML format, just rename the file to `en.json` or `en.toml`, and the content is like this:
@@ -421,18 +421,19 @@ $ RUST_I18N_DEBUG=1 cargo build
 
 ## Benchmark
 
-Benchmark [`t!`] method, result on Apple M1:
+Benchmark [`t!`] method, result on MacBook Pro (2023, Apple M3):
 
 ```bash
-t                       time:   [58.274 ns 60.222 ns 62.390 ns]
-t_with_locale           time:   [55.395 ns 57.106 ns 59.081 ns]
-t_with_args             time:   [167.46 ns 170.94 ns 175.64 ns]
-t_with_args (str)       time:   [164.85 ns 165.91 ns 167.41 ns]
-t_with_args (many)      time:   [444.04 ns 452.17 ns 463.44 ns]
-t_with_threads          time:   [414.26 ns 422.97 ns 433.53 ns]
+t                       time:   [32.637 ns 33.139 ns 33.613 ns]
+t_with_locale           time:   [24.616 ns 24.812 ns 25.071 ns]
+t_with_args             time:   [128.70 ns 128.97 ns 129.24 ns]
+t_with_args (str)       time:   [129.48 ns 130.08 ns 130.76 ns]
+t_with_args (many)      time:   [370.28 ns 374.46 ns 380.56 ns]
+t_with_threads          time:   [38.619 ns 39.506 ns 40.419 ns]
+t_lorem_ipsum           time:   [33.867 ns 34.286 ns 34.751 ns]
 ```
 
-The result `101 ns (0.0001 ms)` means if there have 10K translate texts, it will cost 1ms.
+The result `101 ns (0.0001 ms)` means if there have **10K** translate texts, it will cost `1ms`.
 
 ## License
 
