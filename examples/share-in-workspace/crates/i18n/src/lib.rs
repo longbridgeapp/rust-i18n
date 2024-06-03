@@ -1,6 +1,6 @@
 use rust_i18n::Backend;
 
-rust_i18n::i18n!("../locales");
+rust_i18n::i18n!("../../locales");
 
 pub struct I18nBackend;
 
@@ -18,3 +18,13 @@ impl Backend for I18nBackend {
         }
     }
 }
+
+#[macro_export]
+macro_rules! init {
+    () => {
+        rust_i18n::i18n!(backend = i18n::I18nBackend);
+    };
+}
+
+pub use rust_i18n::set_locale;
+pub use rust_i18n::t;

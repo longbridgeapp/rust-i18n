@@ -1,4 +1,4 @@
-rust_i18n::i18n!(backend = my_i18n::I18nBackend);
+i18n::init!();
 
 #[cfg(test)]
 mod tests {
