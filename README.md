@@ -92,7 +92,14 @@ fn main() {
 
 ## Locale file
 
-You can use `_version` key to specify the version of the locale file, and the default value is `1`.
+You can use `_version` key to specify the version (This version is the locale file version, not the rust-i18n version) of the locale file, and the default value is `1`.
+
+rust-i18n supports two style of config file, and those versions will always be keeping.
+
+- `_version: 1` - Split each locale into difference files, it is useful when your project wants to split to translate work.
+- `_verison: 2` - Put all localized text into same file, it is easy to translate quickly by AI (e.g.: GitHub Copilot). When you write original text, just press Enter key, then AI will suggest you the translation text for other languages.
+
+You can choose as you like.
 
 ### Split Localized Texts into Difference Files
 
