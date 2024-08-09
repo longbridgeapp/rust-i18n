@@ -8,13 +8,9 @@ exclude = ["crates", "tests"]
 keywords = [
     "gettext",
     "i18n",
-    "l10n",
-    "intl",
     "internationalization",
     "localization",
-    "tr",
     "translation",
-    "yml",
 ]
 license = "MIT"
 name = "rust-i18n"
