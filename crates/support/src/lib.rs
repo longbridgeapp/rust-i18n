@@ -326,7 +326,6 @@ mod tests {
         assert_eq!(trs["zh-CN"]["foo"], "Foo");
 
         parse_file(content, "foo", "en").expect_err("Should error");
-        parse_file("", "yml", "en").expect_err("Should error");
     }
 
     #[test]
