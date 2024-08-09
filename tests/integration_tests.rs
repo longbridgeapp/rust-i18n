@@ -101,9 +101,7 @@ mod tests {
 
     #[test]
     fn test_load() {
-        assert!(load_locales("./tests/locales", |_| false)
-            .get("en")
-            .is_some());
+        assert!(load_locales("./tests/locales", |_| false).contains_key("en"));
     }
 
     #[test]

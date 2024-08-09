@@ -199,7 +199,7 @@ fn parse_file_v2(key_prefix: &str, data: &serde_json::Value) -> Option<Translati
                     //  en: Welcome
                     //  zh-CN: 欢迎
                     if text.is_string() {
-                        let key = format_keys(&[&key_prefix, &key]);
+                        let key = format_keys(&[key_prefix, key]);
                         let sub_trs = HashMap::from([(key, text.clone())]);
                         let sub_value = serde_json::to_value(&sub_trs).unwrap();
 
@@ -212,9 +212,8 @@ fn parse_file_v2(key_prefix: &str, data: &serde_json::Value) -> Option<Translati
                     if text.is_object() {
                         // Parse the nested keys
                         // If the value is object (Map<locale, string>), iter them and convert them and insert into trs
-                        let key = format_keys(&[&key_prefix, &key]);
+                        let key = format_keys(&[key_prefix, key]);
                         if let Some(sub_trs) = parse_file_v2(&key, value) {
-                            // println!("--------------- sub_trs:\n{:?}", sub_trs);
                             // Merge the sub_trs into trs
                             for (locale, sub_value) in sub_trs {
                                 trs.entry(locale)

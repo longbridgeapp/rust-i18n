@@ -223,8 +223,9 @@ impl syn::parse::Parse for Arguments {
 
 #[derive(Default)]
 pub struct Messsage {
-    pub key: proc_macro2::TokenStream,
-    pub val: Value,
+    #[allow(dead_code)]
+    key: proc_macro2::TokenStream,
+    val: Value,
 }
 
 impl Messsage {
