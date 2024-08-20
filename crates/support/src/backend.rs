@@ -70,16 +70,15 @@ impl SimpleBackend {
     /// ```
     pub fn add_translations(&mut self, locale: &str, data: &HashMap<&str, &str>) {
         let data = data
-            .clone()
-            .into_iter()
-            .map(|(k, v)| (k.into(), v.into()))
+            .iter()
+            .map(|(k, v)| ((*k).into(), (*v).into()))
             .collect::<HashMap<_, _>>();
 
-        if let Some(trs) = self.translations.get_mut(locale) {
-            trs.extend(data.clone());
-        } else {
-            self.translations.insert(locale.into(), data.clone());
-        }
+        let trs = self
+            .translations
+            .entry(locale.into())
+            .or_insert(HashMap::new());
+        trs.extend(data);
     }
 }
 
