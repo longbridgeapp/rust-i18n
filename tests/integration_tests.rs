@@ -33,6 +33,8 @@ rust_i18n::i18n!(
 
 #[cfg(test)]
 mod tests {
+    use std::{thread, time::Duration};
+
     use rust_i18n::t;
     use rust_i18n_support::load_locales;
 
@@ -314,5 +316,13 @@ mod tests {
             t!("missing.default", locale = "zh-CN", fallback = "en"),
             "This is missing key fallbacked to en."
         );
+    }
+
+    #[test]
+    fn test_set_locale() {
+        rust_i18n::set_locale("zh-CN");
+        for _ in 0..5 {
+            assert_eq!(t!("hello"), "Bar - 你好世界！");
+        }
     }
 }
