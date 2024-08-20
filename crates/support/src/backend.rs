@@ -74,10 +74,7 @@ impl SimpleBackend {
             .map(|(k, v)| ((*k).into(), (*v).into()))
             .collect::<HashMap<_, _>>();
 
-        let trs = self
-            .translations
-            .entry(locale.into())
-            .or_insert(HashMap::new());
+        let trs = self.translations.entry(locale.into()).or_default();
         trs.extend(data);
     }
 }

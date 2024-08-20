@@ -315,4 +315,12 @@ mod tests {
             "This is missing key fallbacked to en."
         );
     }
+
+    #[test]
+    fn test_set_locale() {
+        rust_i18n::set_locale("zh-CN");
+        for _ in 0..5 {
+            assert_eq!(t!("hello"), "Bar - 你好世界！");
+        }
+    }
 }

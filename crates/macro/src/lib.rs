@@ -324,6 +324,8 @@ fn generate_code(
     quote! {
         use rust_i18n::{BackendExt, CowStr, MinifyKey};
         use std::borrow::Cow;
+        use std::sync::Mutex;
+        use rust_i18n::once_cell::sync::Lazy;
 
         /// I18n backend instance
         ///
@@ -334,10 +336,16 @@ fn generate_code(
             #(#all_translations)*
             #extend_code
 
-            #default_locale
+            if *_RUST_I18N_INITIALIZED_DEFAULT_LOCALE.lock().unwrap() == false {
+                *_RUST_I18N_INITIALIZED_DEFAULT_LOCALE.lock().unwrap() = true;
+                #default_locale
+            }
 
             Box::new(backend)
         });
+
+        /// To mark the default locale has been initialized
+        static _RUST_I18N_INITIALIZED_DEFAULT_LOCALE: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 
         static _RUST_I18N_FALLBACK_LOCALE: Option<&[&'static str]> = #fallback;
         static _RUST_I18N_MINIFY_KEY: bool = #minify_key;
