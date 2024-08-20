@@ -292,7 +292,12 @@ fn generate_code(
 
     let default_locale = if let Some(default_locale) = args.default_locale {
         quote! {
-            rust_i18n::set_locale(#default_locale);
+            use std::ops::Deref;
+            if #default_locale != rust_i18n::locale().deref() {
+                rust_i18n::set_locale(rust_i18n::locale().deref());
+            } else {
+                rust_i18n::set_locale(#default_locale);
+            }
         }
     } else {
         quote! {}
