@@ -329,6 +329,8 @@ fn generate_code(
     quote! {
         use rust_i18n::{BackendExt, CowStr, MinifyKey};
         use std::borrow::Cow;
+        use std::sync::Mutex;
+        use rust_i18n::once_cell::sync::Lazy;
 
         /// I18n backend instance
         ///
