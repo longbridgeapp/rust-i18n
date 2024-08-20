@@ -316,8 +316,9 @@ mod tests {
         );
     }
 
+    // https://github.com/longbridgeapp/rust-i18n/issues/87
     #[test]
-    fn test_set_locale() {
+    fn test_set_locale_on_initialize() {
         rust_i18n::set_locale("zh-CN");
         for _ in 0..5 {
             assert_eq!(t!("hello"), "Bar - 你好世界！");
