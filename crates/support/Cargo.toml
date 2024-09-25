@@ -8,18 +8,18 @@ repository = "https://github.com/longbridgeapp/rust-i18n"
 version = "3.1.2"
 
 [dependencies]
-arc-swap = "1.6.0"
-base62 = "2.0.2"
-globwalk = "0.8.1"
-itertools = "0.11.0"
-once_cell = "1.10.0"
-proc-macro2 = "1.0"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_yml = "0.0.11"
-siphasher = "1.0"
-toml = "0.7.4"
-normpath = "1.1.1"
-lazy_static = "1"
-regex = "1"
-triomphe = { version = "0.1.11", features = ["arc-swap"] }
+arc-swap.workspace = true
+base62.workspace = true
+globwalk.workspace = true
+itertools.workspace = true
+once_cell.workspace = true
+proc-macro2.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yml.workspace = true
+siphasher.workspace = true
+toml.workspace = true
+normpath.workspace = true
+lazy_static.workspace = true
+regex.workspace = true
+triomphe.workspace = true
